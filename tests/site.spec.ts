@@ -164,6 +164,9 @@ test('build output excludes the draft and lists the new pages', async ({ request
   const htmlAndXml = files.filter((file) => /\.(html|xml)$/.test(file));
   for (const file of htmlAndXml) {
     const text = fs.readFileSync(file, 'utf8');
+    const lower = text.toLowerCase();
+    expect(lower, file).not.toContain('growing on');
+    expect(lower, file).not.toContain('seo automation');
     expect(text, file).not.toContain('DRAFT_FIXTURE_DO_NOT_PUBLISH');
     expect(text, file).not.toContain('Draft example, not for publication');
     expect(text, file).not.toContain('/articles/draft-example');

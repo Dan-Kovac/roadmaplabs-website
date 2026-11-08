@@ -42,7 +42,7 @@ export const CASES = {
     href: '/work/reviewbuddy',
     name: 'ReviewBuddy',
     short: 'ReviewBuddy',
-    summary: 'A reviews platform in beta, and growing on the same kind of automations we build for clients.',
+    summary: 'ReviewBuddy is our reviews platform for Australian tradies.',
     tag: 'Our product',
     gradient: 'linear-gradient(160deg, #4cc2ff 0%, #1f9be6 100%)',
     laptop: reviewbuddyLaptop,
