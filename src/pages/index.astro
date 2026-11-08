@@ -81,23 +81,6 @@ const homeFaq = [
   </section>
 
   <section style="background: var(--paper)">
-    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 0 24px 120px; box-sizing: border-box; display: flex; flex-direction: column; gap: 80px">
-      <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">See how the work comes together</h2>
-      {proof.map((item, i) => (
-        <div class:list={['rl-split', { 'rl-split--flip': i % 2 === 1 }]}>
-          <div class="rl-split__panel mk-stage" style={`background: ${item.gradient}; padding: 0`}><Mockup case={item.key} sizes="(max-width: 720px) calc(100vw - 48px), 560px" /></div>
-          <div>
-            <span class="rl-tag rl-tag--long" style="margin-bottom: 16px">{item.tag}</span>
-            <h2>{item.name}</h2>
-            <p>{item.summary}</p>
-            <a class="rl-link-action" href={item.href}>Read the case study</a>
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <section style="background: var(--paper)">
     <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 0 24px 120px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
       <div style="display: flex; flex-direction: column; gap: 12px; max-width: 40em">
         <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">Get the foundations right. Then build</h2>
@@ -171,7 +154,7 @@ const homeFaq = [
         <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">From a clear plan to a working system</h2>
         <a class="rl-link-action" href="/process">See how a project works</a>
       </div>
-      <div class="ev-why">
+      <div class="ev-why cards-on-fog">
         {PROCESS_STEPS.map((step, i) => (
           <article class="ev-why__card">
             <span class="ev-node" aria-hidden="true">{i + 1}</span>

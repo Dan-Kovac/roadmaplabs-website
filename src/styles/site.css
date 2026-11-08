@@ -54,7 +54,7 @@ details[open] .faq-plus { transform: rotate(45deg); }
 
 /* The white-button rule for blue .rl-signal panels shouldn't reach the white form card inside one:
    keep the submit button blue there so it reads as the primary action. */
-.rl-signal .rl-card .rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]) { background-image: linear-gradient(135deg, #3a74ff 0%, #0a4cff 45%, #0636c2 100%); background-color: var(--action); color: var(--paper); }
+.rl-signal .rl-card .rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]) { background-image: linear-gradient(135deg, #0a4cff 0%, #0a4cff 45%, #0636c2 100%); background-color: var(--action); color: var(--paper); }
 
 /* Long Compass label: wrap inside cards and narrow viewports. */
 .rl-tag--long { display: inline-block; max-width: 100%; height: auto; white-space: normal; text-wrap: pretty; line-height: 18px; }
@@ -67,13 +67,22 @@ details[open] .faq-plus { transform: rotate(45deg); }
 .page-hero { max-width: 1200px; margin: 0 auto; padding: 96px 24px 48px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
 .page-hero h1 { margin: 0; font-size: clamp(44px, 6vw, 72px); line-height: 1.0; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance; }
 .page-hero .lede { margin: 0; font-size: 20px; line-height: 28px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 32em; text-wrap: pretty; }
-.service-catalogue { display: flex; flex-direction: column; gap: 48px; }
+.service-catalogue { display: flex; flex-direction: column; gap: 32px; }
+.service-links { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.service-links a { display: inline-flex; align-items: center; min-height: 44px; }
 .group-title, .page-section h2.group-title, .page-section h3.group-title { margin: 0 0 16px; font: 600 24px/32px var(--font-sans); letter-spacing: -0.01em; text-wrap: balance; }
 .detail-stack { display: flex; flex-direction: column; gap: 80px; }
 .page-hero .hero-body { margin: 0; font-size: 16px; line-height: 24px; color: var(--text-secondary); max-width: 40em; text-wrap: pretty; }
 .page-micro { margin: 0; font-size: 14px; line-height: 22px; color: var(--text-secondary); max-width: 40em; }
 .page-section { max-width: 1200px; margin: 0 auto; padding: 80px 24px; box-sizing: border-box; }
 .page-section h2 { margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600; text-wrap: balance; }
+.detail-stack .rl-split h2,
+.detail-stack .ev-why__card h2 {
+  margin: 0 0 var(--space-16);
+  font: 600 36px/1.15 var(--font-sans);
+  letter-spacing: -0.025em;
+}
+.cards-on-fog .ev-why__card { background: var(--paper); }
 .service-group { display: flex; flex-direction: column; gap: 0; }
 .service-group + .service-group { margin-top: 40px; }
 .service-label { margin: 0 0 8px; font: 500 14px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); }
@@ -97,7 +106,7 @@ details[open] .faq-plus { transform: rotate(45deg); }
 .article-list a:last-child { border-bottom: 1px solid var(--border); }
 .article-list h3 { margin: 0; font: 600 22px/30px var(--font-sans); letter-spacing: -0.015em; }
 .article-meta { margin: 0; font-size: 14px; line-height: 20px; color: var(--text-secondary); }
-.article-body { display: flex; flex-direction: column; gap: 16px; font-size: 16px; line-height: 26px; }
+.article-body { display: flex; flex-direction: column; gap: 16px; font-size: 16px; line-height: 24px; }
 .article-body :where(h2) { margin: 16px 0 0; font: 600 24px/32px var(--font-sans); letter-spacing: -0.01em; }
 .article-body :where(p, ul) { margin: 0; }
 .article-body :where(ul) { padding-left: 20px; display: grid; gap: 8px; }

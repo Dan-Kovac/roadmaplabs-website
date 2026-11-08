@@ -31,13 +31,14 @@ const formatDate = (date: Date) =>
   ogType="article"
   schema={articleSchema(article)}
 >
-  <article class="page-section" style="display: flex; flex-direction: column; align-items: flex-start; gap: 20px; max-width: 760px">
+  <article class="page-section" style="display: flex; flex-direction: column; align-items: flex-start; gap: 20px; max-width: 1200px">
+    <a class="rl-link" href="/articles" style="color: var(--text-secondary); padding: 12px 0">← Articles</a>
     <div style="display: flex; flex-wrap: wrap; gap: 8px">
       <span class="rl-tag">{article.data.topic}</span>
       <span class="rl-tag">{article.data.format}</span>
     </div>
     <h1 style="margin: 0; font-size: clamp(40px, 5vw, 60px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance">{article.data.title}</h1>
-    <p class="lede" style="margin: 0; font-size: 20px; line-height: 30px; color: var(--text-secondary)">{article.data.description}</p>
+    <p class="lede" style="margin: 0; max-width: 880px; font-size: 22px; line-height: 30px; color: var(--text-secondary)">{article.data.description}</p>
     <p class="article-meta">{article.data.author} · {formatDate(article.data.publishedAt)} · {article.data.readingTime}</p>
     {article.data.updatedAt.getTime() !== article.data.publishedAt.getTime() && (
       <p class="article-meta">Updated {formatDate(article.data.updatedAt)}</p>

@@ -110,7 +110,7 @@ export const CONTACT_FAQ: Faq[] = [
     a: "Yes. The 1-hour discovery session is free, and the AI blueprint and strategy are yours to keep. There's no obligation to hire us.",
   },
   {
-    q: 'Can we take the report and do it ourselves?',
+    q: 'Can we use the blueprint and strategy ourselves?',
     a: "Yes, and we'd welcome it. Build it with your team or take it to another provider. There's no obligation to hire us.",
   },
   {

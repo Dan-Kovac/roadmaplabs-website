@@ -53,9 +53,18 @@ async function expectImagesLoaded(page: Page) {
     );
   });
   const broken = await page.evaluate(() =>
-    [...document.images].filter((img) => img.naturalWidth === 0).map((img) => img.currentSrc || img.getAttribute('src') || ''),
+    [...document.images]
+      .filter((img) => {
+        const box = img.getBoundingClientRect();
+        const hidden = box.width === 0 && box.height === 0;
+        return !hidden && (img.naturalWidth === 0 || box.height < 1);
+      })
+      .map((img) => img.currentSrc || img.getAttribute('src') || img.alt),
   );
   expect(broken, 'images with naturalWidth 0').toEqual([]);
+  const logo = page.locator('footer img[alt="Roadmap Labs"]');
+  await expect(logo).toBeVisible();
+  await expect.poll(async () => logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 }
 
 async function expectFaqToggles(page: Page) {
@@ -108,6 +117,28 @@ for (const route of routes) {
     await expectHeaderNav(page, testInfo.project.name, route.nav);
   });
 }
+
+test('work rows stay visible', async ({ page }) => {
+  await page.goto('/work');
+  const rows = page.locator('main .rl-split');
+  await expect(rows).toHaveCount(3);
+  for (let i = 0; i < 3; i++) {
+    const row = rows.nth(i);
+    await row.scrollIntoViewIfNeeded();
+    await expect(row).toBeVisible();
+    const opacity = await row.evaluate((el) => Number(getComputedStyle(el).opacity));
+    expect(opacity).toBe(1);
+  }
+});
+
+test('public copy does not say live pilot', async ({ page }) => {
+  for (const path of ['/', '/work', '/work/reviewbuddy', '/about', '/work/flexfolio', '/work/compass-buyers-agency']) {
+    await page.goto(path);
+    const text = (await page.locator('body').innerText()).toLowerCase();
+    expect(text, path).not.toContain('live pilot');
+    expect(text, path).not.toContain('live in pilot');
+  }
+});
 
 test('draft article is not a route', async ({ page }) => {
   const response = await page.goto('/articles/draft-example');

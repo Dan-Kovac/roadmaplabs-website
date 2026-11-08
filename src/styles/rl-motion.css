@@ -39,7 +39,7 @@ a:hover .mk-laptop, .mk-stage:hover .mk-laptop { transform: translateY(-6px) rot
 .rl-btn { transition: transform .2s ease, box-shadow .2s ease; }
 .rl-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(10,76,255,.7); }
 /* Deep cobalt gradient on every filled button (chosen Nov 2026). White buttons on dark or on the signal stay white. */
-.rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]) { background-image: linear-gradient(135deg, #3a74ff 0%, #0a4cff 45%, #0636c2 100%); background-size: 180% 180%; background-position: 0% 0%; box-shadow: inset 0 1px 0 rgba(255,255,255,.24); transition: transform .2s ease, box-shadow .2s ease, background-position .5s ease; }
+.rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]) { background-image: linear-gradient(135deg, #0a4cff 0%, #0a4cff 45%, #0636c2 100%); background-size: 180% 180%; background-position: 0% 0%; box-shadow: inset 0 1px 0 rgba(255,255,255,.24); transition: transform .2s ease, box-shadow .2s ease, background-position .5s ease; }
 .rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]):hover { background-position: 100% 100%; color: var(--paper); box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 12px 28px -12px rgba(10,76,255,.8); }
 .rl-signal .rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost) { background-image: none; background-color: var(--paper); color: var(--ink); }
 

@@ -2,9 +2,16 @@
 import Base from '../layouts/Base.astro';
 import ClosingCTA from '../components/ClosingCTA.astro';
 import Faq from '../components/Faq.astro';
+import Img from '../components/Img.astro';
+import Mockup from '../components/Mockup.astro';
 import { CASES, FAQ_PAGE_ITEMS, SERVICE_GROUPS } from '../data/site';
+import processDiagramWhiteboard from '../assets/images/process-diagram-whiteboard.jpg';
+import warehouseClipboard from '../assets/images/warehouse-clipboard.jpg';
+import talkingAtLaptop from '../assets/images/talking-at-laptop.jpg';
+import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
 
 const slug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const details = SERVICE_GROUPS.flatMap((group) => group.items);
 const serviceFaq = [
   'How much does an engagement cost?',
   'Who owns the accounts and pays the AI fees?',
@@ -36,17 +43,58 @@ const serviceFaq = [
         {SERVICE_GROUPS.map((group) => (
           <div>
             <h3 class="group-title">{group.label}</h3>
-            <div class="ev-why">
+            <ul class="service-links">
               {group.items.map((item) => (
-                <article class="ev-why__card" id={slug(item.title)}>
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                </article>
+                <li><a href={`#${slug(item.title)}`}>{item.title}</a></li>
               ))}
-            </div>
+            </ul>
           </div>
         ))}
       </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="ev-pad page-section detail-stack">
+      {details.map((item, i) => (
+        <div id={slug(item.title)} class:list={[item.title === 'Teach your team to use AI well' ? 'ev-why__card' : 'rl-split', { 'rl-split--flip': item.title !== 'Teach your team to use AI well' && i % 2 === 1 }]}>
+          {item.title === 'Teach your team to use AI well' ? (
+            <>
+              <h2>{item.title}</h2>
+              <p>{item.body}</p>
+              <a class="rl-link-action" href="/contact">Book a free 1-hour discovery session</a>
+            </>
+          ) : (
+            <>
+              <div class="rl-split__panel" style={item.title === 'Build custom tools and internal operating systems' || item.title === 'Build a website that supports the business' ? `background: ${item.title.startsWith('Build custom') ? CASES.flexfolio.gradient : CASES.compass.gradient}; padding: 0` : 'padding: 0; overflow: hidden'}>
+                {item.title === 'Implement AI securely' && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={processDiagramWhiteboard} alt="Someone sketching a process diagram on a glass whiteboard" sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
+                {item.title === 'Make old data useful' && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={warehouseClipboard} alt="Two colleagues with a clipboard in a warehouse" sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
+                {item.title === 'Simplify your software setup' && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={talkingAtLaptop} alt="Two people talking through ideas together at a laptop" sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
+                {item.title === 'Automate repeated work' && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={factoryConveyorLine} alt="A group watching a conveyor line on a factory floor" sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
+                {item.title === 'Build custom tools and internal operating systems' && <Mockup case="flexfolio" sizes="(max-width: 720px) calc(100vw - 48px), 540px" />}
+                {item.title === 'Build a website that supports the business' && <Mockup case="compass" sizes="(max-width: 720px) calc(100vw - 48px), 540px" />}
+              </div>
+              <div>
+                <h2>{item.title}</h2>
+                <p>{item.body}</p>
+                {item.title === 'Build custom tools and internal operating systems' && (
+                  <>
+                    <span class="rl-tag">Our product</span>
+                    <a class="rl-link-action" href="/work/flexfolio">Read the case study</a>
+                  </>
+                )}
+                {item.title === 'Build a website that supports the business' && (
+                  <>
+                    <span class="rl-tag rl-tag--long">{CASES.compass.tag}</span>
+                    <p>We built the Compass Buyers Agency website.</p>
+                  </>
+                )}
+                <a class="rl-link-action" href="/contact">Book a free 1-hour discovery session</a>
+              </div>
+            </>
+          )}
+        </div>
+      ))}
     </div>
   </section>
 
