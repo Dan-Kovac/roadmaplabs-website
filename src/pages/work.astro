@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+import ClosingCTA from '../components/ClosingCTA.astro';
+import Mockup from '../components/Mockup.astro';
+---
+<Base
+  title='AI and Automation Case Studies | Roadmap Labs'
+  description='How we use AI and automation in real businesses: a website and bespoke web app for Compass Buyers Agency, and our own products ReviewBuddy and Flexfolio.'
+  path="/work"
+>
+
+<section style="max-width: 1200px; margin: 0 auto; padding: 96px 24px 48px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 20px">
+  <span class="rl-tag">Our work</span>
+  <h1 style="margin: 0; font-size: clamp(44px, 6vw, 72px); line-height: 1.0; letter-spacing: -0.03em; font-weight: 600">AI and automation case studies</h1>
+  <p style="margin: 0; font-size: 20px; line-height: 28px; color: var(--text-secondary); max-width: 32em">If your business has long-standing processes that work, even if they're done by people and take a long time, they're usually the best place to start with AI. Here's a client we're helping grow, and two products we're building ourselves. Each one covers the challenge, what we built and what changed.</p>
+</section>
+
+<section style="max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; box-sizing: border-box; display: flex; flex-direction: column; gap: 80px">
+  <div class="rl-split rl-reveal">
+    <div class="rl-split__panel mk-stage" style="background: linear-gradient(160deg, #3a6b68 0%, #173a39 100%); padding: 0"><Mockup case="compass" sizes="(max-width: 720px) calc(100vw - 48px), 560px" /></div>
+    <div>
+      <span class="rl-tag" style="margin-bottom: 16px">Client work</span>
+      <h2>Compass Buyers Agency</h2>
+      <p>A data-driven website that reports on every suburb they buy in, and a bespoke web app that runs the business behind it.</p>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px">
+        <a class="rl-link-action" href="/work/compass-buyers-agency">Read the case study</a>
+        <a href="https://compassagency.com.au" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; min-height: 44px; color: var(--text-secondary)">Visit compassagency.com.au<span aria-hidden="true"> ↗</span><span class="cs-sr"> (opens in a new tab)</span></a>
+      </div>
+    </div>
+  </div>
+  <div class="rl-split rl-split--flip rl-reveal">
+    <div class="rl-split__panel mk-stage" style="background: linear-gradient(160deg, #4cc2ff 0%, #1f9be6 100%); padding: 0"><Mockup case="reviewbuddy" sizes="(max-width: 720px) calc(100vw - 48px), 560px" /></div>
+    <div>
+      <span class="rl-tag" style="margin-bottom: 16px">Our product</span>
+      <h2>ReviewBuddy</h2>
+      <p>A reviews platform in live pilot, and growing on the same kind of automations we build for clients.</p>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px">
+        <a class="rl-link-action" href="/work/reviewbuddy">Read the case study</a>
+        <a href="https://www.reviewbuddy.com.au" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; min-height: 44px; color: var(--text-secondary)">Visit reviewbuddy.com.au<span aria-hidden="true"> ↗</span><span class="cs-sr"> (opens in a new tab)</span></a>
+      </div>
+    </div>
+  </div>
+  <div class="rl-split rl-reveal">
+    <div class="rl-split__panel mk-stage" style="background: linear-gradient(160deg, #2a2a2a 0%, #0b0b0b 100%); padding: 0"><Mockup case="flexfolio" sizes="(max-width: 720px) calc(100vw - 48px), 560px" /></div>
+    <div>
+      <span class="rl-tag" style="margin-bottom: 16px">Our product</span>
+      <h2>Flexfolio</h2>
+      <p>A portfolio platform that shows how product managers think, now in pilot with 30 PMs.</p>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px">
+        <a class="rl-link-action" href="/work/flexfolio">Read the case study</a>
+        <a href="https://www.flexfolio.co" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; min-height: 44px; color: var(--text-secondary)">Visit flexfolio.co<span aria-hidden="true"> ↗</span><span class="cs-sr"> (opens in a new tab)</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<ClosingCTA />
+
+</Base>

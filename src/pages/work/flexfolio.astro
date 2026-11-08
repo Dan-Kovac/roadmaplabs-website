@@ -1,0 +1,112 @@
+---
+import Base from '../../layouts/Base.astro';
+import ClosingCTA from '../../components/ClosingCTA.astro';
+import Mockup from '../../components/Mockup.astro';
+import Img from '../../components/Img.astro';
+import { CASES } from '../../data/site';
+import { caseSchema } from '../../data/schema';
+const c = CASES.flexfolio;
+import flexfolioProfilePage from '../../assets/images/flexfolio-profile-page.jpg';
+import flexfolioPortfolioPage from '../../assets/images/flexfolio-portfolio-page.jpg';
+import flexfolioPhone from '../../assets/images/flexfolio-phone.jpg';
+---
+<Base
+  title='Flexfolio: Portfolios for Product Managers | Roadmap Labs'
+  description='Flexfolio helps product managers show how they think, with an easy-to-update portfolio. Built with Supabase and Claude Code, in pilot with 30 PMs.'
+  path="/work/flexfolio"
+  ogType="article"
+  ogImage={c.og}
+  ogImageAlt={c.laptopAlt}
+  schema={caseSchema(c, 'Flexfolio: Portfolios for Product Managers | Roadmap Labs', 'Flexfolio helps product managers show how they think, with an easy-to-update portfolio. Built with Supabase and Claude Code, in pilot with 30 PMs.')}
+>
+<article style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
+
+  <nav class="cs-switch" aria-label="Case studies" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px">
+    <a class="rl-link" href="/work" style="color: var(--text-secondary); padding: 12px 0">← All case studies</a>
+    <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px">
+      <li><a href="/work/compass-buyers-agency" class="rl-tag" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; box-sizing: border-box">Compass</a></li>
+      <li><a href="/work/reviewbuddy" class="rl-tag" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; box-sizing: border-box">ReviewBuddy</a></li>
+      <li><a href="/work/flexfolio" aria-current="page" class="rl-tag rl-tag--active" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; box-sizing: border-box">Flexfolio</a></li>
+    </ol>
+  </nav>
+
+  <header style="display: flex; flex-direction: column; align-items: flex-start; gap: 20px; max-width: 880px">
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <span class="rl-tag rl-tag--active">Our product</span>
+      <span class="rl-tag">Web app</span>
+      <span class="rl-tag">Product management</span>
+    </div>
+    <h1 style="margin: 0; font-size: clamp(40px, 5vw, 60px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 600">Flexfolio</h1>
+    <p style="margin: 0; font-size: 22px; line-height: 30px; letter-spacing: -0.01em; color: var(--text-secondary)">A portfolio platform that shows how product managers think, now in pilot with 30 PMs.</p>
+    <a href="https://www.flexfolio.co" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 500; color: #0a4cff">Visit flexfolio.co<span aria-hidden="true"> ↗</span><span class="cs-sr"> (opens in a new tab)</span></a>
+  </header>
+
+  <div class="rl-split__panel mk-stage rl-rise rl-d2" style="min-height: 0; padding: clamp(8px, 3vw, 40px) clamp(8px, 4vw, 64px); background: linear-gradient(160deg, #2a2a2a 0%, #0b0b0b 100%)"><Mockup case="flexfolio" sizes="(max-width: 1200px) calc(100vw - 48px), 1150px" eager priority /></div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 48px 72px">
+    <aside style="flex: 1 1 240px; max-width: 320px">
+      <dl style="margin: 0; display: grid; gap: 0; border-top: 1px solid var(--border)">
+        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Type</dt><dd style="margin: 4px 0 0; font-weight: 500">Our product</dd></div>
+        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Status</dt><dd style="margin: 4px 0 0; font-weight: 500">Pilot</dd></div>
+        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Started</dt><dd style="margin: 4px 0 0; font-weight: 500">2025</dd></div>
+        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Website</dt><dd style="margin: 4px 0 0; font-weight: 500"><a href="https://www.flexfolio.co" target="_blank" rel="noopener" style="color: inherit">flexfolio.co<span aria-hidden="true"> ↗</span><span class="cs-sr"> (opens in a new tab)</span></a></dd></div>
+      </dl>
+    </aside>
+
+    <div style="flex: 2.4 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 56px">
+      <section style="display: flex; flex-direction: column; gap: 16px">
+        <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Overview</h2>
+        <p style="margin: 0; font-size: 16px; line-height: 24px; max-width: 640px">Flexfolio started with my day job. I'm a product manager at a large Australian wagering company, and I believe the best PMs in a world of AI will be the ones who can show their thinking. Flexfolio makes it simple to build a good-looking portfolio that shows employers and headhunters how you go about solving problems.</p>
+      </section>
+      <section style="display: flex; flex-direction: column; gap: 16px">
+        <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Highlights</h2>
+        <ul style="margin: 0; padding: 0 0 0 20px; display: grid; gap: 12px; font-size: 16px; line-height: 24px; max-width: 640px">
+          <li>In pilot with a cohort of 30 product managers.</li>
+          <li>Built on our own internal systems, with Supabase and Claude Code.</li>
+          <li>An SEO automation and an outbound content marketing automation running alongside the product.</li>
+        </ul>
+      </section>
+      <section style="display: flex; flex-direction: column; gap: 16px">
+        <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Challenge</h2>
+        <p style="margin: 0; font-size: 16px; line-height: 24px; max-width: 640px">People hiring product managers want to see how they think, across their career and the projects in it. A CV doesn't show that, and more and more CVs get screened by AI before a person reads them. A link to a well-structured, in-depth portfolio that's easy to keep up to date gives a PM a better shot.</p>
+      </section>
+      <section style="display: flex; flex-direction: column; gap: 16px">
+        <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Solution</h2>
+        <ul style="margin: 0; padding: 0 0 0 20px; display: grid; gap: 12px; font-size: 16px; line-height: 24px; max-width: 640px">
+          <li>We started from a problem we know first-hand: hiring managers want to see your thinking, not just a list of roles.</li>
+          <li>We designed a simple way to build a portfolio that looks good and lays out how you approach problems, project by project.</li>
+          <li>We built it with Supabase and Claude Code, using the same internal systems we use for client work.</li>
+          <li>We're growing it with an SEO automation and an outbound content marketing automation.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+  <section style="display: flex; flex-direction: column; gap: 24px">
+    <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Walkthrough</h2>
+    <div style="background: var(--fog); border-radius: var(--radius-surface); padding: clamp(24px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start"><figure style="margin: 0; flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 12px"><Img src={flexfolioPortfolioPage} alt="A Flexfolio product manager portfolio page" style="display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 10px; box-shadow: 0 18px 40px -18px rgba(0,7,16,.55)" sizes="(max-width: 900px) calc(100vw - 96px), 460px" /><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">A product manager portfolio</figcaption></figure><figure style="margin: 0; flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 12px"><Img src={flexfolioProfilePage} alt="A Flexfolio profile page" style="display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 10px; box-shadow: 0 18px 40px -18px rgba(0,7,16,.55)" sizes="(max-width: 900px) calc(100vw - 96px), 460px" /><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">A profile page</figcaption></figure><figure style="margin: 0; flex: 0 0 220px; display: flex; flex-direction: column; align-items: center; gap: 12px"><div style="width: min(100%, 240px); border: 8px solid var(--ink); border-radius: 32px; overflow: hidden; box-shadow: var(--shadow-float); background: var(--ink)"><Img src={flexfolioPhone} alt="Flexfolio on a phone" style="display: block; width: 100%; aspect-ratio: 9 / 19.5; object-fit: cover; object-position: top" sizes="224px" /></div><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">On mobile</figcaption></figure></div>
+  </section>
+</article>
+
+<nav aria-label="More case studies" style="max-width: 1200px; margin: 0 auto; padding: 0 24px 96px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; border-top: 1px solid var(--border); padding-top: 48px">
+    <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">More case studies</h2>
+    <span style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">3 of 3</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 24px">
+    <a class="cs-card" href="/work/reviewbuddy" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: var(--radius-surface); background: var(--fog); color: var(--ink); text-decoration: none">
+      <div class="mk-stage cs-thumb" style="background: linear-gradient(160deg, #4cc2ff 0%, #1f9be6 100%)"><Mockup case="reviewbuddy" decorative sizes="(max-width: 720px) calc(100vw - 88px), 540px" /></div>
+      <span style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">← Previous</span>
+      <span role="heading" aria-level="3" style="font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">ReviewBuddy</span>
+      <span style="font-size: 16px; line-height: 24px; color: var(--text-secondary)">A reviews platform in live pilot, and growing on the same kind of automations we build for clients.</span>
+    </a>
+    <a class="cs-card" href="/work/compass-buyers-agency" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: var(--radius-surface); background: var(--fog); color: var(--ink); text-decoration: none">
+      <div class="mk-stage cs-thumb" style="background: linear-gradient(160deg, #3a6b68 0%, #173a39 100%)"><Mockup case="compass" decorative sizes="(max-width: 720px) calc(100vw - 88px), 540px" /></div>
+      <span style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">Next →</span>
+      <span role="heading" aria-level="3" style="font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Compass Buyers Agency</span>
+      <span style="font-size: 16px; line-height: 24px; color: var(--text-secondary)">A data-driven website that reports on every suburb they buy in, and a bespoke web app that runs the business behind it.</span>
+    </a>
+  </div>
+</nav>
+
+<ClosingCTA />
+</Base>

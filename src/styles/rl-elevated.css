@@ -1,0 +1,130 @@
+/* Roadmap Labs: Home v2 refinements. Stays inside the brand book: monochrome, flat, 12px radius, one signal per page. Loaded after rl-motion.css. */
+
+/* ---------- Bands ---------- */
+.ev-dark { background: var(--abyss); color: var(--paper); }
+/* The page's signal moment: cobalt to cyan at the top edge, deepening into abyss behind the steps */
+.ev-signal { background: linear-gradient(180deg, rgba(0,7,16,.08) 0%, rgba(0,7,16,.5) 16%, rgba(0,7,16,.9) 34%, #000710 52%), var(--gradient-signal); }
+.ev-signal .ev-eyebrow { color: rgba(255,255,255,.88); }
+.ev-eyebrow { display: block; font: 500 14px/20px var(--font-sans); letter-spacing: -.01em; color: var(--text-secondary); }
+.ev-dark .ev-eyebrow { color: var(--mist); }
+.ev-tag-dark { background: rgba(255,255,255,.08); color: var(--paper); }
+.ev-rule { height: 1px; background: rgba(255,255,255,.1); border: 0; margin: 0; }
+
+/* ---------- Hero product visual: fog panel, flat ---------- */
+.ev-hero-panel { position: relative; border-radius: var(--radius-surface); overflow: hidden; background: var(--fog); }
+
+/* ---------- Worries: hairline pills, one lights at a time ---------- */
+.ev-worries { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 960px; margin: 0 auto; padding: 0; list-style: none; }
+.ev-worry { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); color: var(--mist); font: 400 16px/22px var(--font-sans); letter-spacing: -.01em; animation: ev-worry 16s ease-in-out infinite; }
+.ev-worry svg { flex: 0 0 18px; }
+.ev-worry:nth-child(2) { animation-delay: 2s; } .ev-worry:nth-child(3) { animation-delay: 4s; }
+.ev-worry:nth-child(4) { animation-delay: 6s; } .ev-worry:nth-child(5) { animation-delay: 8s; } .ev-worry:nth-child(6) { animation-delay: 10s; }
+.ev-worry:nth-child(7) { animation-delay: 12s; } .ev-worry:nth-child(8) { animation-delay: 14s; }
+@keyframes ev-worry {
+  0%, 1.5%, 12.5%, 100% { border-color: rgba(255,255,255,.14); background: transparent; color: var(--mist); }
+  3.5%, 10.5% { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.08); color: var(--paper); }
+}
+
+/* ---------- Three steps on a hairline rail ---------- */
+.ev-steps { position: relative; margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.ev-steps::before, .ev-steps::after { content: ""; position: absolute; top: 19px; left: 40px; right: 0; height: 1px; }
+.ev-steps::before { background: rgba(255,255,255,.14); }
+.ev-steps::after { background: linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent) 0 0 / 25% 100% no-repeat; animation: ev-rail 4.5s linear infinite; }
+.ev-step { display: flex; flex-direction: column; gap: 20px; }
+.ev-node { position: relative; z-index: 1; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--abyss); border: 1px solid rgba(255,255,255,.24); color: var(--paper); font: 600 14px/1 var(--font-sans); animation: ev-node 4.5s linear infinite; }
+.ev-step:nth-child(1) .ev-node { animation-delay: -.3s; } .ev-step:nth-child(2) .ev-node { animation-delay: 1.2s; } .ev-step:nth-child(3) .ev-node { animation-delay: 2.7s; }
+.ev-step .rl-photo { aspect-ratio: 4 / 3; }
+.ev-step h3 { margin: 4px 0 0; font: 600 24px/32px var(--font-sans); letter-spacing: -.015em; color: var(--paper); }
+.ev-step p { margin: 0; font: 400 16px/24px var(--font-sans); letter-spacing: -.01em; color: var(--mist); max-width: 34ch; }
+@keyframes ev-rail { from { background-position: -30% 0; } to { background-position: 130% 0; } }
+@keyframes ev-node {
+  0%, 30%, 100% { border-color: rgba(255,255,255,.24); background: var(--abyss); color: var(--paper); }
+  8%, 20% { border-color: var(--paper); background: var(--paper); color: var(--ink); }
+}
+
+/* Mini UI inside the step photos */
+.ev-mini { left: 14px; right: 14px; bottom: 14px; padding: 12px 14px !important; gap: 8px !important; }
+.ev-flow { display: flex; align-items: center; gap: 6px; font: 500 12px/16px var(--font-sans); }
+.ev-flow span { padding: 4px 8px; border-radius: var(--radius-tag); background: var(--fog); white-space: nowrap; }
+.ev-flow i { flex: 1 1 8px; height: 1px; background: var(--steel); }
+.ev-bar-quiet > i { background: var(--mist); }
+.ev-checks { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 500 12px/16px var(--font-sans); color: var(--graphite); }
+.ev-checks span { display: inline-flex; align-items: center; gap: 5px; }
+.ev-checks svg { flex: 0 0 12px; }
+
+/* ---------- Why us: fog cards, flat ---------- */
+.ev-why { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 24px; }
+.ev-why__card { display: flex; flex-direction: column; gap: 12px; padding: 32px; border-radius: var(--radius-surface); background: var(--fog); }
+.ev-why__card svg { margin-bottom: 12px; }
+.ev-why__card h3 { margin: 0; font: 600 20px/28px var(--font-sans); letter-spacing: -.01em; color: var(--ink); }
+.ev-why__card p { margin: 0; font: 400 16px/24px var(--font-sans); letter-spacing: -.01em; color: var(--text-secondary); }
+
+/* ---------- Free session checklist ---------- */
+.ev-checklist { margin: 8px 0 0; padding: 0; list-style: none; width: 100%; border-top: 1px solid var(--border); }
+.ev-checklist li { display: flex; align-items: flex-start; gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--border); font: 400 16px/24px var(--font-sans); letter-spacing: -.01em; }
+.ev-checklist svg { flex: 0 0 20px; margin-top: 2px; }
+
+/* ---------- Case study cards: paper on fog, flat ---------- */
+.ev-case { display: flex; flex-direction: column; background: var(--paper); border-radius: var(--radius-surface); overflow: hidden; text-decoration: none; color: var(--ink); transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+.ev-case:hover { color: var(--ink); transform: translateY(-4px); }
+.ev-case .mk-stage { position: relative; border-radius: 0; aspect-ratio: 4 / 3; display: flex; align-items: center; }
+.ev-case__tag { position: absolute; top: 16px; left: 16px; z-index: 2; background: var(--paper); }
+.ev-case__body { display: grid; gap: 8px; padding: 24px 24px 28px; }
+.ev-case__body h3 { margin: 0; font: 600 24px/32px var(--font-sans); letter-spacing: -.015em; }
+.ev-case__body p { margin: 0; font: 400 16px/24px var(--font-sans); letter-spacing: -.01em; color: var(--text-secondary); }
+
+/* ---------- Closing call to action (shared): centred, the signal rises from the bottom ---------- */
+.ev-cta { position: relative; overflow: hidden; color: var(--paper); text-align: center; background: linear-gradient(0deg, rgba(0,7,16,0) 0%, rgba(0,7,16,.45) 24%, rgba(0,7,16,.88) 52%, #000710 76%), var(--gradient-signal); }
+.ev-cta__inner { max-width: 1200px; margin: 0 auto; padding: 136px 24px 88px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.ev-cta h2 { margin: 0; max-width: 15ch; font: 600 clamp(40px, 5.6vw, 72px)/1.02 var(--font-sans); letter-spacing: -.035em; color: var(--paper); }
+.ev-cta p { margin: 0; max-width: 46ch; font: 400 18px/28px var(--font-sans); letter-spacing: -.01em; color: rgba(255,255,255,.8); }
+.ev-cta__actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px 28px; margin-top: 8px; }
+.ev-cta__actions .rl-link-action, .ev-cta__actions .rl-link-action:hover { color: var(--paper); }
+.ev-cta__steps { list-style: none; margin: 64px 0 0; padding: 0; width: 100%; max-width: 980px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; text-align: left; }
+.ev-cta__steps li { display: flex; flex-direction: column; gap: 6px; padding: 22px 24px; border-radius: var(--radius-surface); background: rgba(0,7,16,.42); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.ev-cta__steps span { font: 500 12px/18px var(--font-sans); letter-spacing: .02em; text-transform: uppercase; color: rgba(255,255,255,.78); }
+.ev-cta__steps strong { font: 600 18px/26px var(--font-sans); letter-spacing: -.01em; color: var(--paper); }
+.ev-cta__steps em { font: 400 15px/22px var(--font-sans); font-style: normal; letter-spacing: -.01em; color: rgba(255,255,255,.85); }
+
+/* ---------- Case study "More case studies" thumbnails: device mockup, never cropped flat ---------- */
+.cs-thumb { aspect-ratio: 16 / 10; display: flex; align-items: center; }
+.cs-thumb .mk { padding: 6% 14% 8% 6%; }
+
+/* ---------- Report mock (Contact) ---------- */
+.ev-report { background: var(--fog); border-radius: var(--radius-surface); padding: clamp(24px, 4vw, 56px); display: grid; place-items: center; min-height: 440px; }
+.ev-report .rl-ui { width: min(100%, 400px); padding: 24px; display: grid; gap: 14px; box-shadow: var(--shadow-float); }
+.ev-report__checks { display: grid; gap: 8px; padding-bottom: 14px; border-bottom: 1px solid var(--fog); }
+.ev-report__checks span { display: flex; align-items: center; gap: 8px; font: 500 14px/20px var(--font-sans); }
+
+/* ---------- Header: menu button on phones ---------- */
+.ev-menu-btn { display: none; width: 44px; height: 44px; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-surface); background: transparent; align-items: center; justify-content: center; cursor: pointer; }
+.ev-menu-btn:focus-visible { outline: 2px solid var(--roadmap-blue); outline-offset: 2px; }
+.ev-mobile-menu { display: none; }
+
+/* ---------- Phones ---------- */
+@media (max-width: 720px) {
+  .ev-nav { flex-wrap: nowrap !important; padding: 10px 16px !important; }
+  .ev-nav .rl-nav__logo { height: 32px !important; }
+  .ev-nav-links, .ev-nav-cta { display: none !important; }
+  .ev-menu-btn { display: inline-flex; }
+  .ev-mobile-menu { display: grid; padding: 4px 16px 24px; }
+  .ev-mobile-menu .rl-link { display: flex; align-items: center; min-height: 52px; border-bottom: 1px solid rgba(139,141,152,.25); font-size: 18px; line-height: 24px; }
+  .ev-mobile-menu .rl-btn { justify-content: center; margin-top: 20px; }
+  .rl-announce { font-size: 12px !important; line-height: 18px !important; padding: 8px 16px !important; }
+
+  .ev-pad { padding: 72px 16px !important; }
+  .ev-pad--top { padding: 72px 16px 0 !important; }
+  .ev-hero-grid { padding: 48px 16px 72px !important; gap: 40px !important; }
+  .ev-hero-grid .rl-photo { aspect-ratio: 4 / 5 !important; }
+  .ev-worries { justify-content: flex-start; gap: 8px; }
+  .ev-worry { font-size: 15px; line-height: 20px; padding: 10px 14px; }
+  .ev-why__card { padding: 24px; }
+  .ev-case__body { padding: 20px 20px 24px; }
+  .ev-cta__inner { padding: 88px 16px 64px; }
+  .ev-cta__steps { grid-template-columns: 1fr; margin-top: 40px; }
+}
+
+@media (max-width: 900px) {
+  .ev-steps { grid-template-columns: 1fr; gap: 48px; }
+  .ev-steps::before, .ev-steps::after { display: none; }
+}

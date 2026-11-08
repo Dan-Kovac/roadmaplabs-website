@@ -1,0 +1,83 @@
+/* Roadmap Labs: motion and device mockups. Loaded after bundle.css. */
+
+/* ---------- Device mockups ---------- */
+.mk-stage { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius-surface); }
+.mk-stage::before { content: ""; position: absolute; inset: -20%; z-index: -1; background: radial-gradient(50% 45% at 70% 30%, rgba(255,255,255,.28), transparent 70%); animation: rl-drift 14s ease-in-out infinite alternate; }
+.mk-stage::after { content: ""; position: absolute; inset: 0; z-index: -1; background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px); background-size: 18px 18px; mask-image: linear-gradient(180deg, #000, transparent 75%); -webkit-mask-image: linear-gradient(180deg, #000, transparent 75%); }
+.mk { position: relative; width: 100%; padding: 7% 12% 9% 5%; box-sizing: border-box; }
+.mk-laptop { position: relative; width: 100%; transition: transform .5s cubic-bezier(.2,.7,.2,1); }
+.mk-screen { background: #0b0d12; border-radius: 14px 14px 0 0; padding: 2.4% 2.4% 0; box-shadow: 0 40px 70px -35px rgba(0,7,16,.7); }
+.mk-screen img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 6px 6px 0 0; }
+.mk-base { height: clamp(7px, 1.3vw, 16px); margin: 0 -7%; background: linear-gradient(180deg, #f3f3f7, #b9bbc6); border-radius: 0 0 16px 16px / 0 0 12px 12px; box-shadow: 0 24px 30px -22px rgba(0,7,16,.6); }
+.mk-phone { position: absolute; right: 5%; bottom: 6%; width: 21%; border: clamp(3px, .55vw, 7px) solid #0b0d12; border-radius: clamp(14px, 2.2vw, 28px); overflow: hidden; background: #0b0d12; box-shadow: 0 30px 60px -20px rgba(0,7,16,.7); animation: rl-float 6s ease-in-out infinite; }
+.mk-phone img { display: block; width: 100%; aspect-ratio: 9 / 19.5; object-fit: cover; object-position: top; }
+a:hover .mk-laptop, .mk-stage:hover .mk-laptop { transform: translateY(-6px) rotate(-.4deg); }
+
+/* ---------- Hero aurora ---------- */
+.rl-aurora { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.rl-aurora i { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .22; }
+.rl-aurora i:nth-child(1) { width: 46vw; height: 46vw; max-width: 640px; max-height: 640px; left: -12%; top: -30%; background: #0a4cff; animation: rl-drift 18s ease-in-out infinite alternate; }
+.rl-aurora i:nth-child(2) { width: 36vw; height: 36vw; max-width: 520px; max-height: 520px; right: -8%; top: 10%; background: #00a3ff; animation: rl-drift 22s ease-in-out -6s infinite alternate-reverse; }
+
+/* ---------- Entrances ---------- */
+.rl-rise { animation: rl-rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.rl-d1 { animation-delay: .08s; } .rl-d2 { animation-delay: .18s; } .rl-d3 { animation-delay: .28s; } .rl-d4 { animation-delay: .4s; }
+@supports (animation-timeline: view()) {
+  .rl-reveal { animation: rl-rise linear both; animation-timeline: view(); animation-range: entry 5% cover 28%; }
+}
+
+/* ---------- Product UI life ---------- */
+.rl-bar--signal > i { transform-origin: left center; animation: rl-grow 1.6s .7s cubic-bezier(.2,.7,.2,1) both; }
+.rl-live { display: inline-flex; align-items: center; gap: 6px; font: 600 10px/14px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--roadmap-blue); }
+.rl-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #00a3ff; box-shadow: 0 0 0 0 rgba(0,163,255,.6); animation: rl-pulse 1.8s ease-out infinite; }
+.rl-float { animation: rl-float 7s ease-in-out infinite; }
+
+/* ---------- Closing band ---------- */
+.rl-signal--dark.rl-flow { background-size: 160% 160%; animation: rl-pan 14s ease-in-out infinite alternate; }
+
+/* ---------- Buttons ---------- */
+.rl-btn { transition: transform .2s ease, box-shadow .2s ease; }
+.rl-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(10,76,255,.7); }
+/* Deep cobalt gradient on every filled button (chosen Nov 2026). White buttons on dark or on the signal stay white. */
+.rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]) { background-image: linear-gradient(135deg, #3a74ff 0%, #0a4cff 45%, #0636c2 100%); background-size: 180% 180%; background-position: 0% 0%; box-shadow: inset 0 1px 0 rgba(255,255,255,.24); transition: transform .2s ease, box-shadow .2s ease, background-position .5s ease; }
+.rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]):hover { background-position: 100% 100%; color: var(--paper); box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 12px 28px -12px rgba(10,76,255,.8); }
+.rl-signal .rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost) { background-image: none; background-color: var(--paper); color: var(--ink); }
+
+@keyframes rl-rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes rl-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes rl-drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(6%, 8%) scale(1.12); } }
+@keyframes rl-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes rl-pulse { 0% { box-shadow: 0 0 0 0 rgba(0,163,255,.6); } 100% { box-shadow: 0 0 0 9px rgba(0,163,255,0); } }
+@keyframes rl-pan { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ---------- "Behind on AI?" worry-to-answer section ---------- */
+.rl-pd { background: var(--abyss); color: var(--paper); position: relative; overflow: hidden; isolation: isolate; }
+.rl-pd::after { content: ""; position: absolute; z-index: -1; width: 70vw; height: 50vw; max-width: 900px; max-height: 600px; left: 50%; top: 45%; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(10,76,255,.28), transparent); filter: blur(20px); }
+.rl-pairs { width: 100%; max-width: 960px; margin: 0 auto; }
+.rl-pairs-head { display: grid; grid-template-columns: 1fr 64px 1fr; gap: 16px; padding: 0 16px 12px; font: 500 12px/18px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--mist); }
+.rl-pair { display: grid; grid-template-columns: 1fr 64px 1fr; gap: 16px; align-items: center; padding: 16px; border-top: 1px solid rgba(255,255,255,.09); border-radius: 12px; animation: rl-row 12s ease-in-out infinite; }
+.rl-pair:last-child { border-bottom: 1px solid rgba(255,255,255,.09); }
+.rl-pair .w { display: flex; align-items: center; gap: 10px; color: var(--mist); font: 400 16px/22px var(--font-sans); }
+.rl-pair .a { display: flex; align-items: center; gap: 10px; color: var(--paper); font: 600 16px/22px var(--font-sans); letter-spacing: -.01em; }
+.rl-pair .w svg, .rl-pair .a svg { flex: 0 0 18px; }
+.rl-pair .arr { height: 2px; background: rgba(255,255,255,.16); position: relative; }
+.rl-pair .arr::after { content: ""; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left-color: rgba(255,255,255,.35); border-right: 0; }
+.rl-pair:nth-child(2) { animation-delay: 0s; } .rl-pair:nth-child(3) { animation-delay: 2s; } .rl-pair:nth-child(4) { animation-delay: 4s; }
+.rl-pair:nth-child(5) { animation-delay: 6s; } .rl-pair:nth-child(6) { animation-delay: 8s; } .rl-pair:nth-child(7) { animation-delay: 10s; }
+.rl-steps { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; }
+.rl-step { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); font: 500 14px/20px var(--font-sans); color: var(--paper); }
+.rl-step b { font-weight: 600; color: #00a3ff; }
+.rl-flowline { flex: 0 0 40px; height: 2px; background: linear-gradient(90deg, transparent, #00a3ff, transparent) 0 0 / 50% 100% no-repeat, rgba(255,255,255,.14); animation: rl-stream 2.4s linear infinite; }
+@media (max-width: 720px) {
+  .rl-pairs-head { display: none; }
+  .rl-pair { grid-template-columns: 1fr; gap: 6px; }
+  .rl-pair .arr { display: none; }
+  .rl-pair .a { padding-left: 28px; }
+  .rl-flowline { display: none; }
+}
+@keyframes rl-stream { from { background-position: -50% 0, 0 0; } to { background-position: 150% 0, 0 0; } }
+@keyframes rl-row { 0%, 2%, 18%, 100% { background: transparent; } 5%, 15% { background: rgba(10,76,255,.22); } }

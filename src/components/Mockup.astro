@@ -1,0 +1,32 @@
+---
+// Laptop and phone device mockup for a case study.
+import Img from './Img.astro';
+import { CASES, type CaseKey } from '../data/site';
+
+interface Props {
+  case: CaseKey;
+  decorative?: boolean;
+  /** Approximate rendered width of the whole mockup, for sizes. */
+  sizes?: string;
+  eager?: boolean;
+  priority?: boolean;
+}
+const { case: key, decorative = false, sizes = '(max-width: 720px) 100vw, 600px', eager = false, priority = false } = Astro.props;
+const c = CASES[key];
+// The phone is ~22% of the mockup width: scale only each entry's length, never its media condition.
+const scale = (len: string) => len.replace(/(\d+(?:\.\d+)?)(vw|px)/g, (_, n, u) => `${Math.round(Number(n) * 0.22)}${u}`);
+const phoneSizes = sizes
+  .split(',')
+  .map((part) => {
+    const m = part.trim().match(/^(\(.*\))\s+(.+)$/);
+    return m ? `${m[1]} ${scale(m[2])}` : scale(part.trim());
+  })
+  .join(', ');
+---
+<div class="mk">
+  <div class="mk-laptop">
+    <div class="mk-screen"><Img src={c.laptop} alt={decorative ? '' : c.laptopAlt} sizes={sizes} eager={eager} priority={priority} widths={[400, 640, 960, 1280, 1600]} /></div>
+    <div class="mk-base"></div>
+  </div>
+  <div class="mk-phone"><Img src={c.phone} alt={decorative ? '' : c.phoneAlt} sizes={phoneSizes} eager={eager} widths={[120, 200, 320, 480, 600]} /></div>
+</div>

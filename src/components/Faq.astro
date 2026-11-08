@@ -1,0 +1,10 @@
+---
+import type { Faq } from '../data/site';
+interface Props { items: Faq[]; openFirst?: boolean }
+const { items, openFirst = false } = Astro.props;
+---
+<div style="flex: 2 1 560px; min-width: 0; border-top: 1px solid var(--border)">
+  {items.map((f, i) => (
+    <details open={openFirst && i === 0} style="border-bottom: 1px solid var(--border); padding: 16px 0"><summary style="display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 44px; font: 600 18px/26px var(--font-sans); letter-spacing: -0.01em">{f.q}<span class="faq-plus" aria-hidden="true" style="font-size: 24px; font-weight: 400; color: var(--steel); transition: transform .2s">+</span></summary><p style="margin: 8px 0 0; font-size: 16px; line-height: 24px; color: var(--text-secondary); max-width: 640px">{f.a}</p></details>
+  ))}
+</div>

@@ -1,0 +1,109 @@
+/* Roadmap Labs component styles. Load after tokens.css. Classes are prefixed rl-. */
+.rl, .rl * { box-sizing: border-box; }
+.rl { font-family: var(--font-sans); color: var(--text-primary); letter-spacing: -0.01em; font-feature-settings: "calt" 0, "liga" 0, "ss03", "cv10"; -webkit-font-smoothing: antialiased; }
+
+/* Button */
+.rl-btn { display: inline-flex; align-items: center; gap: var(--space-8); padding: var(--space-8) var(--space-16); min-height: 40px; border: 1px solid transparent; border-radius: var(--radius-surface); background: var(--action); color: var(--paper); font: 600 14px/20px var(--font-sans); letter-spacing: -0.01em; text-decoration: none; cursor: pointer; }
+.rl-btn--lg { font-size: 16px; line-height: 24px; min-height: 48px; padding: 12px 20px; }
+.rl-btn--outline { background: var(--paper); color: var(--ink); border-color: var(--border-control); }
+.rl-btn--ghost { background: transparent; color: var(--ink); font-weight: 500; padding-left: 0; padding-right: 0; }
+.rl-btn--ghost .rl-icon { color: var(--roadmap-blue); }
+.rl-btn:focus-visible, .rl-input:focus-visible, .rl-link:focus-visible { outline: 2px solid var(--roadmap-blue); outline-offset: 2px; }
+.rl-btn[disabled] { background: var(--fog); color: var(--pewter); border-color: var(--border); cursor: not-allowed; }
+
+/* Input / email capture */
+.rl-field { display: flex; gap: var(--space-8); max-width: 480px; }
+.rl-input { flex: 1; min-width: 0; min-height: 48px; padding: 12px var(--space-16); border: 1px solid var(--border-control); border-radius: var(--radius-surface); background: var(--paper); color: var(--ink); font: 400 16px/24px var(--font-sans); letter-spacing: -0.01em; }
+.rl-input::placeholder { color: var(--text-muted); }
+.rl-label { display: block; font: 500 12px/18px var(--font-sans); color: var(--text-secondary); margin-bottom: 6px; }
+
+/* Card */
+.rl-card { background: var(--surface); border-radius: var(--radius-surface); padding: var(--space-32); box-shadow: none; }
+.rl-card--bordered { border: 1px solid var(--border); }
+.rl-card__title { margin: 0 0 var(--space-8); font: 600 20px/28px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
+.rl-card__body { margin: 0; font: 400 14px/20px var(--font-sans); color: var(--text-secondary); }
+.rl-card__media { display: block; width: calc(100% + 2 * var(--space-32)); margin: calc(-1 * var(--space-32)) calc(-1 * var(--space-32)) var(--space-24); aspect-ratio: 16 / 9; border-radius: var(--radius-surface) var(--radius-surface) 0 0; background: var(--fog); object-fit: cover; }
+.rl-band { background: var(--surface-alt); padding: var(--space-48); }
+
+/* Tag */
+.rl-tag { display: inline-flex; align-items: center; padding: 2px var(--space-8); border-radius: var(--radius-tag); background: var(--fog); color: var(--ink); font: 500 12px/18px var(--font-sans); }
+.rl-tag--active { background: var(--roadmap-blue); color: var(--paper); }
+
+/* Announcement bar */
+.rl-announce { background: var(--carbon); color: var(--paper); text-align: center; padding: var(--space-8) var(--space-16); font: 500 12px/18px var(--font-sans); }
+.rl-announce a { color: var(--paper); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Nav */
+.rl-nav { display: flex; align-items: center; gap: var(--space-32); padding: var(--space-16) var(--space-24); background: var(--paper); }
+.rl-nav__logo { height: 40px; width: auto; display: block; }
+.rl-nav__items { display: flex; gap: var(--space-24); margin: 0; padding: 0; list-style: none; }
+.rl-nav__items a, .rl-link { color: var(--ink); text-decoration: none; font: 500 14px/20px var(--font-sans); }
+.rl-nav__end { margin-left: auto; display: flex; align-items: center; gap: var(--space-24); }
+
+/* Footer */
+.rl-footer { background: var(--abyss); color: var(--paper); padding: var(--space-48) var(--space-32); }
+.rl-footer__logo { height: 36px; width: auto; display: block; margin-bottom: var(--space-32); }
+.rl-footer__cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-32); }
+.rl-footer h4 { margin: 0 0 var(--space-16); font: 600 14px/20px var(--font-sans); color: var(--paper); }
+.rl-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-8); }
+.rl-footer a { color: var(--mist); text-decoration: none; font: 400 14px/20px var(--font-sans); }
+
+/* Wide-gamut cobalt: same token, more voltage on P3 screens */
+@media (color-gamut: p3) { :root {
+  --roadmap-blue: color(display-p3 0.11 0.27 1);
+  --signal-cyan: color(display-p3 0.1 0.64 1);
+  --gradient-signal: linear-gradient(135deg, color(display-p3 0.11 0.27 1) 0%, color(display-p3 0.1 0.64 1) 100%);
+  --gradient-signal-dark: linear-gradient(135deg, #000710 0%, #000710 40%, color(display-p3 0.11 0.27 1) 85%, color(display-p3 0.1 0.64 1) 100%);
+} }
+
+/* Action link: standalone, names its destination ("See the work →") */
+.rl-link-action { display: inline-flex; align-items: center; gap: 6px; color: var(--roadmap-blue); font: 500 15px/22px var(--font-sans); letter-spacing: -0.01em; text-decoration: none; }
+.rl-link-action::after { content: "→"; transition: transform .15s ease; }
+.rl-link-action:hover::after { transform: translateX(3px); }
+
+/* Photo: the blue wash. Desaturates any photo and multiplies it over Roadmap Blue. */
+.rl-photo { position: relative; margin: 0; overflow: hidden; border-radius: var(--radius-surface); background: var(--roadmap-blue); aspect-ratio: 16 / 10; isolation: isolate; }
+.rl-photo img { display: block; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.12) brightness(1.12); mix-blend-mode: multiply; }
+.rl-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,7,16,.10)); pointer-events: none; }
+
+/* PhotoCard */
+.rl-photocard { display: grid; gap: var(--space-16); align-content: start; }
+.rl-photocard h3 { margin: var(--space-8) 0 0; font: 600 24px/32px var(--font-sans); letter-spacing: -0.015em; color: var(--ink); }
+.rl-photocard p { margin: 0; font: 400 16px/24px var(--font-sans); color: var(--text-secondary); max-width: 44ch; }
+
+/* FeatureCard: copy on top, product vignette anchored at the bottom */
+.rl-feature { display: flex; flex-direction: column; min-height: 320px; padding: var(--space-32) var(--space-32) 0; background: var(--fog); border-radius: var(--radius-surface); overflow: hidden; }
+.rl-feature h3 { margin: 0 0 var(--space-8); font: 600 22px/28px var(--font-sans); letter-spacing: -0.015em; color: var(--ink); }
+.rl-feature p { margin: 0; font: 400 14px/20px var(--font-sans); color: var(--text-secondary); }
+.rl-feature__vignette { margin-top: auto; padding-top: var(--space-24); display: grid; gap: var(--space-8); }
+
+/* Mini UI used inside vignettes and media panels */
+.rl-ui { background: var(--paper); border: 1px solid rgba(0,7,16,.08); border-radius: 10px; box-shadow: 0 6px 18px rgba(0,7,16,.06); padding: 12px 14px; font: 500 13px/18px var(--font-sans); color: var(--ink); }
+.rl-ui--flush { border-bottom: 0; border-radius: 10px 10px 0 0; box-shadow: none; }
+.rl-ui__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rl-ui__meta { font: 500 10px/14px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--pewter); }
+.rl-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--roadmap-blue); color: var(--paper); font: 600 10px/16px var(--font-sans); }
+.rl-pill--quiet { background: var(--fog); color: var(--ink); }
+.rl-bar { height: 6px; border-radius: 3px; background: var(--fog); overflow: hidden; }
+.rl-bar > i { display: block; height: 100%; background: var(--roadmap-blue); border-radius: 3px; }
+.rl-skel { height: 8px; border-radius: 4px; background: var(--fog); }
+
+/* MediaSplit: fog panel with floating UI beside copy */
+.rl-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-72); align-items: center; }
+.rl-split--flip .rl-split__panel { order: 2; }
+.rl-split__panel { background: var(--fog); border-radius: var(--radius-surface); padding: var(--space-48); display: grid; place-items: center; min-height: 320px; }
+.rl-split__panel .rl-ui { width: min(100%, 340px); padding: 20px; }
+.rl-split h2 { margin: 0 0 var(--space-16); font: 600 36px/1.15 var(--font-sans); letter-spacing: -0.025em; color: var(--ink); }
+.rl-split p { margin: 0 0 var(--space-24); font: 400 16px/24px var(--font-sans); color: var(--text-secondary); max-width: 46ch; }
+@media (max-width: 720px) { .rl-split { grid-template-columns: 1fr; gap: var(--space-32); } .rl-split--flip .rl-split__panel { order: 0; } }
+
+/* Signal: the cobalt-to-cyan gradient. The one pop on a black, grey and white page. At most one per page. */
+.rl-signal { position: relative; overflow: hidden; border-radius: var(--radius-surface); background: var(--gradient-signal); color: var(--paper); padding: var(--space-48); min-height: 320px; display: flex; flex-direction: column; align-items: flex-start; }
+.rl-signal h2 { margin: 0 0 var(--space-16); max-width: 14ch; font: 600 48px/1.1 var(--font-sans); letter-spacing: -0.025em; color: var(--paper); }
+.rl-signal p { margin: 0; max-width: 34ch; font: 400 16px/24px var(--font-sans); color: var(--paper); }
+.rl-signal .rl-btn { margin-top: var(--space-24); background: var(--paper); color: var(--ink); }
+.rl-signal--dark { background: var(--gradient-signal-dark); }
+.rl-split__panel--signal { background: var(--gradient-signal); }
+.rl-bar--signal > i { background: var(--gradient-signal); }
+.rl-photo--signal { background: var(--gradient-signal); }
+.rl-signal-rule { display: block; height: 2px; border: 0; margin: 0; background: var(--gradient-signal); }

@@ -1,0 +1,48 @@
+/* Roadmap Labs tokens, compiled from the design system's tokens.json (Nov 2026). bundle.css reads these. */
+:root {
+  --roadmap-blue: #0a4cff;
+  --signal-cyan: #00a3ff;
+  --abyss: #000710;
+  --carbon: #15191e;
+  --ink: #000000;
+  --logo-ink: #0b0d12;
+  --paper: #ffffff;
+  --fog: #f3f3f7;
+  --mist: #b9bbc6;
+  --steel: #8b8d98;
+  --pewter: #6f737b;
+  --graphite: #60646c;
+
+  --text-primary: var(--ink);
+  --text-secondary: var(--graphite);
+  --text-muted: var(--pewter);
+  --surface: var(--paper);
+  --surface-alt: var(--fog);
+  --border: var(--mist);
+  --border-control: var(--steel);
+  --action: var(--roadmap-blue);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-72: 72px;
+  --space-80: 80px;
+  --space-160: 160px;
+
+  --radius-tag: 6px;
+  --radius-surface: 12px;
+  --radius-round: 9999px;
+
+  --shadow-none: none;
+  --shadow-float: 0 8px 24px rgba(0, 7, 16, 0.12);
+
+  --page-max-width: 1200px;
+  --measure: 640px;
+
+  --gradient-signal: linear-gradient(135deg, #0a4cff 0%, #00a3ff 100%);
+  --gradient-signal-dark: linear-gradient(135deg, #000710 0%, #000710 40%, #0a4cff 85%, #00a3ff 100%);
+}

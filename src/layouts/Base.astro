@@ -1,0 +1,117 @@
+---
+import '../styles/rl-tokens.css';
+import '../styles/bundle.css';
+import '../styles/rl-motion.css';
+import '../styles/rl-elevated.css';
+import '../styles/site.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE, abs } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Canonical path, e.g. "/" or "/work/flexfolio". */
+  path: string;
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+  ogImageAlt?: string;
+  noindex?: boolean;
+  schema?: object[];
+}
+const {
+  title,
+  description,
+  path,
+  ogType = 'website',
+  ogImage = '/og/roadmap-labs.png',
+  ogImageAlt = 'Roadmap Labs: AI consulting for established Australian businesses',
+  noindex = false,
+  schema = [],
+} = Astro.props;
+
+const canonical = abs(path);
+const image = abs(ogImage);
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': ['ProfessionalService', 'Organization'],
+  '@id': `${SITE.url}/#organization`,
+  name: SITE.name,
+  url: `${SITE.url}/`,
+  logo: { '@type': 'ImageObject', url: `${SITE.url}/logo.png`, width: 1200, height: 362 },
+  image: `${SITE.url}/og/roadmap-labs.png`,
+  description: 'AI consulting for established Australian businesses. We map your processes, find the bottlenecks and build the automations worth having.',
+  email: SITE.email,
+  taxID: `ABN ${SITE.abn}`,
+  address: { '@type': 'PostalAddress', addressLocality: 'Melbourne', addressRegion: 'VIC', addressCountry: 'AU' },
+  areaServed: { '@type': 'Country', name: 'Australia' },
+  founder: { '@type': 'Person', '@id': `${SITE.url}/about#dan-kovac`, name: 'Dan Kovac' },
+  ...(SITE.linkedin ? { sameAs: [SITE.linkedin] } : {}),
+};
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE.url}/#website`,
+  name: SITE.name,
+  url: `${SITE.url}/`,
+  inLanguage: 'en-AU',
+  publisher: { '@id': `${SITE.url}/#organization` },
+};
+const ld = [organization, website, ...schema];
+---
+<!doctype html>
+<html lang="en-AU" id="top">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content={description}>
+{!noindex && <link rel="canonical" href={canonical}>}
+{noindex && <meta name="robots" content="noindex, follow">}
+<link rel="preload" href="/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:site_name" content="Roadmap Labs">
+<meta property="og:locale" content="en_AU">
+<meta property="og:type" content={ogType}>
+<meta property="og:title" content={title}>
+<meta property="og:description" content={description}>
+<meta property="og:url" content={canonical}>
+<meta property="og:image" content={image}>
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content={ogImageAlt}>
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content={title}>
+<meta name="twitter:description" content={description}>
+<meta name="twitter:image" content={image}>
+<meta name="twitter:image:alt" content={ogImageAlt}>
+<link rel="sitemap" href="/sitemap-index.xml">
+{ld.map((s) => <script type="application/ld+json" is:inline set:html={JSON.stringify(s)} />)}
+<slot name="head" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="rl" style="width: 100%; background: var(--paper)">
+<Header />
+<main id="main">
+<slot />
+</main>
+<Footer />
+</div>
+<script is:inline>
+  // Pause looping decorative animations in sections that are off screen; saves main-thread paint work.
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) e.target.removeAttribute('data-offscreen'); else e.target.setAttribute('data-offscreen', ''); });
+    }, { rootMargin: '200px 0px' });
+    document.querySelectorAll('main > section, main > article, main > nav, .ev-cta').forEach(function (el) { io.observe(el); });
+  })();
+</script>
+</body>
+</html>
