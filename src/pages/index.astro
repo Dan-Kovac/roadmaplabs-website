@@ -4,240 +4,183 @@ import ClosingCTA from '../components/ClosingCTA.astro';
 import Mockup from '../components/Mockup.astro';
 import Img from '../components/Img.astro';
 import Faq from '../components/Faq.astro';
-import { HOME_FAQ, faqSchema } from '../data/site';
-import warehouseAisleColleagues from '../assets/images/warehouse-aisle-colleagues.jpg';
-import danKovac from '../assets/images/dan-kovac.jpg';
+import { CASES, FAQ_PAGE_ITEMS, PROCESS_STEPS, SERVICE_GROUPS, faqSchema } from '../data/site';
 import processDiagramWhiteboard from '../assets/images/process-diagram-whiteboard.jpg';
-import warehouseClipboard from '../assets/images/warehouse-clipboard.jpg';
-import talkingAtLaptop from '../assets/images/talking-at-laptop.jpg';
-import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
+import danKovac from '../assets/images/dan-kovac.jpg';
+
+const proof = [CASES.reviewbuddy, CASES.flexfolio, CASES.compass] as const;
+const homeFaq = [
+  'How much does an engagement cost?',
+  'How do you handle security and business data?',
+  'Do we need to replace our existing systems?',
+  'Who owns the accounts and pays the AI fees?',
+  'Will you train our staff?',
+  'Are we locked into ongoing support?',
+].map((q) => FAQ_PAGE_ITEMS.find((item) => item.q === q)!);
 ---
 <Base
-  title='AI Consultant for Australian Businesses | Roadmap Labs'
-  description='AI consulting for established Australian businesses. We connect AI to the systems you already use, train your team and put a dollar value on every automation.'
+  title="AI Consultant for Australian Businesses | Roadmap Labs"
+  description="AI consulting for established Australian businesses. We build useful tools around the systems you already use and help your team use them well."
   path="/"
-  schema={[faqSchema(HOME_FAQ)]}
+  schema={[faqSchema(homeFaq)]}
 >
-
-<section style="background: var(--paper)">
-  <div class="ev-hero-grid" style="max-width: 1200px; margin: 0 auto; padding: 104px 24px 112px; box-sizing: border-box; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 72px; align-items: center">
-    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 28px">
-      <span class="rl-tag rl-rise">Melbourne-based · Working across Australia</span>
-      <h1 class="rl-rise rl-d1" style="margin: 0; font-size: clamp(44px, 5.6vw, 72px); line-height: 1.0; letter-spacing: -0.035em; font-weight: 600; color: var(--ink)">The AI consulting partner for established Australian businesses</h1>
-      <p class="rl-rise rl-d2" style="margin: 0; font-size: 20px; line-height: 30px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 30em">You can see what AI could do for your business. We make it work with the systems you already run on, get the whole team using it safely, and put a 12-month dollar figure on every automation before anything gets built.</p>
-      <div class="rl-rise rl-d4" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; padding-top: 4px">
-        <a class="rl-btn rl-btn--lg" href="/contact">Book your free session</a>
-        <a class="rl-link-action" href="/work" style="padding: 12px 0">See the work</a>
+  <section style="background: var(--paper)">
+    <div class="ev-hero-grid" style="max-width: 1200px; margin: 0 auto; padding: 104px 24px 112px; box-sizing: border-box; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 72px; align-items: center">
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 28px">
+        <span class="rl-tag">Melbourne-based · Working across Australia</span>
+        <h1 style="margin: 0; font-size: clamp(44px, 5.6vw, 72px); line-height: 1.0; letter-spacing: -0.035em; font-weight: 600; color: var(--ink); text-wrap: balance">Help your established business grow with AI</h1>
+        <p style="margin: 0; font-size: 20px; line-height: 30px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 30em">You can see where repetitive admin slows your team down. We work out where AI fits and build useful tools around the systems you already use.</p>
+        <a class="rl-btn rl-btn--lg" href="/contact">Book a free 1-hour discovery session</a>
+        <p class="page-micro">You'll leave with a clear AI blueprint and strategy you can use yourself. There's no obligation to hire us.</p>
+      </div>
+      <div class="mk-stage" style="background: linear-gradient(160deg, #4cc2ff 0%, #1f9be6 100%); border-radius: var(--radius-surface); min-height: 360px">
+        <Mockup case="reviewbuddy" sizes="(max-width: 1000px) calc(100vw - 48px), 540px" eager priority />
       </div>
     </div>
-    <figure class="rl-photo rl-photo--soft rl-rise rl-d3" style="aspect-ratio: 5 / 6; min-height: 360px">
-      <Img src={warehouseAisleColleagues} alt="Two colleagues walking through a warehouse aisle with blue shelving" style="object-position: 50% 40%" sizes="(max-width: 1000px) calc(100vw - 48px), 540px" eager priority />
-      <div class="rl-ui rl-float" style="left: 24px; bottom: 24px; width: min(80%, 320px)">
-        <div class="rl-ui__row"><span class="rl-ui__meta">Automation roadmap</span><span class="rl-live">Analysing</span></div>
-        <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>1. Quote follow-ups</span><span class="rl-pill">Top value</span></div><div class="rl-bar rl-bar--signal"><i style="width: 92%"></i></div></div>
-        <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>2. Building proposals</span></div><div class="rl-bar rl-bar--signal"><i style="width: 64%"></i></div></div>
-        <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>3. Invoice matching</span></div><div class="rl-bar rl-bar--signal"><i style="width: 41%"></i></div></div>
-        <span class="rl-ui__meta">Example · ranked by 12-month value</span>
+  </section>
+
+  <section style="background: var(--fog)">
+    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 40em">
+        <span class="ev-eyebrow">Proof from the work</span>
+        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">Built through real work</h2>
       </div>
-    </figure>
-  </div>
-</section>
-
-<section id="how" class="ev-dark ev-signal">
-  <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 56px">
-    <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px">
-      <span class="ev-eyebrow">Sound familiar?</span>
-      <h2 style="margin: 0; font-size: clamp(36px, 4.4vw, 56px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 600; max-width: 18ch; color: var(--paper)">Feeling behind on AI? We'll get you ahead of it.</h2>
-    </div>
-    <ul class="ev-worries" aria-label="Common worries">
-      <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Our competitors are already using it</li>
-      <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Our CRM, email and ads don't talk to each other</li>
-      <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Our tech stack is too complicated for AI to work with</li>
-      <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Half the team uses ChatGPT or Claude, and half don't</li>
-      <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>We're too close to the business to see what to fix</li>
-      <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Which AI provider and tools do we pick?</li>
-      <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Is it secure and compliant?</li>
-      <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Will token costs go up and burn us?</li>
-    </ul>
-
-    <hr class="ev-rule" style="margin-top: 24px">
-
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px 48px">
-      <div style="display: flex; flex-direction: column; gap: 12px">
-        <span class="ev-eyebrow">How our AI consulting works</span>
-        <h3 style="margin: 0; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.2; letter-spacing: -0.025em; font-weight: 600; color: var(--paper)">How we get you there, in three steps</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px">
+        {proof.map((item) => (
+          <a href={item.href} class="ev-case">
+            <div class="mk-stage" style={`background: ${item.gradient}`}><span class="rl-tag rl-tag--long ev-case__tag">{item.tag}</span><Mockup case={item.key} sizes="(max-width: 720px) calc(100vw - 48px), (max-width: 1100px) 50vw, 384px" /></div>
+            <div class="ev-case__body">
+              <h3>{item.name}</h3>
+              <p>{item.summary}</p>
+              <span class="rl-link-action" style="margin-top: 8px">Read the case study</span>
+            </div>
+          </a>
+        ))}
       </div>
-      <a class="rl-btn rl-btn--lg" href="/contact" style="background: var(--paper); color: var(--ink)">Book your free session</a>
     </div>
+  </section>
 
-    <ol class="ev-steps">
-      <li class="ev-step">
-        <span class="ev-node" aria-hidden="true">1</span>
-        <figure class="rl-photo rl-photo--soft">
-          <Img src={processDiagramWhiteboard} alt="Someone sketching a process diagram on a glass whiteboard" sizes="(max-width: 900px) calc(100vw - 48px), 360px" />
-          <div class="rl-ui rl-float ev-mini">
-            <div class="rl-ui__row"><span class="rl-ui__meta">Process map</span><span class="rl-pill rl-pill--quiet">Example</span></div>
-            <div class="ev-flow"><span>Lead</span><i></i><span>Proposal</span><i></i><span>Sale</span><i></i><span>Invoice</span></div>
-          </div>
+  <section style="background: var(--paper)">
+    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box">
+      <div class="rl-split">
+        <div>
+          <h2>Build on what already works</h2>
+          <p>Your business has years of knowledge in its people and processes. We work out where AI can help.</p>
+          <p>We look at where work gets held up and what a useful improvement would mean. Any estimate needs clear assumptions and something we can measure.</p>
+          <ul class="ev-checklist">
+            <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span><strong style="font-weight: 600">Keep what works.</strong> <span style="color: var(--text-secondary)">We improve the tools and processes you already run on. We'll only suggest something new once we've got real value out of what's there.</span></span></li>
+            <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span><strong style="font-weight: 600">Clear assumptions before you build.</strong> <span style="color: var(--text-secondary)">We explain the assumptions behind a proposed project and agree what to measure. An estimate isn't a guaranteed saving.</span></span></li>
+            <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span><strong style="font-weight: 600">The whole team on board.</strong> <span style="color: var(--text-secondary)">We roll AI out across your team securely, with the right skills set up and training, so everyone uses it the same way.</span></span></li>
+          </ul>
+        </div>
+        <figure class="rl-photo rl-photo--soft rl-split__panel" style="padding: 0; min-height: 0; aspect-ratio: 4 / 3">
+          <Img src={processDiagramWhiteboard} alt="Someone sketching a process diagram on a glass whiteboard" sizes="(max-width: 720px) calc(100vw - 48px), 540px" />
         </figure>
-        <h3>Map your systems and processes</h3>
-        <p>We sit with your team and map how the business really runs, across your CRM, inbox, ads and spreadsheets. Then we build on the systems that got you here.</p>
-      </li>
-      <li class="ev-step">
-        <span class="ev-node" aria-hidden="true">2</span>
-        <figure class="rl-photo rl-photo--soft">
-          <Img src={factoryConveyorLine} alt="A group watching a conveyor line on a factory floor" sizes="(max-width: 900px) calc(100vw - 48px), 360px" />
-          <div class="rl-ui rl-float ev-mini">
-            <div class="rl-ui__row"><span class="rl-ui__meta">Where time goes</span><span class="rl-pill rl-pill--quiet">Example</span></div>
-            <div style="display: grid; gap: 4px"><span>Building proposals</span><div class="rl-bar"><i style="width: 88%"></i></div></div>
-            <div style="display: grid; gap: 4px"><span style="color: var(--text-secondary)">Data entry</span><div class="rl-bar ev-bar-quiet"><i style="width: 52%"></i></div></div>
-          </div>
-        </figure>
-        <h3>Find the biggest bottlenecks</h3>
-        <p>We find where time and money leak, and put a 12-month dollar figure on each bottleneck holding the business back.</p>
-      </li>
-      <li class="ev-step">
-        <span class="ev-node" aria-hidden="true">3</span>
-        <figure class="rl-photo rl-photo--soft">
-          <Img src={warehouseClipboard} alt="Two colleagues with a clipboard in a warehouse" sizes="(max-width: 900px) calc(100vw - 48px), 360px" />
-          <div class="rl-ui rl-float ev-mini">
-            <div class="rl-ui__row"><span class="rl-ui__meta">Start here</span><span class="rl-pill rl-pill--quiet">Example</span></div>
-            <div class="rl-ui__row"><span>1. Quote follow-ups</span><span class="rl-pill">Top value</span></div>
-            <div class="ev-checks">
-              <span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Built</span>
-              <span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested</span>
-              <span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Team trained</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="background: var(--paper)">
+    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 0 24px 120px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 40em">
+        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">Get the foundations right. Then build</h2>
+        <p class="prose-p">Established businesses rarely start with a blank page. We look at what works today and where the tools make work harder.</p>
+      </div>
+      <div class="service-catalogue">
+        {SERVICE_GROUPS.map((group) => (
+          <div>
+            <h3 class="group-title">{group.label}</h3>
+            <div class="ev-why">
+              {group.items.map((item) => (
+                <a class="ev-why__card" href={`/services#${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`} style="text-decoration: none; color: inherit">
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </a>
+              ))}
             </div>
           </div>
-        </figure>
-        <h3>Build your automation roadmap</h3>
-        <p>Every automation ranked by what it saves over 12 months. You pick what we build, then we test it, hand it over and train your team to use it.</p>
-      </li>
-    </ol>
-  </div>
-</section>
-
-<section style="background: var(--paper)">
-  <div class="ev-pad--top" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
-    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 720px">
-      <span class="ev-eyebrow">Why established businesses work with us</span>
-      <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">We build on the systems that made you successful</h2>
-    </div>
-    <div class="ev-why">
-      <div class="ev-why__card">
-        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b8d98" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 16V9M10 16V5M14 16v-6M18 16V7"/></svg>
-        <h3>Keep what works</h3>
-        <p>We improve the tools and processes you already run on. We'll only suggest something new once we've got real value out of what's there.</p>
-      </div>
-      <div class="ev-why__card">
-        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b8d98" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.8 9.2c-.5-.8-1.5-1.2-2.8-1.2-1.7 0-2.8.8-2.8 2s1.1 1.7 2.8 2 2.8.8 2.8 2-1.1 2-2.8 2c-1.3 0-2.3-.4-2.8-1.2M12 6.5v1.5M12 16v1.5"/></svg>
-        <h3>A dollar figure on everything</h3>
-        <p>Every automation comes with what it saves over 12 months, so you choose what to build with the numbers in front of you.</p>
-      </div>
-      <div class="ev-why__card">
-        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b8d98" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3 2.8-5 5.5-5s4.9 2 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.3.2 4 1.9 4.5 4.8"/></svg>
-        <h3>The whole team on board</h3>
-        <p>We roll AI out across your team securely, with the right skills set up and training, so everyone uses it the same way.</p>
-      </div>
-      <div class="ev-why__card">
-        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b8d98" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
-        <h3>Stop paying for software you barely use</h3>
-        <p>We often see businesses paying $3,000+ a month for Salesforce and using about 10% of it. We'll show you where your tooling money goes.</p>
+        ))}
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section style="background: var(--paper)">
-  <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box">
-    <div class="rl-split" style="align-items: stretch">
-      <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 20px">
-        <span class="rl-tag">Free · 1 hour · Online</span>
-        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">A free hour on where AI fits in your business</h2>
+  <section style="background: var(--paper)">
+    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 0 24px 120px; box-sizing: border-box">
+      <div class="rl-split">
+        <figure class="rl-photo" style="aspect-ratio: 4 / 5; max-width: 460px; width: 100%; justify-self: center; background: var(--gradient-signal)"><Img src={danKovac} alt="Dan Kovac, founder of Roadmap Labs" style="filter: none; mix-blend-mode: normal; object-position: 50% 0%" sizes="(max-width: 720px) calc(100vw - 48px), 460px" /></figure>
+        <div>
+          <span class="ev-eyebrow" style="margin-bottom: 16px">Who you'll work with</span>
+          <h2>I'm Dan. I like building useful things</h2>
+          <p>I bring ten years in digital marketing to Roadmap Labs. I build useful tools around the way a business actually works.</p>
+          <p>I see enterprise AI at scale at one of Australia's largest wagering providers.</p>
+          <a class="rl-link-action" href="/about">More about Dan</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background: var(--fog)">
+    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box">
+      <div class="rl-split">
+        <div>
+          <h2>Your team stays in control</h2>
+          <p>We agree the data boundaries before connecting tools. Your business owns its accounts and pays its own AI and token fees, separate from the project fee.</p>
+          <p>Handover includes teaching your team to use the system and check its work. The project scope sets out the documentation and maintenance responsibilities.</p>
+          <a class="rl-link-action" href="/faq">Read the project FAQs</a>
+        </div>
         <ul class="ev-checklist">
-          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span><strong style="font-weight: 600">Your bottlenecks.</strong> <span style="color: var(--text-secondary)">Where the time and money go, and what's holding the business back.</span></span></li>
-          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span><strong style="font-weight: 600">Your goals.</strong> <span style="color: var(--text-secondary)">Where you want the business to be, and what AI can realistically do to get it there.</span></span></li>
-          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span><strong style="font-weight: 600">Our suggestions.</strong> <span style="color: var(--text-secondary)">The tools and automations that suit a business like yours.</span></span></li>
+          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span>Your business owns its accounts and pays its own AI and token fees, separate from the project fee.</span></li>
+          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span>The project scope sets out the documentation and maintenance responsibilities.</span></li>
+          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span>Ongoing support is optional and scoped separately.</span></li>
         </ul>
-        <p style="margin: 0; font-size: 16px; line-height: 24px; color: var(--text-secondary); max-width: 34em">Within 48 hours you get a custom report: your business mapped, the automations that suit you, and what each one saves over 12 months. You pick what to build. Run it with us or manage it yourself. There's no lock-in, and no risk in the conversation.</p>
-        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; padding-top: 4px">
-          <a class="rl-btn rl-btn--lg" href="/contact">Book your free session</a>
-          <a class="rl-link-action" href="/contact" style="padding: 12px 0">What happens after the session</a>
-        </div>
       </div>
-      <figure class="rl-photo rl-photo--soft" style="aspect-ratio: auto; height: 100%; min-height: 480px">
-        <Img src={talkingAtLaptop} alt="Two people talking through ideas together at a laptop" sizes="(max-width: 720px) calc(100vw - 48px), 560px" />
-        <div class="rl-ui rl-float" style="right: 24px; bottom: 24px; width: min(82%, 300px)">
-          <div class="rl-ui__row"><span class="rl-ui__meta">Bottleneck</span><span class="rl-pill rl-pill--quiet">Example</span></div>
-          <div style="font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em">Following up quotes</div>
-          <div class="rl-ui__row" style="color: var(--text-secondary)"><span>6 hrs a week × $65 × 48 weeks</span></div>
-          <div class="rl-ui__row" style="border-top: 1px solid var(--border); padding-top: 10px; align-items: baseline"><span>Cost each year</span><span style="font: 600 24px/28px var(--font-sans); letter-spacing: -0.02em; color: var(--ink)">$18,720</span></div>
-        </div>
-      </figure>
     </div>
-  </div>
-</section>
+  </section>
 
-<section style="background: var(--fog)">
-  <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
-      <div style="display: flex; flex-direction: column; gap: 12px">
-        <span class="ev-eyebrow">Our work</span>
-        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.2; letter-spacing: -0.025em; font-weight: 600">AI and automation case studies</h2>
+  <section style="background: var(--paper)">
+    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 20px">
+      <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">Useful things you can put to work</h2>
+      <div class="empty-panel" style="width: 100%; box-sizing: border-box">
+        <h3>The first articles are being prepared</h3>
+        <p class="prose-p">There are no published articles here yet. Check back for practical guides you can use in your own business.</p>
       </div>
-      <a class="rl-link-action" href="/work">All case studies</a>
+      <a class="rl-link-action" href="/articles">Latest articles</a>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px">
-      <a href="/work/compass-buyers-agency" class="ev-case">
-        <div class="mk-stage" style="background: linear-gradient(160deg, #3a6b68 0%, #173a39 100%)"><span class="rl-tag ev-case__tag">Client work</span><Mockup case="compass" sizes="(max-width: 720px) calc(100vw - 48px), (max-width: 1100px) 50vw, 384px" /></div>
-        <div class="ev-case__body">
-          <h3>Compass Buyers Agency</h3>
-          <p>A data-driven website that reports on every suburb they buy in, and a bespoke web app that runs the business behind it.</p>
-          <span class="rl-link-action" style="margin-top: 8px">Read the case study</span>
-        </div>
-      </a>
-      <a href="/work/reviewbuddy" class="ev-case">
-        <div class="mk-stage" style="background: linear-gradient(160deg, #4cc2ff 0%, #1f9be6 100%)"><span class="rl-tag ev-case__tag">Our product</span><Mockup case="reviewbuddy" sizes="(max-width: 720px) calc(100vw - 48px), (max-width: 1100px) 50vw, 384px" /></div>
-        <div class="ev-case__body">
-          <h3>ReviewBuddy</h3>
-          <p>A reviews platform in live pilot, and growing on the same kind of automations we build for clients.</p>
-          <span class="rl-link-action" style="margin-top: 8px">Read the case study</span>
-        </div>
-      </a>
-      <a href="/work/flexfolio" class="ev-case">
-        <div class="mk-stage" style="background: linear-gradient(160deg, #2a2a2a 0%, #0b0b0b 100%)"><span class="rl-tag ev-case__tag">Our product</span><Mockup case="flexfolio" sizes="(max-width: 720px) calc(100vw - 48px), (max-width: 1100px) 50vw, 384px" /></div>
-        <div class="ev-case__body">
-          <h3>Flexfolio</h3>
-          <p>A portfolio platform that shows how product managers think, now in pilot with 30 PMs.</p>
-          <span class="rl-link-action" style="margin-top: 8px">Read the case study</span>
-        </div>
-      </a>
+  </section>
+
+  <section style="background: var(--fog)">
+    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 32px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">From a clear plan to a working system</h2>
+        <a class="rl-link-action" href="/process">See how a project works</a>
+      </div>
+      <div class="ev-why cards-on-fog">
+        {PROCESS_STEPS.map((step, i) => (
+          <article class="ev-why__card">
+            <span class="ev-node" aria-hidden="true">{i + 1}</span>
+            <h3>{step.title}</h3>
+            <p>{step.paragraphs[0]}</p>
+          </article>
+        ))}
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box">
-  <div class="rl-split">
-    <figure class="rl-photo" style="aspect-ratio: 4 / 5; max-width: 460px; width: 100%; justify-self: center; background: var(--gradient-signal)"><Img src={danKovac} alt="Dan Kovac, founder of Roadmap Labs" style="filter: none; mix-blend-mode: normal; object-position: 50% 0%" sizes="(max-width: 720px) calc(100vw - 48px), 460px" /></figure>
-    <div>
-      <span class="ev-eyebrow" style="margin-bottom: 16px">Who you'll work with</span>
-      <h2>Hi, I'm Dan. I'm passionate about helping Aussie businesses scale with AI</h2>
-      <p>I spent 10 years running a digital marketing agency, and I've been implementing AI systems since 2012, long before ChatGPT made it mainstream. That's the experience I bring to every roadmap.</p>
-      <a class="rl-link-action" href="/about">More about Dan</a>
+  <section style="background: var(--paper)">
+    <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 48px">
+      <div style="flex: 1 1 280px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px">
+        <span class="ev-eyebrow">FAQ</span>
+        <h2 style="margin: 0; font-size: 36px; line-height: 1.21; letter-spacing: -0.02em; font-weight: 600">Common questions</h2>
+        <a class="rl-link-action" href="/faq">Read the project FAQs</a>
+      </div>
+      <Faq items={homeFaq} />
     </div>
-  </div>
-</section>
+  </section>
 
-<section style="background: var(--fog)">
-  <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 48px">
-    <div style="flex: 1 1 280px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px">
-      <span class="ev-eyebrow">FAQ</span>
-      <h2 style="margin: 0; font-size: 36px; line-height: 1.21; letter-spacing: -0.02em; font-weight: 600">Common questions</h2>
-    </div>
-    <Faq items={HOME_FAQ} />
-  </div>
-</section>
-
-<ClosingCTA />
-
+  <ClosingCTA
+    title="Work out where AI fits in your business"
+    body="Spend an hour with Dan on the work holding your team up. You'll leave with a clear AI blueprint and strategy you can use yourself."
+    cta="Book a free 1-hour discovery session"
+    microcopy="There's no obligation to hire us."
+  />
 </Base>

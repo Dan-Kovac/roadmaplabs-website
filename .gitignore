@@ -4,3 +4,6 @@ dist/
 .vercel/
 .DS_Store
 review/
+test-results/
+playwright-report/
+blob-report/

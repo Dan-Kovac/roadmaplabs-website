@@ -1,0 +1,139 @@
+---
+import Base from '../layouts/Base.astro';
+import ClosingCTA from '../components/ClosingCTA.astro';
+import Faq from '../components/Faq.astro';
+import Img from '../components/Img.astro';
+import Mockup from '../components/Mockup.astro';
+import { CASES, FAQ_PAGE_ITEMS, SERVICE_GROUPS } from '../data/site';
+import processDiagramWhiteboard from '../assets/images/process-diagram-whiteboard.jpg';
+import warehouseClipboard from '../assets/images/warehouse-clipboard.jpg';
+import talkingAtLaptop from '../assets/images/talking-at-laptop.jpg';
+import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
+
+const slug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const details = SERVICE_GROUPS.flatMap((group) => group.items);
+const serviceFaq = [
+  'How much does an engagement cost?',
+  'Who owns the accounts and pays the AI fees?',
+  'Will you train our staff?',
+  'Are we locked into ongoing support?',
+].map((q) => FAQ_PAGE_ITEMS.find((item) => item.q === q)!);
+---
+<Base
+  title="AI Consulting Australia: Services | Roadmap Labs"
+  description="AI consulting for established Australian businesses. Get help with automations, messy data and custom tools. Start with a free 1-hour discovery session."
+  path="/services"
+>
+  <section class="page-hero">
+    <span class="rl-tag">AI consulting for established Australian businesses</span>
+    <h1>Take repetitive admin off your team's plate</h1>
+    <p class="lede">Your business has years of knowledge in its people and systems. We make that knowledge easier to use and take repetitive work off your team's plate.</p>
+    <p class="hero-body">We build AI automations and custom software around how your business runs. That includes websites and internal operating systems, with practical teaching for the people using them.</p>
+    <a class="rl-btn rl-btn--lg" href="/contact">Book a free 1-hour discovery session</a>
+    <p class="page-micro">You'll leave with a clear AI blueprint and strategy you can use yourself. There's no obligation to hire us.</p>
+  </section>
+
+  <section style="background: var(--fog)">
+    <div class="ev-pad page-section" style="display: flex; flex-direction: column; gap: 48px">
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 40em">
+        <h2>Start with the foundations your business already has</h2>
+        <p class="prose-p">Established businesses rarely start with a blank page. We look at what works today and where the tools make work harder.</p>
+      </div>
+      <div class="service-catalogue">
+        {SERVICE_GROUPS.map((group) => (
+          <div>
+            <h3 class="group-title">{group.label}</h3>
+            <ul class="service-links">
+              {group.items.map((item) => (
+                <li><a href={`#${slug(item.title)}`}>{item.title}</a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="ev-pad page-section detail-stack">
+      {details.map((item, i) => (
+        <div id={slug(item.title)} class:list={[item.title === 'Teach your team to use AI well' ? 'ev-why__card' : 'rl-split', { 'rl-split--flip': item.title !== 'Teach your team to use AI well' && i % 2 === 1 }]}>
+          {item.title === 'Teach your team to use AI well' ? (
+            <>
+              <h2>{item.title}</h2>
+              <p>{item.body}</p>
+              <a class="rl-link-action" href="/contact">Book a free 1-hour discovery session</a>
+            </>
+          ) : (
+            <>
+              <div class="rl-split__panel" style={item.title === 'Build custom tools and internal operating systems' || item.title === 'Build a website that supports the business' ? `background: ${item.title.startsWith('Build custom') ? CASES.flexfolio.gradient : CASES.compass.gradient}; padding: 0` : 'padding: 0; overflow: hidden'}>
+                {item.title === 'Implement AI securely' && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={processDiagramWhiteboard} alt="Someone sketching a process diagram on a glass whiteboard" sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
+                {item.title === 'Make old data useful' && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={warehouseClipboard} alt="Two colleagues with a clipboard in a warehouse" sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
+                {item.title === 'Simplify your software setup' && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={talkingAtLaptop} alt="Two people talking through ideas together at a laptop" sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
+                {item.title === 'Automate repeated work' && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={factoryConveyorLine} alt="A group watching a conveyor line on a factory floor" sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
+                {item.title === 'Build custom tools and internal operating systems' && <Mockup case="flexfolio" sizes="(max-width: 720px) calc(100vw - 48px), 540px" />}
+                {item.title === 'Build a website that supports the business' && <Mockup case="compass" sizes="(max-width: 720px) calc(100vw - 48px), 540px" />}
+              </div>
+              <div>
+                <h2>{item.title}</h2>
+                <p>{item.body}</p>
+                {item.title === 'Build custom tools and internal operating systems' && (
+                  <>
+                    <span class="rl-tag">Our product</span>
+                    <a class="rl-link-action" href="/work/flexfolio">Read the case study</a>
+                  </>
+                )}
+                {item.title === 'Build a website that supports the business' && (
+                  <>
+                    <span class="rl-tag rl-tag--long">{CASES.compass.tag}</span>
+                    <p>We built the Compass Buyers Agency website.</p>
+                    <a class="rl-link-action" href="/work/compass-buyers-agency">Read the case study</a>
+                  </>
+                )}
+                <a class="rl-link-action" href="/contact">Book a free 1-hour discovery session</a>
+              </div>
+            </>
+          )}
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section style="border-top: 1px solid var(--border)">
+    <div class="page-section" style="display: flex; flex-wrap: wrap; gap: 48px">
+      <h2 style="flex: 1 1 280px">Built through work we do ourselves</h2>
+      <div style="flex: 2 1 560px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 16px">
+        <p class="prose-p">We're building and scaling ReviewBuddy for Australian tradies, and building Flexfolio for product managers. Working on our own products means living with the decisions after the build.</p>
+        <p class="prose-p">Dan brings ten years in digital marketing and sees enterprise AI at scale at one of Australia's largest wagering providers. That perspective informs his work at Roadmap Labs.</p>
+        <span class="rl-tag rl-tag--long">{CASES.compass.tag}</span>
+        <p class="prose-p">We built the Compass Buyers Agency website.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="border-top: 1px solid var(--border)">
+    <div class="page-section" style="display: flex; flex-wrap: wrap; gap: 48px">
+      <h2 style="flex: 1 1 280px">Plan for the people who'll run it</h2>
+      <div style="flex: 2 1 560px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 16px">
+        <p class="prose-p">We agree the data boundaries before connecting tools. Your business owns its accounts and pays its own AI and token fees, separate from the project fee.</p>
+        <p class="prose-p">Handover includes teaching your team to use the system and check its work. The project scope sets out the documentation and maintenance responsibilities.</p>
+        <a class="rl-link-action" href="/process">See how a project works</a>
+      </div>
+    </div>
+  </section>
+
+  <section style="border-top: 1px solid var(--border)">
+    <div class="page-section" style="display: flex; flex-wrap: wrap; gap: 48px">
+      <h2 style="flex: 1 1 280px">Before you choose a service</h2>
+      <Faq items={serviceFaq} />
+    </div>
+  </section>
+
+  <ClosingCTA
+    eyebrow="Free discovery session | 1 hour"
+    title="Work out which job is worth doing first"
+    body="Talk through the repeated work holding your team up. You'll leave with a clear AI blueprint and strategy to keep."
+    cta="Book a free 1-hour discovery session"
+    microcopy="The plan is yours to use, whether you hire us or not."
+  />
+</Base>

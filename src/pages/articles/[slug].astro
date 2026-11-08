@@ -1,0 +1,75 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ClosingCTA from '../../components/ClosingCTA.astro';
+import { articleSchema } from '../../data/schema';
+import { publishedArticles, type ArticleEntry } from '../../lib/articles';
+
+export async function getStaticPaths() {
+  const articles = await publishedArticles();
+  return articles.map((article) => ({
+    params: { slug: article.id },
+    props: { article },
+  }));
+}
+
+interface Props {
+  article: ArticleEntry;
+}
+
+const { article } = Astro.props;
+const { Content } = await render(article);
+const published = await publishedArticles();
+const related = published.filter((entry) => article.data.related.includes(entry.id));
+const formatDate = (date: Date) =>
+  date.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+---
+<Base
+  title={`${article.data.title} | Roadmap Labs`}
+  description={article.data.description}
+  path={`/articles/${article.id}`}
+  ogType="article"
+  schema={articleSchema(article)}
+>
+  <article class="page-section" style="display: flex; flex-direction: column; align-items: flex-start; gap: 20px; max-width: 1200px">
+    <a class="rl-link" href="/articles" style="color: var(--text-secondary); padding: 12px 0">← Articles</a>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <span class="rl-tag">{article.data.topic}</span>
+      <span class="rl-tag">{article.data.format}</span>
+    </div>
+    <h1 style="margin: 0; font-size: clamp(40px, 5vw, 60px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance">{article.data.title}</h1>
+    <p class="lede" style="margin: 0; max-width: 880px; font-size: 22px; line-height: 30px; color: var(--text-secondary)">{article.data.description}</p>
+    <p class="article-meta">{article.data.author} · {formatDate(article.data.publishedAt)} · {article.data.readingTime}</p>
+    {article.data.updatedAt.getTime() !== article.data.publishedAt.getTime() && (
+      <p class="article-meta">Updated {formatDate(article.data.updatedAt)}</p>
+    )}
+    <div class="article-body">
+      <Content />
+    </div>
+    {article.data.sources.length > 0 && (
+      <section style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 20px; line-height: 28px">Sources</h2>
+        <ul style="margin: 0; padding-left: 20px">
+          {article.data.sources.map((source) => <li>{source}</li>)}
+        </ul>
+      </section>
+    )}
+    {related.length > 0 && (
+      <section style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 20px; line-height: 28px">Related</h2>
+        <ul style="margin: 0; padding-left: 20px">
+          {related.map((entry) => (
+            <li><a href={`/articles/${entry.id}`}>{entry.data.title}</a></li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </article>
+  <ClosingCTA
+    eyebrow="Free discovery session | 1 hour"
+    title="Talk through your own business"
+    body="If you'd rather work through a specific problem, start with a free 1-hour discovery session. You'll leave with a clear AI blueprint and strategy you can use yourself."
+    cta="Book a free 1-hour discovery session"
+    microcopy="No obligation to hire us."
+  />
+</Base>

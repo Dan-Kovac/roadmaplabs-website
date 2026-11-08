@@ -6,18 +6,17 @@ import Img from '../../components/Img.astro';
 import { CASES } from '../../data/site';
 import { caseSchema } from '../../data/schema';
 const c = CASES.compass;
-import compassByronBaySuburbPage from '../../assets/images/compass-byron-bay-suburb-page.jpg';
 import compassBuyersAgencyPhone from '../../assets/images/compass-buyers-agency-phone.jpg';
 import compassContactPage from '../../assets/images/compass-contact-page.jpg';
 ---
 <Base
-  title='Compass Buyers Agency: Website and Web App | Roadmap Labs'
-  description='How we built Compass Buyers Agency a data-driven suburb website and a bespoke web app that runs the business, connected to Claude, Xero and DocuSign.'
+  title="Compass Buyers Agency Website | Roadmap Labs"
+  description="A website we built for Compass Buyers Agency. See the website project by Roadmap Labs, based in Melbourne and working across Australia."
   path="/work/compass-buyers-agency"
   ogType="article"
   ogImage={c.og}
   ogImageAlt={c.laptopAlt}
-  schema={caseSchema(c, 'Compass Buyers Agency: Website and Web App | Roadmap Labs', 'How we built Compass Buyers Agency a data-driven suburb website and a bespoke web app that runs the business, connected to Claude, Xero and DocuSign.')}
+  schema={caseSchema(c, 'Compass Buyers Agency Website | Roadmap Labs', 'A website we built for Compass Buyers Agency. See the website project by Roadmap Labs, based in Melbourne and working across Australia.')}
 >
 <article style="max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
 
@@ -32,12 +31,11 @@ import compassContactPage from '../../assets/images/compass-contact-page.jpg';
 
   <header style="display: flex; flex-direction: column; align-items: flex-start; gap: 20px; max-width: 880px">
     <div style="display: flex; flex-wrap: wrap; gap: 8px">
-      <span class="rl-tag rl-tag--active">Client work</span>
+      <span class="rl-tag rl-tag--active rl-tag--long">{c.tag}</span>
       <span class="rl-tag">Website</span>
-      <span class="rl-tag">Bespoke web app</span>
     </div>
     <h1 style="margin: 0; font-size: clamp(40px, 5vw, 60px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 600">Compass Buyers Agency</h1>
-    <p style="margin: 0; font-size: 22px; line-height: 30px; letter-spacing: -0.01em; color: var(--text-secondary)">A data-driven website that reports on every suburb they buy in, and a bespoke web app that runs the business behind it.</p>
+    <p style="margin: 0; font-size: 22px; line-height: 30px; letter-spacing: -0.01em; color: var(--text-secondary)">{c.summary}</p>
     <a href="https://compassagency.com.au" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 500; color: #0a4cff">Visit compassagency.com.au<span aria-hidden="true"> ↗</span><span class="cs-sr"> (opens in a new tab)</span></a>
   </header>
 
@@ -46,10 +44,9 @@ import compassContactPage from '../../assets/images/compass-contact-page.jpg';
   <div style="display: flex; flex-wrap: wrap; gap: 48px 72px">
     <aside style="flex: 1 1 240px; max-width: 320px">
       <dl style="margin: 0; display: grid; gap: 0; border-top: 1px solid var(--border)">
-        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Client</dt><dd style="margin: 4px 0 0; font-weight: 500">Compass Buyers Agency</dd></div>
-        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Our role</dt><dd style="margin: 4px 0 0; font-weight: 500">Website, plus a bespoke web app</dd></div>
-        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Working together since</dt><dd style="margin: 4px 0 0; font-weight: 500">2024</dd></div>
-        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Status</dt><dd style="margin: 4px 0 0; font-weight: 500">Website live, web app rolling out</dd></div>
+        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Project</dt><dd style="margin: 4px 0 0; font-weight: 500">Compass Buyers Agency</dd></div>
+        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Our role</dt><dd style="margin: 4px 0 0; font-weight: 500">Website</dd></div>
+        <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Status</dt><dd style="margin: 4px 0 0; font-weight: 500">Website live</dd></div>
         <div style="padding: 14px 0; border-bottom: 1px solid var(--border)"><dt style="font-size: 12px; line-height: 18px; color: var(--text-secondary)">Website</dt><dd style="margin: 4px 0 0; font-weight: 500"><a href="https://compassagency.com.au" target="_blank" rel="noopener" style="color: inherit">compassagency.com.au<span aria-hidden="true"> ↗</span><span class="cs-sr"> (opens in a new tab)</span></a></dd></div>
       </dl>
     </aside>
@@ -57,67 +54,17 @@ import compassContactPage from '../../assets/images/compass-contact-page.jpg';
     <div style="flex: 2.4 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 56px">
       <section style="display: flex; flex-direction: column; gap: 16px">
         <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Overview</h2>
-        <p style="margin: 0; font-size: 16px; line-height: 24px; max-width: 640px">We've worked with Compass Buyers Agency since 2024, on two separate builds. The first is their public website, which publishes data-driven reports on the suburbs they buy in. The second is a bespoke web app that works as their operating system, keeping the pipeline and client records in one secure place. The website is live, and the web app is rolling out now.</p>
+        <p style="margin: 0; font-size: 16px; line-height: 24px; max-width: 640px">We built the Compass Buyers Agency website.</p>
       </section>
-      <section style="display: flex; flex-direction: column; gap: 20px; padding: clamp(24px, 3vw, 40px); border-radius: var(--radius-surface); background: var(--fog)">
-        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-          <span class="rl-tag rl-tag--active">Build 1 of 2</span>
-          <span class="rl-tag">Website</span>
-        </div>
+      <section style="display: flex; flex-direction: column; gap: 16px">
         <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">The website</h2>
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <h3 style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-secondary)">Before</h3>
-          <p style="margin: 0; font-size: 16px; line-height: 24px; max-width: 640px">Compass had a website that looked good but didn't perform for SEO. It wasn't doing much to bring buyers in, or to show what the team knows.</p>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <h3 style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-secondary)">What we built</h3>
-          <ul style="margin: 0; padding: 0 0 0 20px; display: grid; gap: 12px; font-size: 16px; line-height: 24px; max-width: 640px">
-            <li>We rebuilt the site on a Supabase database, so it can scale across suburb after suburb without each page being built by hand.</li>
-            <li>We built automations that pull property data from realestate.com.au and other providers through APIs, and turn it into a report for each suburb.</li>
-            <li>Every report builds their brand and their traffic, and gives buyers real value before they've even made contact.</li>
-          </ul>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <h3 style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-secondary)">What changed</h3>
-          <ul style="margin: 0; padding: 0 0 0 20px; display: grid; gap: 12px; font-size: 16px; line-height: 24px; max-width: 640px">
-            <li>Suburb pages rolling out across more than 30 suburbs they buy in, each with its own data-driven report.</li>
-            <li>Built for a fraction of the traditional cost. We'd normally expect $50,000 to $60,000 or more for a website like this.</li>
-          </ul>
-        </div>
-      </section>
-      <section style="display: flex; flex-direction: column; gap: 20px; padding: clamp(24px, 3vw, 40px); border-radius: var(--radius-surface); background: var(--fog)">
-        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-          <span class="rl-tag rl-tag--active">Build 2 of 2</span>
-          <span class="rl-tag">Bespoke web app</span>
-        </div>
-        <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">The operating system</h2>
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <h3 style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-secondary)">Before</h3>
-          <p style="margin: 0; font-size: 16px; line-height: 24px; max-width: 640px">The team was stitching together Google Sheets, their CRM and a handful of property data platforms, and client conversations were split between WhatsApp and email. That's hard to keep compliant, and you can't build routines and systems when everything's in a different place.</p>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <h3 style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-secondary)">What we built</h3>
-          <ul style="margin: 0; padding: 0 0 0 20px; display: grid; gap: 12px; font-size: 16px; line-height: 24px; max-width: 640px">
-            <li>We started by understanding how the business actually runs, before building anything.</li>
-            <li>We built a bespoke web app that shows their main sales pipeline and holds every client's details, so they're compliant and ready for an audit at any time.</li>
-            <li>We connected it to Claude through MCP, so the team can check and update it from their phone wherever they are, without opening the app.</li>
-            <li>We added connectors to Xero, DocuSign and their property data provider.</li>
-          </ul>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <h3 style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-secondary)">What changed</h3>
-          <ul style="margin: 0; padding: 0 0 0 20px; display: grid; gap: 12px; font-size: 16px; line-height: 24px; max-width: 640px">
-            <li>Pipeline, client records and documents in one secure place, instead of spread across spreadsheets, WhatsApp and email.</li>
-            <li>The team stays productive on the road, and the documentation stays organised.</li>
-            <li>Rolling out with the team now.</li>
-          </ul>
-        </div>
+        <p style="margin: 0; font-size: 16px; line-height: 24px; max-width: 640px">A website we built for Compass Buyers Agency.</p>
       </section>
     </div>
   </div>
   <section style="display: flex; flex-direction: column; gap: 24px">
     <h2 style="margin: 0; font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Walkthrough</h2>
-    <div style="background: var(--fog); border-radius: var(--radius-surface); padding: clamp(24px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start"><figure style="margin: 0; flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 12px"><Img src={compassByronBaySuburbPage} alt="The Byron Bay suburb page on the Compass Buyers Agency website" style="display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 10px; box-shadow: 0 18px 40px -18px rgba(0,7,16,.55)" sizes="(max-width: 900px) calc(100vw - 96px), 460px" /><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">One of the suburb pages: Byron Bay</figcaption></figure><figure style="margin: 0; flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 12px"><Img src={compassContactPage} alt="The contact page on the Compass Buyers Agency website" style="display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 10px; box-shadow: 0 18px 40px -18px rgba(0,7,16,.55)" sizes="(max-width: 900px) calc(100vw - 96px), 460px" /><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">The contact page</figcaption></figure><figure style="margin: 0; flex: 0 0 220px; display: flex; flex-direction: column; align-items: center; gap: 12px"><div style="width: min(100%, 240px); border: 8px solid var(--ink); border-radius: 32px; overflow: hidden; box-shadow: var(--shadow-float); background: var(--ink)"><Img src={compassBuyersAgencyPhone} alt="The Compass Buyers Agency website on a phone" style="display: block; width: 100%; aspect-ratio: 9 / 19.5; object-fit: cover; object-position: top" sizes="224px" /></div><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">On mobile</figcaption></figure></div>
+    <div style="background: var(--fog); border-radius: var(--radius-surface); padding: clamp(24px, 4vw, 48px); display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start"><figure style="margin: 0; flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 12px"><Img src={c.laptop} alt="The Compass Buyers Agency website on desktop" style="display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 10px; box-shadow: 0 18px 40px -18px rgba(0,7,16,.55)" sizes="(max-width: 900px) calc(100vw - 96px), 460px" /><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">The website on desktop</figcaption></figure><figure style="margin: 0; flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 12px"><Img src={compassContactPage} alt="The contact page on the Compass Buyers Agency website" style="display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 10px; box-shadow: 0 18px 40px -18px rgba(0,7,16,.55)" sizes="(max-width: 900px) calc(100vw - 96px), 460px" /><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">The contact page</figcaption></figure><figure style="margin: 0; flex: 0 0 220px; display: flex; flex-direction: column; align-items: center; gap: 12px"><div style="width: min(100%, 240px); border: 8px solid var(--ink); border-radius: 32px; overflow: hidden; box-shadow: var(--shadow-float); background: var(--ink)"><Img src={compassBuyersAgencyPhone} alt="The Compass Buyers Agency website on a phone" style="display: block; width: 100%; aspect-ratio: 9 / 19.5; object-fit: cover; object-position: top" sizes="224px" /></div><figcaption style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">On mobile</figcaption></figure></div>
   </section>
 </article>
 
@@ -131,13 +78,13 @@ import compassContactPage from '../../assets/images/compass-contact-page.jpg';
       <div class="mk-stage cs-thumb" style="background: linear-gradient(160deg, #2a2a2a 0%, #0b0b0b 100%)"><Mockup case="flexfolio" decorative sizes="(max-width: 720px) calc(100vw - 88px), 540px" /></div>
       <span style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">← Previous</span>
       <span role="heading" aria-level="3" style="font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">Flexfolio</span>
-      <span style="font-size: 16px; line-height: 24px; color: var(--text-secondary)">A portfolio platform that shows how product managers think, now in pilot with 30 PMs.</span>
+      <span style="font-size: 16px; line-height: 24px; color: var(--text-secondary)">{CASES.flexfolio.summary}</span>
     </a>
     <a class="cs-card" href="/work/reviewbuddy" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: var(--radius-surface); background: var(--fog); color: var(--ink); text-decoration: none">
       <div class="mk-stage cs-thumb" style="background: linear-gradient(160deg, #4cc2ff 0%, #1f9be6 100%)"><Mockup case="reviewbuddy" decorative sizes="(max-width: 720px) calc(100vw - 88px), 540px" /></div>
       <span style="font-size: 14px; line-height: 20px; color: var(--text-secondary)">Next →</span>
       <span role="heading" aria-level="3" style="font-size: 24px; line-height: 32px; letter-spacing: -0.01em; font-weight: 600">ReviewBuddy</span>
-      <span style="font-size: 16px; line-height: 24px; color: var(--text-secondary)">A reviews platform in live pilot, and growing on the same kind of automations we build for clients.</span>
+      <span style="font-size: 16px; line-height: 24px; color: var(--text-secondary)">ReviewBuddy is our reviews platform for Australian tradies.</span>
     </a>
   </div>
 </nav>

@@ -43,6 +43,54 @@ export function caseSchema(c: CaseLike, title: string, description: string) {
   ];
 }
 
+type ArticleLike = {
+  id: string;
+  data: {
+    title?: string;
+    description?: string;
+    publishedAt?: Date;
+    updatedAt?: Date;
+    author?: string;
+  };
+};
+
+/** Article and BreadcrumbList for a published article. Drafts never reach this. */
+export function articleSchema(article: ArticleLike) {
+  const url = abs(`/articles/${article.id}`);
+  const published = (article.data.publishedAt ?? new Date()).toISOString().slice(0, 10);
+  const modified = (article.data.updatedAt ?? article.data.publishedAt ?? new Date()).toISOString().slice(0, 10);
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      '@id': `${url}#article`,
+      headline: article.data.title ?? '',
+      description: article.data.description ?? '',
+      url,
+      mainEntityOfPage: url,
+      inLanguage: 'en-AU',
+      datePublished: published,
+      dateModified: modified,
+      author: { '@type': 'Person', '@id': PERSON_ID, name: article.data.author ?? '', url: abs('/about') },
+      publisher: {
+        '@type': 'Organization',
+        '@id': ORG_ID,
+        name: SITE.name,
+        logo: { '@type': 'ImageObject', url: `${SITE.url}/logo.png` },
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: abs('/') },
+        { '@type': 'ListItem', position: 2, name: 'Articles', item: abs('/articles') },
+        { '@type': 'ListItem', position: 3, name: article.data.title, item: url },
+      ],
+    },
+  ];
+}
+
 /** Person schema for Dan Kovac on the About page. */
 export async function personSchema() {
   const img = await getImage({ src: danPhoto, width: 480, format: 'jpg' });
