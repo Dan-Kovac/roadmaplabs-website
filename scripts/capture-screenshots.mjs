@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from '@playwright/test';
 
 const routes = [
@@ -23,7 +25,10 @@ const viewports = [
 ];
 
 const base = process.env.SCREENSHOT_BASE || 'http://127.0.0.1:4321';
+const manifest = [];
 const browser = await chromium.launch();
+mkdirSync('/opt/cursor/artifacts/screenshots/desktop', { recursive: true });
+mkdirSync('/opt/cursor/artifacts/screenshots/mobile', { recursive: true });
 
 for (const [name, viewport] of viewports) {
   const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
@@ -63,9 +68,13 @@ for (const [name, viewport] of viewports) {
         .map((img) => img.alt || img.currentSrc),
     );
     if (failed.length) console.error(name, route, failed);
+    const capturedAt = new Date().toISOString();
+    const hash = createHash('sha256').update(readFileSync(out)).digest('hex');
+    manifest.push(`${hash}  ${capturedAt}  screenshots/${name}/${file}.png`);
     console.log(out);
   }
   await context.close();
 }
 
+writeFileSync('/opt/cursor/artifacts/screenshots/MANIFEST.txt', `${manifest.join('\n')}\n`);
 await browser.close();
