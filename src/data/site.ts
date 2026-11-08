@@ -115,7 +115,7 @@ export const CONTACT_FAQ: Faq[] = [
   },
   {
     q: 'Do we need to share sensitive records?',
-    a: 'No. The session is about your goals and how the work happens. If a project goes ahead, we can use redacted or sample information while we work out what access it actually needs.',
+    a: 'No. The session is about your goals and how the work happens. If a project goes ahead, we agree what access it needs before you share business data.',
   },
   {
     q: 'What does a project cost if we go ahead?',
