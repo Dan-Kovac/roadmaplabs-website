@@ -330,7 +330,7 @@ export const FAQ_PAGE: FaqGroup[] = [
       },
       {
         q: 'Can we start without sharing sensitive records?',
-        a: 'No. The first conversation is about your goals and how the work happens. If a project goes ahead, we agree what access it needs before you share business data.',
+        a: 'Yes. The first conversation is about your goals and how the work happens. If a project goes ahead, we agree what access it needs before you share business data.',
       },
     ],
   },

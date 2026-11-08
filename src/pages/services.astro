@@ -2,26 +2,9 @@
 import Base from '../layouts/Base.astro';
 import ClosingCTA from '../components/ClosingCTA.astro';
 import Faq from '../components/Faq.astro';
-import Img from '../components/Img.astro';
-import Mockup from '../components/Mockup.astro';
 import { CASES, FAQ_PAGE_ITEMS, SERVICE_GROUPS } from '../data/site';
-import processDiagramWhiteboard from '../assets/images/process-diagram-whiteboard.jpg';
-import warehouseClipboard from '../assets/images/warehouse-clipboard.jpg';
-import talkingAtLaptop from '../assets/images/talking-at-laptop.jpg';
-import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
 
 const slug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-const photos = {
-  'Implement AI securely': { src: processDiagramWhiteboard, alt: 'Someone sketching a process diagram on a glass whiteboard' },
-  'Make old data useful': { src: warehouseClipboard, alt: 'Two colleagues with a clipboard in a warehouse' },
-  'Simplify your software setup': { src: talkingAtLaptop, alt: 'Two people talking through ideas together at a laptop' },
-  'Automate repeated work': { src: factoryConveyorLine, alt: 'A group watching a conveyor line on a factory floor' },
-} as const;
-const mockups = {
-  'Build custom tools and internal operating systems': 'flexfolio',
-  'Build a website that supports the business': 'compass',
-} as const;
-const details = SERVICE_GROUPS.flatMap((group) => group.items);
 const serviceFaq = [
   'How much does an engagement cost?',
   'Who owns the accounts and pays the AI fees?',
@@ -55,48 +38,15 @@ const serviceFaq = [
             <h3 class="group-title">{group.label}</h3>
             <div class="ev-why">
               {group.items.map((item) => (
-                <a class="ev-why__card" href={`#${slug(item.title)}`} style="text-decoration: none; color: inherit">
+                <article class="ev-why__card" id={slug(item.title)}>
                   <h3>{item.title}</h3>
                   <p>{item.body}</p>
-                </a>
+                </article>
               ))}
             </div>
           </div>
         ))}
       </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="ev-pad page-section detail-stack">
-      {details.map((item, i) => {
-        const photo = photos[item.title as keyof typeof photos];
-        const mock = mockups[item.title as keyof typeof mockups];
-        const text = (
-          <div id={slug(item.title)}>
-            <h2>{item.title}</h2>
-            <p>{item.body}</p>
-            {item.title === 'Build a website that supports the business' && (
-              <>
-                <span class="rl-tag rl-tag--long" style="margin-bottom: 16px">{CASES.compass.tag}</span>
-                <p>We built the Compass Buyers Agency website.</p>
-              </>
-            )}
-          </div>
-        );
-        if (!photo && !mock) {
-          return <article class="ev-why__card" id={slug(item.title)}><h3>{item.title}</h3><p>{item.body}</p></article>;
-        }
-        return (
-          <div class:list={['rl-split', { 'rl-split--flip': i % 2 === 1 }]}>
-            <div class="rl-split__panel" style={mock ? `background: ${CASES[mock].gradient}; padding: 0` : 'padding: 0; overflow: hidden'}>
-              {photo && <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0"><Img src={photo.src} alt={photo.alt} sizes="(max-width: 720px) calc(100vw - 48px), 540px" /></figure>}
-              {mock && <Mockup case={mock} sizes="(max-width: 720px) calc(100vw - 48px), 540px" />}
-            </div>
-            {text}
-          </div>
-        );
-      })}
     </div>
   </section>
 
@@ -106,6 +56,8 @@ const serviceFaq = [
       <div style="flex: 2 1 560px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 16px">
         <p class="prose-p">We're building and scaling ReviewBuddy for Australian tradies, and building Flexfolio for product managers. Working on our own products means living with the decisions after the build.</p>
         <p class="prose-p">Dan brings ten years in digital marketing and sees enterprise AI at scale at one of Australia's largest wagering providers. That perspective informs his work at Roadmap Labs.</p>
+        <span class="rl-tag rl-tag--long">{CASES.compass.tag}</span>
+        <p class="prose-p">We built the Compass Buyers Agency website.</p>
       </div>
     </div>
   </section>
@@ -123,7 +75,7 @@ const serviceFaq = [
 
   <section style="border-top: 1px solid var(--border)">
     <div class="page-section" style="display: flex; flex-wrap: wrap; gap: 48px">
-      <h2 style="flex: 1 1 280px">Price, ownership and support</h2>
+      <h2 style="flex: 1 1 280px">Before you choose a service</h2>
       <Faq items={serviceFaq} />
     </div>
   </section>
