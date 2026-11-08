@@ -56,6 +56,59 @@ details[open] .faq-plus { transform: rotate(45deg); }
    keep the submit button blue there so it reads as the primary action. */
 .rl-signal .rl-card .rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]) { background-image: linear-gradient(135deg, #3a74ff 0%, #0a4cff 45%, #0636c2 100%); background-color: var(--action); color: var(--paper); }
 
+/* Long Compass label: wrap inside cards and narrow viewports. */
+.rl-tag--long { display: inline-block; max-width: 100%; height: auto; white-space: normal; text-wrap: pretty; line-height: 18px; }
+.ev-case__tag.rl-tag--long { max-width: calc(100% - 32px); }
+
+/* Longer discovery CTAs stay inside the viewport. */
+.rl-btn { max-width: 100%; white-space: normal; height: auto; }
+
+/* Page sections added for services, process, FAQ and articles. */
+.page-hero { max-width: 1200px; margin: 0 auto; padding: 96px 24px 48px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
+.page-hero h1 { margin: 0; font-size: clamp(44px, 6vw, 72px); line-height: 1.0; letter-spacing: -0.03em; font-weight: 600; text-wrap: balance; }
+.page-hero .lede { margin: 0; font-size: 20px; line-height: 28px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 32em; text-wrap: pretty; }
+.service-catalogue { display: flex; flex-direction: column; gap: 48px; }
+.group-title, .page-section h2.group-title, .page-section h3.group-title { margin: 0 0 16px; font: 600 24px/32px var(--font-sans); letter-spacing: -0.01em; text-wrap: balance; }
+.detail-stack { display: flex; flex-direction: column; gap: 80px; }
+.page-hero .hero-body { margin: 0; font-size: 16px; line-height: 24px; color: var(--text-secondary); max-width: 40em; text-wrap: pretty; }
+.page-micro { margin: 0; font-size: 14px; line-height: 22px; color: var(--text-secondary); max-width: 40em; }
+.page-section { max-width: 1200px; margin: 0 auto; padding: 80px 24px; box-sizing: border-box; }
+.page-section h2 { margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600; text-wrap: balance; }
+.service-group { display: flex; flex-direction: column; gap: 0; }
+.service-group + .service-group { margin-top: 40px; }
+.service-label { margin: 0 0 8px; font: 500 14px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); }
+.service-item { padding: 24px 0; border-top: 1px solid var(--border); display: grid; gap: 8px; }
+.service-item h3 { margin: 0; font: 600 22px/30px var(--font-sans); letter-spacing: -0.015em; text-wrap: balance; }
+.service-item p, .prose-p { margin: 0; font-size: 16px; line-height: 24px; color: var(--text-secondary); max-width: 42em; text-wrap: pretty; }
+.process-steps { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 0; }
+.process-step { display: grid; grid-template-columns: 40px 1fr; gap: 8px 20px; padding: 28px 0; border-top: 2px solid var(--ink); }
+.process-step h3 { margin: 0; font: 600 24px/32px var(--font-sans); letter-spacing: -0.015em; text-wrap: balance; }
+.process-num { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--paper); font: 600 14px/1 var(--font-sans); }
+.expect-list { flex: 2 1 560px; min-width: 0; display: flex; flex-direction: column; }
+.expect-item { padding: 20px 0; border-top: 1px solid var(--border); display: grid; gap: 8px; }
+.expect-item:last-child { border-bottom: 1px solid var(--border); }
+.expect-item h3 { margin: 0; font: 600 20px/28px var(--font-sans); letter-spacing: -0.01em; }
+.topic-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 0; padding: 0; list-style: none; }
+.topic-list li { margin: 0; }
+.empty-panel { margin-top: 24px; padding: 32px; border-radius: var(--radius-surface); background: var(--fog); display: grid; gap: 8px; }
+.empty-panel h3 { margin: 0; font: 600 22px/30px var(--font-sans); letter-spacing: -0.015em; }
+.article-list { list-style: none; margin: 24px 0 0; padding: 0; }
+.article-list a { display: grid; gap: 8px; padding: 24px 0; border-top: 1px solid var(--border); text-decoration: none; color: inherit; }
+.article-list a:last-child { border-bottom: 1px solid var(--border); }
+.article-list h3 { margin: 0; font: 600 22px/30px var(--font-sans); letter-spacing: -0.015em; }
+.article-meta { margin: 0; font-size: 14px; line-height: 20px; color: var(--text-secondary); }
+.article-body { display: flex; flex-direction: column; gap: 16px; font-size: 16px; line-height: 26px; }
+.article-body :where(h2) { margin: 16px 0 0; font: 600 24px/32px var(--font-sans); letter-spacing: -0.01em; }
+.article-body :where(p, ul) { margin: 0; }
+.article-body :where(ul) { padding-left: 20px; display: grid; gap: 8px; }
+.ev-cta .offer-micro { max-width: 46ch; font-size: 14px; line-height: 22px; color: rgba(255,255,255,.72); }
+@media (max-width: 720px) {
+  .page-section { padding: 72px 16px; }
+  .process-step { grid-template-columns: 1fr; }
+  .empty-panel { padding: 24px; }
+  .detail-stack { gap: 48px; }
+}
+
 /* Looping decorative animations pause while their section is off screen (see Base.astro). */
 [data-offscreen] :not(.rl-reveal):not(.rl-rise),
 [data-offscreen] :not(.rl-reveal):not(.rl-rise)::before,

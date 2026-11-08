@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+import ClosingCTA from '../../components/ClosingCTA.astro';
+import { ARTICLE_TOPICS } from '../../data/site';
+import { publishedArticles } from '../../lib/articles';
+
+const articles = await publishedArticles();
+const formatDate = (date: Date) =>
+  date.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+---
+<Base
+  title="Practical AI Articles for Business | Roadmap Labs"
+  description="Practical AI articles for established Australian businesses, covering data, automations and team use. The first guides are being prepared. Check back here."
+  path="/articles"
+>
+  <section class="page-hero">
+    <span class="rl-tag">Roadmap Labs articles</span>
+    <h1>Put AI to work with a clearer idea of how</h1>
+    <p class="lede">Practical writing for established Australian businesses working out where AI fits. Focused on the work your team needs to do and how to judge what helps.</p>
+    <p class="hero-body">We're preparing the first guides. New articles will appear here once they're ready.</p>
+  </section>
+
+  <section style="border-top: 1px solid var(--border)">
+    <div class="page-section">
+      <h2>Find the part you're working on</h2>
+      <ul class="topic-list" aria-label="Article topics">
+        {ARTICLE_TOPICS.map((topic) => (
+          <li><span class="rl-tag">{topic}</span></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section style="background: var(--fog)">
+    <div class="page-section">
+      <h2>Latest articles</h2>
+      {articles.length === 0 ? (
+        <div class="empty-panel">
+          <h3>The first articles are being prepared</h3>
+          <p class="prose-p">There are no published articles here yet. Check back for practical guides you can use in your own business.</p>
+        </div>
+      ) : (
+        <ul class="article-list">
+          {articles.map((article) => (
+            <li>
+              <a href={`/articles/${article.id}`}>
+                <span class="rl-tag">{article.data.topic}</span>
+                <h3>{article.data.title}</h3>
+                <p class="prose-p">{article.data.description}</p>
+                <p class="article-meta">{article.data.format} · {article.data.author} · {formatDate(article.data.publishedAt)} · {article.data.readingTime}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <section>
+    <div class="page-section" style="display: flex; flex-direction: column; gap: 12px">
+      <h2>Follow new articles here</h2>
+      <p class="prose-p">For now, check this page for new writing.</p>
+    </div>
+  </section>
+
+  <ClosingCTA
+    eyebrow="Free discovery session | 1 hour"
+    title="Talk through your own business"
+    body="If you'd rather work through a specific problem, start with a free 1-hour discovery session. You'll leave with a clear AI blueprint and strategy you can use yourself."
+    cta="Book a free 1-hour discovery session"
+    microcopy="No obligation to hire us."
+  />
+</Base>

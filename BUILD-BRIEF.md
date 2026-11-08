@@ -6,14 +6,15 @@ Everything a fresh session needs to build, deploy and launch roadmaplabs.com.au.
 https://claude.ai/artifact/PUVcdEiuhb2MGYdeS8hEVX. Build the pages on the
 **Website v1** page of the canvas. The **Mobile** page shows the same pages at
 390px wide (they import the desktop pages, so the layouts are fluid, not
-separate designs). Ignore the **Later** page (Services, Articles, Process,
-FAQ, SEO keyword map); none of it is linked from v1.
+separate designs). Services, Articles, Process and FAQ are now linked from the header, footer and sitemap. The SEO keyword map on the Later page is still unused.
 
 Read the canvas files with the Artifact tool (`read` with `paths`). Each
 artboard is `project/<Name>.dc.html`. Shared parts: `Header`, `Footer`,
 `ClosingCTA`. Styles: `project/rl-tokens.css`, `project/rl-motion.css`,
 `project/rl-elevated.css`, `project/ds/roadmap-labs/components/bundle.css`.
 Copy the copy exactly. It has been through a voice and SEO pass.
+
+The canvas **Later** page is not the copy source for Services, Process, FAQ or Articles. Those routes are in this build. Customer-facing copy for `/services`, `/process`, `/faq` and the `/articles` index is Writer v4 (9 November 2026), used word for word, including the softened lines where a DAN question is still open. Do not publish editorial labels, DAN questions, team notes or the claims audit. Draft articles stay out of the build, the sitemap and the routes. No article is published yet.
 
 ## Stack (recommended)
 
@@ -42,6 +43,10 @@ inconsistency.
 | Contact | `/contact` | Book a Free AI Strategy Session \| Roadmap Labs | A free hour on where AI fits in your business |
 | Privacy | `/privacy` | Privacy Policy \| Roadmap Labs | Privacy policy |
 | (new) | `/404` | Page not found \| Roadmap Labs | Simple page, link home and to /contact |
+| (Writer v4) | `/services` | AI Consulting Australia: Services \| Roadmap Labs | Take repetitive admin off your team's plate |
+| (Writer v4) | `/process` | Our AI Consulting Process \| Roadmap Labs | Get clear on the work before you build |
+| (Writer v4) | `/faq` | AI Consulting FAQs: Cost and Data \| Roadmap Labs | Get clear on the cost and the work involved |
+| (Writer v4) | `/articles` | Practical AI Articles for Business \| Roadmap Labs | Put AI to work with a clearer idea of how |
 
 Meta descriptions are in each canvas file's `<head>`. Use them as written.
 
@@ -58,8 +63,9 @@ Rewrite every `*.dc.html` link to the URLs above (`Main.dc.html` becomes `/`,
   per case study from its laptop mockup.
 - Favicon set (SVG + 180px apple-touch-icon) from the Roadmap Labs logo.
 - `robots.txt` allowing everything and pointing at the sitemap.
-- XML sitemap of the 8 public pages (not 404). Submit it in Google Search
-  Console once live.
+- XML sitemap of the public pages (not `/404`, not `/thanks`, and not draft
+  articles). Published articles are included when they exist. None are
+  published yet. Submit the sitemap in Google Search Console once live.
 
 ### Structured data (JSON-LD)
 
@@ -69,8 +75,9 @@ Rewrite every `*.dc.html` link to the URLs above (`Main.dc.html` becomes `/`,
   areaServed Australia, founder Person Dan Kovac, `taxID` ABN 44 108 955 374.
   Add `sameAs` with the LinkedIn company URL once it exists.
 - Home: `FAQPage` built from the home page FAQ (7 questions). Contact:
-  `FAQPage` from its 4 questions. Questions and answers must match the
-  visible text exactly.
+  `FAQPage` from its 4 questions. `/faq`: `FAQPage` from the Writer v4
+  questions on that page. Questions and answers must match the visible text
+  exactly.
 - About: `Person` for Dan Kovac (jobTitle AI consultant, worksFor Roadmap Labs).
 - Case studies: `Article` with headline, description, image, author Dan Kovac,
   publisher Roadmap Labs, datePublished on launch day.
@@ -124,7 +131,7 @@ cookie notice and check the privacy policy still matches what's collected
 
 ## Launch checklist
 
-- [ ] All 8 pages built at the URLs above, links rewritten, 404 page in place
+- [ ] Public pages built at the URLs above, including `/services`, `/process`, `/faq` and `/articles`, links rewritten, 404 page in place
 - [ ] Titles, descriptions, canonicals, OG tags and JSON-LD on every page
       (validate with Google's Rich Results Test)
 - [ ] Sitemap and robots.txt live
@@ -140,5 +147,9 @@ cookie notice and check the privacy policy still matches what's collected
 
 - LinkedIn company page URL: add to the footer and to `sameAs`.
 - Have the privacy policy checked before Google Ads or analytics go on.
-- Articles, Services, Process and FAQ pages are designed on the "Later" page
-  of the canvas for a future release.
+- Publish articles in `src/content/articles` with `draft: false`. Drafts are
+  excluded from routes, `dist` and the sitemap. Topic filters stay off until
+  an article is published.
+- The claims audit in the Writer v4 document is not applied to existing pages.
+  Compass is labelled "A website we built for Compass Buyers Agency" where the
+  old label said "Client work".

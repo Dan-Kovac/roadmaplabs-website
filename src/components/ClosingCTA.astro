@@ -1,16 +1,32 @@
+---
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  body?: string;
+  cta?: string;
+  microcopy?: string;
+}
+const {
+  eyebrow = 'Free discovery session | 1 hour',
+  title = 'Work out where AI fits in your business',
+  body = "Spend an hour with Dan on the work holding your team up. You'll leave with a clear AI blueprint and strategy you can use yourself.",
+  cta = 'Book a free 1-hour discovery session',
+  microcopy = "There's no obligation to hire us.",
+} = Astro.props;
+---
 <section class="rl ev-cta" aria-labelledby="cta-title" style="width: 100%">
   <div class="ev-cta__inner">
-    <span class="rl-tag ev-tag-dark">Free · 1 hour · Online</span>
-    <h2 id="cta-title">Book your free AI strategy session</h2>
-    <p>An hour with Dan on where AI fits in your business. Within 48 hours you get a custom report with what each automation saves over 12 months.</p>
+    <span class="rl-tag ev-tag-dark">{eyebrow}</span>
+    <h2 id="cta-title">{title}</h2>
+    <p>{body}</p>
     <div class="ev-cta__actions">
-      <a class="rl-btn rl-btn--lg" href="/contact" style="background: var(--paper); color: var(--ink)">Book your free session</a>
-      <a class="rl-link-action" href="/work" style="padding: 12px 0">See the work</a>
+      <a class="rl-btn rl-btn--lg" href="/contact" style="background: var(--paper); color: var(--ink)">{cta}</a>
     </div>
+    <p class="offer-micro">{microcopy}</p>
     <ol class="ev-cta__steps">
-      <li><span>The session</span><strong>An hour with Dan</strong><em>Your bottlenecks, your goals and where AI fits.</em></li>
-      <li><span>Within 48 hours</span><strong>Your custom report</strong><em>Your business mapped, and what each automation saves over 12 months.</em></li>
-      <li><span>After that</span><strong>It's your call</strong><em>Build with us or run it yourself. There's no lock-in.</em></li>
+      <li><span>The session</span><strong>An hour with Dan</strong><em>Talk through your goals and how the work happens today.</em></li>
+      <li><span>Your takeaway</span><strong>A blueprint and strategy to keep</strong><em>Priorities and a sensible place to start.</em></li>
+      <li><span>Your decision</span><strong>Choose what happens next</strong><em>Use the plan yourself or ask us to scope a project.</em></li>
     </ol>
   </div>
 </section>

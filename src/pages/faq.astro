@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import Faq from '../components/Faq.astro';
+import ClosingCTA from '../components/ClosingCTA.astro';
+import { FAQ_PAGE, FAQ_PAGE_ITEMS, faqSchema } from '../data/site';
+---
+<Base
+  title="AI Consulting FAQs: Cost and Data | Roadmap Labs"
+  description="Answers about AI consulting costs, business data and handover. Typical projects are A$5k to A$50k. Start with a free 1-hour discovery session."
+  path="/faq"
+  schema={[faqSchema(FAQ_PAGE_ITEMS)]}
+>
+  <section class="page-hero">
+    <span class="rl-tag">Before you start</span>
+    <h1>Get clear on the cost and the work involved</h1>
+    <p class="lede">The details depend on what your business needs. Here's how we approach a project and what we'll agree before it starts.</p>
+  </section>
+
+  {FAQ_PAGE.map((group) => (
+    <section style="border-top: 1px solid var(--border)">
+      <div class="page-section" style="display: flex; flex-wrap: wrap; gap: 48px">
+        <h2 style="flex: 1 1 280px">{group.heading}</h2>
+        <Faq items={group.items} />
+      </div>
+    </section>
+  ))}
+
+  <ClosingCTA
+    eyebrow="Free discovery session | 1 hour"
+    title="Work through the questions specific to your business"
+    body="Start with how the work happens today. You'll leave with a clear AI blueprint and strategy, whether you build with us or use it yourself."
+    cta="Book a free 1-hour discovery session"
+    microcopy="The session is free. There's no obligation to hire us."
+  />
+</Base>

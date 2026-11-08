@@ -1,17 +1,13 @@
 ---
-const links = [
-  { href: '/', label: 'Home' },
-  { href: '/work', label: 'Our work' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-];
+import { HEADER_LINKS } from '../data/site';
+const links = HEADER_LINKS;
 const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
 const current = (href: string) => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/'));
 ---
 <header class="rl" style="width: 100%; background: #ffffff">
   <div class="rl-announce" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 12px; font-size: 13px; line-height: 20px; padding: 10px 16px">
     <span class="rl-pill" style="background: var(--paper); color: var(--ink)">Free</span>
-    <span>1-hour AI strategy session, with a custom report within 48 hours.</span>
+    <span>Free 1-hour discovery session. You'll leave with a clear AI blueprint and strategy.</span>
     <a href="/contact" style="font-weight: 600">Book your session →</a>
   </div>
   <nav class="ev-nav" aria-label="Main" style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px">
@@ -23,7 +19,7 @@ const current = (href: string) => (href === '/' ? path === '/' : path === href |
         <li><a class="rl-link" href={l.href} aria-current={current(l.href) ? 'page' : undefined} style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; color: #000000">{l.label}</a></li>
       ))}
     </ul>
-    <a class="rl-btn rl-btn--lg ev-nav-cta" href="/contact" style="min-height: 44px; padding: 10px 18px; font-size: 15px">Book your free session</a>
+    <a class="rl-btn rl-btn--lg ev-nav-cta" href="/contact" style="min-height: 44px; padding: 10px 18px; font-size: 15px">Book a free 1-hour discovery session</a>
     <button class="ev-menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" style="color: #000000">
       <svg class="icon-open" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       <svg class="icon-close" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -33,7 +29,7 @@ const current = (href: string) => (href === '/' ? path === '/' : path === href |
     {links.map((l) => (
       <a class="rl-link" href={l.href} aria-current={current(l.href) ? 'page' : undefined} style="color: #000000">{l.label}</a>
     ))}
-    <a class="rl-btn rl-btn--lg" href="/contact">Book your free session</a>
+    <a class="rl-btn rl-btn--lg" href="/contact">Book a free 1-hour discovery session</a>
   </div>
   <div style="height: 1px; background: #b9bbc6"></div>
 </header>

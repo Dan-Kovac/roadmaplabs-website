@@ -1,0 +1,87 @@
+---
+import Base from '../layouts/Base.astro';
+import ClosingCTA from '../components/ClosingCTA.astro';
+import Faq from '../components/Faq.astro';
+import Img from '../components/Img.astro';
+import { FAQ_PAGE_ITEMS, PROCESS_EXPECTATIONS, PROCESS_STEPS } from '../data/site';
+import processDiagramWhiteboard from '../assets/images/process-diagram-whiteboard.jpg';
+import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
+import warehouseClipboard from '../assets/images/warehouse-clipboard.jpg';
+import talkingAtLaptop from '../assets/images/talking-at-laptop.jpg';
+
+const photos = [
+  { src: processDiagramWhiteboard, alt: 'Someone sketching a process diagram on a glass whiteboard' },
+  { src: factoryConveyorLine, alt: 'A group watching a conveyor line on a factory floor' },
+  { src: warehouseClipboard, alt: 'Two colleagues with a clipboard in a warehouse' },
+  { src: talkingAtLaptop, alt: 'Two people talking through ideas together at a laptop' },
+];
+const processFaq = [
+  'How much does an engagement cost?',
+  'Who owns the custom system?',
+  'Are we locked into ongoing support?',
+  'What happens after launch?',
+].map((q) => FAQ_PAGE_ITEMS.find((item) => item.q === q)!);
+---
+<Base
+  title="Our AI Consulting Process | Roadmap Labs"
+  description="See how an AI project works, from a free 1-hour discovery session to a scoped build and team handover. Keep the blueprint and choose what happens next."
+  path="/process"
+>
+  <section class="page-hero">
+    <span class="rl-tag">How we work</span>
+    <h1>Get clear on the work before you build</h1>
+    <p class="lede">Start with what your business needs to do better. We'll work out where AI fits and what your team needs to run it.</p>
+    <a class="rl-btn rl-btn--lg" href="/contact">Book a free 1-hour discovery session</a>
+    <p class="page-micro">The session is free. The AI blueprint and strategy are yours to keep.</p>
+  </section>
+
+  <section>
+    <div class="ev-pad page-section detail-stack">
+      <h2>From the first conversation to handover</h2>
+      {PROCESS_STEPS.map((step, i) => (
+        <div class:list={['rl-split', { 'rl-split--flip': i % 2 === 1 }]}>
+          <div class="rl-split__panel" style="padding: 0; overflow: hidden">
+            <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3; width: 100%; border-radius: 0">
+              <Img src={photos[i].src} alt={photos[i].alt} sizes="(max-width: 720px) calc(100vw - 48px), 540px" />
+            </figure>
+          </div>
+          <div>
+            <span class="rl-tag" style="margin-bottom: 16px">{i + 1}</span>
+            <h2>{step.title}</h2>
+            {step.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section style="background: var(--fog)">
+    <div class="ev-pad page-section" style="display: flex; flex-direction: column; gap: 32px">
+      <h2>Make the decisions together</h2>
+      <div class="ev-why">
+        {PROCESS_EXPECTATIONS.map((item) => (
+          <article class="ev-why__card">
+            <h3>{item.q}</h3>
+            <p>{item.a}</p>
+          </article>
+        ))}
+      </div>
+      <a class="rl-link-action" href="/faq">Read the project FAQs</a>
+    </div>
+  </section>
+
+  <section style="border-top: 1px solid var(--border)">
+    <div class="page-section" style="display: flex; flex-wrap: wrap; gap: 48px">
+      <h2 style="flex: 1 1 280px">Scope, ownership and support</h2>
+      <Faq items={processFaq} />
+    </div>
+  </section>
+
+  <ClosingCTA
+    eyebrow="Free discovery session | 1 hour"
+    title="Bring the job your team keeps doing by hand"
+    body="We'll look at where the work gets stuck and where AI could help. You'll leave with a blueprint and strategy you can act on."
+    cta="Book a free 1-hour discovery session"
+    microcopy="There's no obligation to build with us."
+  />
+</Base>
