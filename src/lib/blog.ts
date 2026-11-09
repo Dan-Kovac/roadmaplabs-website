@@ -40,16 +40,23 @@ async function fromSupabase(): Promise<Post[]> {
   // RLS only exposes status = 'published' to the anon key.
   const { data, error } = await sb.from('posts').select('*').eq('status', 'published').order('published_at', { ascending: false });
   if (error) throw new Error(`Supabase posts query failed: ${error.message}`);
-  return (data ?? []).map((r: any) => ({
-    ...r,
-    cluster: clusterFor(r.cluster),
-    featured_image: r.featured_image_url ?? null,
-    featured_image_alt: r.featured_image_alt ?? '',
-    reading_minutes: r.reading_minutes ?? readingMinutes(r.body_md),
-    published_at: new Date(r.published_at),
-    updated_at: new Date(r.updated_at),
-    faq: Array.isArray(r.faq) ? r.faq : [],
-  }));
+  // Images hosted on this site are stored as absolute URLs; serve them relative so previews work too.
+  const local = (u: string | null) => (u ? u.replace(/^https:\/\/(www\.)?roadmaplabs\.com\.au(?=\/)/, '') : null);
+  return (data ?? []).map((r: any) => {
+    const published = new Date(r.published_at);
+    const updated = new Date(r.updated_at);
+    return {
+      ...r,
+      cluster: clusterFor(r.cluster),
+      featured_image: local(r.featured_image_url ?? null),
+      featured_image_alt: r.featured_image_alt ?? '',
+      reading_minutes: r.reading_minutes ?? readingMinutes(r.body_md),
+      published_at: published,
+      // A row can be loaded before its publish date; never report a modified date earlier than publication.
+      updated_at: updated > published ? updated : published,
+      faq: Array.isArray(r.faq) ? r.faq : [],
+    };
+  });
 }
 
 async function fromLocal(): Promise<Post[]> {
