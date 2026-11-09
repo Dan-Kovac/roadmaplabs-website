@@ -1,0 +1,80 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostMeta from '../../components/blog/PostMeta.astro';
+import PostList from '../../components/blog/PostList.astro';
+import { getPosts } from '../../lib/blog';
+import { CLUSTERS } from '../../data/clusters';
+import { SITE, abs } from '../../data/site';
+import '../../styles/blog.css';
+
+const posts = await getPosts();
+const [lead, ...rest] = posts;
+const sections = CLUSTERS.filter((c) => posts.some((p) => p.cluster.slug === c.slug));
+const title = 'AI Insights for Australian Businesses | Roadmap Labs';
+const description = 'Practical guides to putting AI to work in an established Australian business, from mapping your processes to choosing tools. Written by Dan Kovac.';
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    '@id': `${SITE.url}/blog#blog`,
+    name: 'Roadmap Labs Insights',
+    url: abs('/blog'),
+    description,
+    inLanguage: 'en-AU',
+    publisher: { '@id': `${SITE.url}/#organization` },
+    blogPost: posts.map((p) => ({ '@type': 'BlogPosting', headline: p.title, url: abs(`/blog/${p.slug}`), datePublished: p.published_at.toISOString() })),
+  },
+];
+---
+<Base title={title} description={description} path="/blog" schema={schema}>
+  <section class="ins-band ins-masthead">
+    <span class="rl-tag" style="justify-self: start">Insights</span>
+    <h1>Practical AI for established Australian businesses</h1>
+    <p>What we've learnt putting AI to work in real businesses, written by Dan from client projects and our own products.</p>
+  </section>
+
+  {lead && (
+    <section class="ins-band" aria-label="Latest post">
+      <a class="ins-lead" href={`/blog/${lead.slug}`}>
+        {lead.featured_image && (
+          <span class="ins-lead__img"><picture>
+            <source type="image/webp" srcset={`${lead.featured_image.replace(/\.png$/, '-800.webp')} 800w, ${lead.featured_image.replace(/\.png$/, '.webp')} 1200w`} sizes="(max-width: 860px) calc(100vw - 48px), 640px" />
+            <img src={lead.featured_image} alt={lead.featured_image_alt} width="1200" height="630" fetchpriority="high" />
+          </picture></span>
+        )}
+        <span class="ins-lead__text">
+          <span class="ins-label">{lead.cluster.name}</span>
+          <h2>{lead.title}</h2>
+          <p>{lead.excerpt}</p>
+          <PostMeta post={lead} />
+        </span>
+      </a>
+    </section>
+  )}
+
+  {rest.length > 0 && (
+    <section class="ins-band" style="padding-bottom: 80px; display: grid; gap: 24px">
+      <h2 class="ins-label" style="margin: 0">Latest</h2>
+      <PostList posts={rest} />
+    </section>
+  )}
+
+  {sections.length > 1 && (
+    <section style="background: var(--fog)">
+      <div class="ins-band" style="padding-top: 80px; padding-bottom: 80px; display: grid; gap: 32px">
+        <h2 style="margin: 0; font-size: clamp(28px, 3.4vw, 36px); line-height: 1.21; letter-spacing: -0.02em; font-weight: 600">Browse by section</h2>
+        <div class="ins-sections">
+          {sections.map((c) => <a href={`/blog/topics/${c.slug}`}><strong>{c.name}</strong><span>{c.description}</span></a>)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="ins-band" style="padding-bottom: 96px">
+    <div class="post-cta" style="max-width: 728px">
+      <h2>Book a free 1-hour session</h2>
+      <p>We'll work out where AI fits in your business. Within 48 hours you'll get a custom report of the automations worth doing, each with what it saves over 12 months. There's no obligation and no lock-in.</p>
+      <p class="post-action"><a class="rl-btn rl-btn--lg" href="/contact">Book a session</a></p>
+    </div>
+  </section>
+</Base>

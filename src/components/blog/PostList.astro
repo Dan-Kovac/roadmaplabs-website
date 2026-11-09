@@ -1,0 +1,21 @@
+---
+import PostMeta from './PostMeta.astro';
+import type { Post } from '../../lib/blog';
+interface Props { posts: Post[]; headingLevel?: 2 | 3 }
+const { posts, headingLevel = 3 } = Astro.props;
+const H = headingLevel === 2 ? 'h2' : 'h3';
+---
+<ul class="ins-list">
+  {posts.map((p) => (
+    <li>
+      <a href={`/blog/${p.slug}`}>
+        <span class="ins-label" style="padding-top: 6px">{p.cluster.name}</span>
+        <span>
+          <H class="ins-list__title">{p.title}</H>
+          <p>{p.excerpt}</p>
+          <span style="display: block; margin-top: 10px"><PostMeta post={p} /></span>
+        </span>
+      </a>
+    </li>
+  ))}
+</ul>

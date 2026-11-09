@@ -31,7 +31,7 @@ const {
 } = Astro.props;
 
 const canonical = abs(path);
-const image = abs(ogImage);
+const image = /^https?:\/\//.test(ogImage) ? ogImage : abs(ogImage);
 
 const organization = {
   '@context': 'https://schema.org',

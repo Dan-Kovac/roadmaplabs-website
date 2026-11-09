@@ -1,0 +1,12 @@
+---
+import { formatDate, type Post } from '../../lib/blog';
+interface Props { post: Post; showAuthor?: boolean }
+const { post, showAuthor = true } = Astro.props;
+---
+<span class="ins-meta">
+  {showAuthor && <span>{post.author_name}</span>}
+  {showAuthor && <span class="sep" aria-hidden="true">·</span>}
+  <time datetime={post.published_at.toISOString()}>{formatDate(post.published_at)}</time>
+  <span class="sep" aria-hidden="true">·</span>
+  <span>{post.reading_minutes} min read</span>
+</span>

@@ -1,0 +1,42 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ClosingCTA from '../../../components/ClosingCTA.astro';
+import PostList from '../../../components/blog/PostList.astro';
+import { getPosts } from '../../../lib/blog';
+import { CLUSTERS } from '../../../data/clusters';
+import { abs } from '../../../data/site';
+import '../../../styles/blog.css';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  // Only sections with at least one post get a page, so there are no thin pages.
+  return CLUSTERS.filter((c) => posts.some((p) => p.cluster.slug === c.slug)).map((c) => ({ params: { cluster: c.slug }, props: { cluster: c } }));
+}
+const { cluster } = Astro.props;
+const posts = (await getPosts()).filter((p) => p.cluster.slug === cluster.slug).sort((a, b) => Number(b.is_pillar) - Number(a.is_pillar));
+const path = `/blog/topics/${cluster.slug}`;
+const title = `${cluster.name}: AI Insights | Roadmap Labs`;
+const description = `${cluster.description} Guides for established Australian businesses, by Dan Kovac.`;
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: abs('/') },
+      { '@type': 'ListItem', position: 2, name: 'Insights', item: abs('/blog') },
+      { '@type': 'ListItem', position: 3, name: cluster.name, item: abs(path) },
+    ],
+  },
+];
+---
+<Base title={title} description={description} path={path} schema={schema}>
+  <section class="ins-band ins-masthead">
+    <nav class="post-crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/blog">Insights</a></li></ol></nav>
+    <h1>{cluster.name}</h1>
+    <p>{cluster.description}</p>
+  </section>
+  <section class="ins-band" style="padding-top: 48px; padding-bottom: 96px">
+    <PostList posts={posts} headingLevel={2} />
+  </section>
+  <ClosingCTA />
+</Base>
