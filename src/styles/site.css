@@ -61,3 +61,21 @@ details[open] .faq-plus { transform: rotate(45deg); }
 [data-offscreen] :not(.rl-reveal):not(.rl-rise)::before,
 [data-offscreen] :not(.rl-reveal):not(.rl-rise)::after,
 [data-offscreen]::before, [data-offscreen]::after { animation-play-state: paused !important; }
+
+/* Home hero fits one laptop screen: asymmetric split (text about 55%), H1 sized to the column,
+   photo height capped to the viewport. 115px is the announcement bar plus nav. */
+@media (min-width: 1000px) {
+  .ev-hero-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) !important;
+    gap: 56px !important;
+    padding: 40px 24px 48px !important;
+    min-height: min(calc(100svh - 115px), 820px);
+  }
+  .ev-hero-grid h1 { font-size: clamp(48px, 4.6vw, 66px) !important; }
+  .ev-hero-grid > div { gap: 24px !important; }
+  .ev-hero-photo {
+    aspect-ratio: auto !important;
+    height: clamp(420px, calc(100svh - 115px - 88px), 640px);
+    min-height: 0 !important;
+  }
+}
