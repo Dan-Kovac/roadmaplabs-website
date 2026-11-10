@@ -79,3 +79,13 @@ details[open] .faq-plus { transform: rotate(45deg); }
     min-height: 0 !important;
   }
 }
+
+/* Scenes built from interface cards, used in place of stock photos. */
+.ev-scene { position: relative; background: var(--fog); border-radius: var(--radius-surface); overflow: hidden; min-height: 420px; }
+.ev-scene .rl-ui { position: absolute; display: grid; gap: 10px; padding: 18px 20px; font-size: 14px; line-height: 20px; box-shadow: var(--shadow-float); border: 0; }
+.ev-scene__a { left: 7%; right: 22%; top: 8%; }
+.ev-scene__b { left: 7%; width: 66%; top: 29%; }
+.ev-scene__c { right: 6%; width: 60%; bottom: 7%; }
+.ev-panel { margin: 0; aspect-ratio: 4 / 3; display: grid; place-items: center; padding: 24px; border-radius: var(--radius-surface); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); }
+.ev-panel .rl-ui { position: static; width: 100%; max-width: 300px; display: grid; gap: 8px; }
+@media (max-width: 999px) { .ev-scene { aspect-ratio: 4 / 5; } }
