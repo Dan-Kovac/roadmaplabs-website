@@ -5,12 +5,13 @@ import Mockup from '../components/Mockup.astro';
 import Img from '../components/Img.astro';
 import Faq from '../components/Faq.astro';
 import { HOME_FAQ, faqSchema } from '../data/site';
-import warehouseAisleColleagues from '../assets/images/warehouse-aisle-colleagues.jpg';
 import danKovac from '../assets/images/dan-kovac.jpg';
-import processDiagramWhiteboard from '../assets/images/process-diagram-whiteboard.jpg';
-import warehouseClipboard from '../assets/images/warehouse-clipboard.jpg';
-import talkingAtLaptop from '../assets/images/talking-at-laptop.jpg';
-import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
+import Scene from '../components/Scene.astro';
+import bgHero from '../assets/images/backgrounds/warehouse-aisle-colleagues.jpg';
+import bgMap from '../assets/images/backgrounds/process-diagram-whiteboard.jpg';
+import bgFind from '../assets/images/backgrounds/factory-conveyor-line.jpg';
+import bgBuild from '../assets/images/backgrounds/warehouse-clipboard.jpg';
+import bgSession from '../assets/images/backgrounds/talking-at-laptop.jpg';
 ---
 <Base
   title='AI Consultant for Australian Businesses | Roadmap Labs'
@@ -30,24 +31,24 @@ import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
         <a class="rl-link-action" href="/work" style="padding: 12px 0">See the work</a>
       </div>
     </div>
-    <div class="ev-scene rl-rise rl-d3 ev-hero-photo" role="img" aria-label="Example automation roadmap: a process map, three automations ranked by 12-month value, and the yearly cost of one bottleneck">
-      <div class="rl-ui ev-scene__a" aria-hidden="true">
+    <Scene bg={bgHero} eager class="ev-scene--hero rl-rise rl-d3 ev-hero-photo" label="Example: a process map, three automations ranked by 12-month value, and what one bottleneck costs each year">
+      <div class="rl-ui ev-scene__a">
         <div class="rl-ui__row"><span class="rl-ui__meta">Process map</span><span class="rl-pill rl-pill--quiet">Example</span></div>
         <div class="ev-flow"><span>Lead</span><i></i><span>Proposal</span><i></i><span>Sale</span><i></i><span>Invoice</span></div>
       </div>
-      <div class="rl-ui ev-scene__b" aria-hidden="true">
+      <div class="rl-ui ev-scene__b">
         <div class="rl-ui__row"><span class="rl-ui__meta">Automation roadmap</span><span class="rl-live">Analysing</span></div>
         <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>1. Quote follow-ups</span><span class="rl-pill">Top value</span></div><div class="rl-bar rl-bar--signal"><i style="width: 92%"></i></div></div>
         <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>2. Building proposals</span></div><div class="rl-bar rl-bar--signal"><i style="width: 64%"></i></div></div>
         <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>3. Invoice matching</span></div><div class="rl-bar rl-bar--signal"><i style="width: 41%"></i></div></div>
         <span class="rl-ui__meta">Ranked by 12-month value</span>
       </div>
-      <div class="rl-ui ev-scene__c" aria-hidden="true">
+      <div class="rl-ui ev-scene__c">
         <div class="rl-ui__row"><span class="rl-ui__meta">Bottleneck</span></div>
         <div style="font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em">Following up quotes</div>
         <div class="rl-ui__row" style="color: var(--text-secondary)"><span>6 hrs a week × $65 × 48 weeks</span></div>
         <div class="rl-ui__row" style="border-top: 1px solid var(--border); padding-top: 10px; align-items: baseline"><span>Cost each year</span><span style="font: 600 24px/28px var(--font-sans); letter-spacing: -0.02em; color: var(--ink)">$18,720</span></div>
-      </div>
+      </Scene>
     </div>
   </div>
 </section>
@@ -82,40 +83,49 @@ import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
     <ol class="ev-steps">
       <li class="ev-step">
         <span class="ev-node" aria-hidden="true">1</span>
-        <figure class="ev-panel">
-          <div class="rl-ui ev-mini">
+        <Scene bg={bgMap} class="ev-scene--step" label="Example process map: lead, proposal, sale and invoice, running across the CRM, inbox, ads and spreadsheets">
+          <div class="rl-ui">
             <div class="rl-ui__row"><span class="rl-ui__meta">Process map</span><span class="rl-pill rl-pill--quiet">Example</span></div>
-            <div class="ev-flow"><span>Lead</span><i></i><span>Proposal</span><i></i><span>Sale</span><i></i><span>Invoice</span></div>
+            <div class="ev-rows">
+              <div class="ev-flow"><span>Lead</span><i></i><span>Proposal</span><i></i><span>Sale</span><i></i><span>Invoice</span></div>
+              <span class="rl-ui__meta">Runs across</span>
+              <div class="ev-chips"><span>CRM</span><span>Inbox</span><span>Ads</span><span>Spreadsheets</span></div>
+            </div>
+            <span class="rl-ui__meta">How the business really runs</span>
           </div>
-        </figure>
+        </Scene>
         <h3>Map your systems and processes</h3>
         <p>We sit with your team and map how the business really runs, across your CRM, inbox, ads and spreadsheets. Then we build on the systems that got you here.</p>
       </li>
       <li class="ev-step">
         <span class="ev-node" aria-hidden="true">2</span>
-        <figure class="ev-panel">
-          <div class="rl-ui ev-mini">
-            <div class="rl-ui__row"><span class="rl-ui__meta">Where time goes</span><span class="rl-pill rl-pill--quiet">Example</span></div>
-            <div style="display: grid; gap: 4px"><span>Building proposals</span><div class="rl-bar"><i style="width: 88%"></i></div></div>
-            <div style="display: grid; gap: 4px"><span style="color: var(--text-secondary)">Data entry</span><div class="rl-bar ev-bar-quiet"><i style="width: 52%"></i></div></div>
+        <Scene bg={bgFind} class="ev-scene--step" label="Example bottlenecks: following up quotes, building proposals and data entry, with the top one costing $18,720 a year">
+          <div class="rl-ui">
+            <div class="rl-ui__row"><span class="rl-ui__meta">Where time and money leak</span><span class="rl-pill rl-pill--quiet">Example</span></div>
+            <div class="ev-rows">
+              <div style="display: grid; gap: 4px"><span>Following up quotes</span><div class="rl-bar"><i style="width: 92%"></i></div></div>
+              <div style="display: grid; gap: 4px"><span style="color: var(--text-secondary)">Building proposals</span><div class="rl-bar ev-bar-quiet"><i style="width: 64%"></i></div></div>
+              <div style="display: grid; gap: 4px"><span style="color: var(--text-secondary)">Data entry</span><div class="rl-bar ev-bar-quiet"><i style="width: 41%"></i></div></div>
+            </div>
+            <div class="ev-total"><span>Cost each year</span><strong>$18,720</strong></div>
           </div>
-        </figure>
+        </Scene>
         <h3>Find the biggest bottlenecks</h3>
         <p>We find where time and money leak, and put a 12-month dollar figure on each bottleneck holding the business back.</p>
       </li>
       <li class="ev-step">
         <span class="ev-node" aria-hidden="true">3</span>
-        <figure class="ev-panel">
-          <div class="rl-ui ev-mini">
-            <div class="rl-ui__row"><span class="rl-ui__meta">Start here</span><span class="rl-pill rl-pill--quiet">Example</span></div>
-            <div class="rl-ui__row"><span>1. Quote follow-ups</span><span class="rl-pill">Top value</span></div>
-            <div class="ev-checks">
-              <span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Built</span>
-              <span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested</span>
-              <span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Team trained</span>
+        <Scene bg={bgBuild} class="ev-scene--step" label="Example automation roadmap: quote follow-ups ranked first, then building proposals and invoice matching, each built, tested and handed over with training">
+          <div class="rl-ui">
+            <div class="rl-ui__row"><span class="rl-ui__meta">Automation roadmap</span><span class="rl-pill rl-pill--quiet">Example</span></div>
+            <div class="ev-rows">
+              <div class="rl-ui__row"><span>1. Quote follow-ups</span><span class="rl-pill">Top value</span></div>
+              <div class="rl-ui__row" style="color: var(--text-secondary)"><span>2. Building proposals</span></div>
+              <div class="rl-ui__row" style="color: var(--text-secondary)"><span>3. Invoice matching</span></div>
             </div>
+            <div class="ev-checks" style="padding-top: 9px; border-top: 1px solid #e6e7ec"><span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Built</span><span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Tested</span><span><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Team trained</span></div>
           </div>
-        </figure>
+        </Scene>
         <h3>Build your automation roadmap</h3>
         <p>Every automation ranked by what it saves over 12 months. You pick what we build, then we test it, hand it over and train your team to use it.</p>
       </li>
@@ -171,7 +181,7 @@ import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
           <a class="rl-link-action" href="/contact" style="padding: 12px 0">What happens after the session</a>
         </div>
       </div>
-      <div class="ev-report">
+      <Scene bg={bgSession} class="ev-scene--center" label="Example custom report, ready within 48 hours: your business mapped, the automations that suit you and a 12-month value on each one">
       <div class="rl-ui">
         <div class="rl-ui__row"><span class="rl-ui__meta">Your custom report</span><span class="rl-pill rl-pill--quiet">Example</span></div>
         <div style="font: 600 20px/28px var(--font-sans); letter-spacing: -0.015em">Ready within 48 hours</div>
@@ -184,7 +194,7 @@ import factoryConveyorLine from '../assets/images/factory-conveyor-line.jpg';
         <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>2. Building proposals</span></div><div class="rl-bar rl-bar--signal"><i style="width: 64%"></i></div></div>
         <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>3. Data entry</span></div><div class="rl-bar rl-bar--signal"><i style="width: 41%"></i></div></div>
         <span class="rl-ui__meta">Ranked by what each saves over 12 months</span>
-      </div>
+      </Scene>
       </div>
     </div>
   </div>

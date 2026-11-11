@@ -7,7 +7,8 @@ import { ABOUT_FAQ } from '../data/site';
 import { personSchema } from '../data/schema';
 const person = await personSchema();
 import danKovac from '../assets/images/dan-kovac.jpg';
-import fabricationWorkshopTeam from '../assets/images/fabrication-workshop-team.jpg';
+import Scene from '../components/Scene.astro';
+import bgWork from '../assets/images/backgrounds/fabrication-workshop-team.jpg';
 ---
 <Base
   title='About Dan Kovac, AI Consultant in Melbourne | Roadmap Labs'
@@ -43,7 +44,18 @@ import fabricationWorkshopTeam from '../assets/images/fabrication-workshop-team.
 
 <section style="max-width: 1200px; margin: 0 auto; padding: 80px 24px; box-sizing: border-box">
   <div class="rl-split rl-split--flip">
-    <figure class="rl-photo rl-photo--soft" style="aspect-ratio: 4 / 3"><Img src={fabricationWorkshopTeam} alt="A team talking on a fabrication workshop floor" sizes="(max-width: 720px) calc(100vw - 48px), 560px" /></figure>
+    <Scene bg={bgWork} class="ev-scene--center ev-scene--43" label="Example project scope: the opportunity worth doing first, scoped and priced before we start, accounts in your name and your team trained">
+      <div class="rl-ui">
+        <div class="rl-ui__row"><span class="rl-ui__meta">Project scope</span><span class="rl-pill rl-pill--quiet">Example</span></div>
+        <div style="font: 600 20px/28px var(--font-sans); letter-spacing: -0.015em">Agreed before we start</div>
+        <div class="ev-report__checks" style="border-bottom: 0; padding-bottom: 0">
+          <span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> The opportunity worth doing first</span>
+          <span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Scoped and priced</span>
+          <span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Accounts in your name</span>
+          <span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Your team trained</span>
+        </div>
+      </div>
+    </Scene>
     <div>
       <h2>How I work with clients</h2>
       <p>I start with what the business is trying to grow towards and work backwards. I map how the work runs today, then put a number on each opportunity so we can pick the one worth doing first.</p>
