@@ -1,0 +1,18 @@
+---
+// A scene of interface cards on a soft, blue-washed background photo. Used in place of stock photography.
+import Img from './Img.astro';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  bg: ImageMetadata;
+  /** What the scene shows, for screen readers. The cards inside are hidden from them. */
+  label: string;
+  class?: string;
+  eager?: boolean;
+}
+const { bg, label, class: cls = '', eager = false } = Astro.props;
+---
+<div class={`ev-scene ${cls}`} role="img" aria-label={label}>
+  <Img src={bg} alt="" class="ev-scene__bg" sizes="(max-width: 720px) 100vw, 600px" widths={[450, 900]} eager={eager} priority={eager} />
+  <div class="ev-scene__cards" aria-hidden="true"><slot /></div>
+</div>
