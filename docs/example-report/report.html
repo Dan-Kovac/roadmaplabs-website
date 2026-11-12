@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>AI roadmap report: example</title>
+<style>
+@font-face { font-family: Inter; font-weight: 400; src: url("../../public/fonts/inter-400.woff2") format("woff2"); }
+@font-face { font-family: Inter; font-weight: 500; src: url("../../public/fonts/inter-500.woff2") format("woff2"); }
+@font-face { font-family: Inter; font-weight: 600; src: url("../../public/fonts/inter-600.woff2") format("woff2"); }
+:root { --blue: #0a4cff; --ink: #000; --graphite: #60646c; --pewter: #6f737b; --fog: #f3f3f7; --mist: #b9bbc6; --line: #e3e4ea; --abyss: #000710; }
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: Inter, sans-serif; font-feature-settings: "calt" 0, "liga" 0, "ss03", "cv10"; letter-spacing: -0.01em; color: var(--ink); font-size: 10.5pt; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { position: relative; width: 210mm; height: 297mm; padding: 18mm 18mm 20mm; overflow: hidden; page-break-after: always; display: flex; flex-direction: column; }
+.page:last-child { page-break-after: auto; }
+h1, h2, h3, p { margin: 0; }
+.eyebrow { font-weight: 500; font-size: 9pt; color: var(--graphite); }
+h2 { font-size: 24pt; line-height: 1.12; letter-spacing: -0.03em; font-weight: 600; margin-top: 3mm; max-width: 150mm; }
+h3 { font-size: 12.5pt; line-height: 1.3; letter-spacing: -0.015em; font-weight: 600; }
+.lead { font-size: 12pt; line-height: 1.5; color: var(--graphite); margin-top: 5mm; max-width: 150mm; }
+.muted { color: var(--graphite); }
+.meta { font-weight: 500; font-size: 7.5pt; letter-spacing: .05em; text-transform: uppercase; color: var(--pewter); }
+.tag { display: inline-block; padding: 1mm 2.4mm; border-radius: 1.6mm; background: var(--fog); font-weight: 500; font-size: 8.5pt; }
+.pill { display: inline-block; padding: .6mm 2.4mm; border-radius: 99mm; background: var(--blue); color: #fff; font-weight: 600; font-size: 7.5pt; white-space: nowrap; }
+.foot { margin-top: auto; padding-top: 5mm; border-top: .3mm solid var(--line); display: flex; justify-content: space-between; align-items: center; font-size: 8pt; color: var(--pewter); }
+.foot img { height: 6.5mm; }
+.panel { background: var(--fog); border-radius: 3mm; padding: 6mm; }
+.card { background: #fff; border-radius: 2.5mm; padding: 5mm; }
+.grid { display: grid; gap: 4mm; }
+.bar { height: 1.6mm; border-radius: 1mm; background: #e6e7ec; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 1mm; background: var(--blue); }
+table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+th { text-align: left; font-weight: 500; font-size: 7.5pt; letter-spacing: .05em; text-transform: uppercase; color: var(--pewter); padding: 0 2mm 2.5mm; border-bottom: .3mm solid var(--mist); }
+td { padding: 2.4mm 2mm; border-bottom: .3mm solid var(--line); vertical-align: top; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr.top td { background: #f5f8ff; }
+tfoot td { font-weight: 600; border-bottom: 0; border-top: .4mm solid var(--ink); }
+ul.ticks { list-style: none; margin: 0; padding: 0; display: grid; gap: 2.2mm; }
+ul.ticks li { display: grid; grid-template-columns: 5mm 1fr; gap: 1.5mm; }
+ul.ticks svg { margin-top: .9mm; }
+
+/* Cover */
+.cover { color: #fff; background: linear-gradient(135deg, #000710 0%, #000710 38%, #0a4cff 82%, #00a3ff 100%); justify-content: space-between; }
+.cover::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.05) .3mm, transparent .3mm), linear-gradient(90deg, rgba(255,255,255,.05) .3mm, transparent .3mm); background-size: 12mm 12mm; }
+.cover > * { position: relative; }
+.cover h1 { font-size: 46pt; line-height: 1; letter-spacing: -0.035em; font-weight: 600; max-width: 140mm; }
+.cover .tag { background: #fff; color: #000; }
+.cover dl { margin: 0; display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 2mm 14mm; font-size: 9.5pt; }
+.cover dt { color: rgba(255,255,255,.7); font-size: 8pt; }
+.cover dd { margin: 0; font-weight: 500; }
+.sample { margin-top: 8mm; padding: 3.5mm 4.5mm; border: .3mm solid rgba(255,255,255,.35); border-radius: 2.5mm; font-size: 9pt; max-width: 120mm; color: rgba(255,255,255,.9); }
+</style>
+</head>
+<body>
+
+<!-- 1. Cover -->
+<section class="page cover">
+  <img src="../../public/logo-white.svg" alt="Roadmap Labs" style="height: 12mm; align-self: flex-start">
+  <div>
+    <span class="tag">Custom report · Example</span>
+    <h1 style="margin-top: 7mm">Your AI roadmap</h1>
+    <p style="margin-top: 6mm; font-size: 14pt; line-height: 1.45; max-width: 130mm; color: rgba(255,255,255,.88)">Your business mapped, the automations that suit you, and what each one saves over 12 months.</p>
+    <div class="sample">This is an example report. The business and every figure in it are illustrative, to show what you receive after your free session.</div>
+  </div>
+  <dl>
+    <div><dt>Prepared for</dt><dd>Example Co, a 14-person trade supplier</dd></div>
+    <div><dt>Prepared by</dt><dd>Dan Kovac, Roadmap Labs</dd></div>
+    <div><dt>Delivered</dt><dd>Within 48 hours of your session</dd></div>
+  </dl>
+</section>
+
+<!-- 2. Summary -->
+<section class="page">
+  <span class="eyebrow">1. Summary</span>
+  <h2>Five automations worth $40,560 a year, starting with quote follow-ups</h2>
+  <p class="lead">In the session we talked through where the time goes and where you want the business to be. This report maps how the work runs today, ranks the automations that suit you, and puts a 12-month figure on each one.</p>
+
+  <div class="grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 9mm">
+    <div class="panel"><span class="meta">Time on these tasks today</span><div style="font-size: 22pt; font-weight: 600; letter-spacing: -0.03em; margin-top: 2mm">17.5 hrs</div><span class="muted">a week, across the team</span></div>
+    <div class="panel"><span class="meta">What that costs today</span><div style="font-size: 22pt; font-weight: 600; letter-spacing: -0.03em; margin-top: 2mm">$54,600</div><span class="muted">a year, at $65 an hour</span></div>
+    <div class="panel" style="background: var(--blue); color: #fff"><span class="meta" style="color: rgba(255,255,255,.75)">Saving over 12 months</span><div style="font-size: 22pt; font-weight: 600; letter-spacing: -0.03em; margin-top: 2mm">$40,560</div><span style="color: rgba(255,255,255,.85)">13 hours a week back</span></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 8mm; margin-top: 9mm">
+    <div>
+      <h3>What you told us</h3>
+      <ul class="ticks" style="margin-top: 3.5mm">
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Quotes go out, then nobody has time to follow them up.</span></li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>The CRM, the inbox and the accounts system don't talk to each other.</span></li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60646c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Some of the team use AI every day and some don't use it at all.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3>What we recommend</h3>
+      <ul class="ticks" style="margin-top: 3.5mm">
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a4cff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Keep the systems you have. Every automation here builds on them.</span></li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a4cff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Start with quote follow-ups. It has the biggest saving and the least risk.</span></li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a4cff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Build one at a time, and train the team on each before the next.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top: 9mm">
+    <span class="meta">How we work out each figure</span>
+    <p style="margin-top: 2mm">Hours saved each week × the hourly cost of the people doing the work × 48 working weeks. Time rarely goes to zero, so every saving assumes a person still checks the output.</p>
+  </div>
+  <div class="foot"><span>Example report · figures are illustrative</span><img src="../../public/logo.svg" alt="Roadmap Labs"><span>2</span></div>
+</section>
+
+<!-- 3. Business mapped -->
+<section class="page">
+  <span class="eyebrow">2. Your business, mapped</span>
+  <h2>How the work runs today, from first enquiry to repeat customer</h2>
+  <p class="lead">We map the business from your customer's point of view, in four stages. Under each one are the tasks your team does today, the tools they use and the hours they take.</p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 9mm">
+    <div class="panel">
+      <span class="meta">Stage 1</span><h3 style="margin-top: 1mm">Acquisition and reach</h3>
+      <p class="muted" style="margin-top: 1.5mm">Referrals, Google and ads run by an outside agency.</p>
+      <div class="card grid" style="margin-top: 4mm; gap: 2.6mm"><div style="display:flex;justify-content:space-between"><span>Weekly reporting</span><span class="muted">2 hrs</span></div><div class="bar"><i style="width: 33%"></i></div><span class="meta">Tools: ads account, spreadsheets</span></div>
+    </div>
+    <div class="panel">
+      <span class="meta">Stage 2</span><h3 style="margin-top: 1mm">Sales and proposals</h3>
+      <p class="muted" style="margin-top: 1.5mm">Enquiries become quotes, and quotes become orders.</p>
+      <div class="card grid" style="margin-top: 4mm; gap: 2.6mm"><div style="display:flex;justify-content:space-between"><span>Following up quotes <span class="pill">Start here</span></span><span class="muted">6 hrs</span></div><div class="bar"><i style="width: 100%"></i></div><div style="display:flex;justify-content:space-between"><span>Building proposals</span><span class="muted">5 hrs</span></div><div class="bar"><i style="width: 83%"></i></div><span class="meta">Tools: CRM, inbox</span></div>
+    </div>
+    <div class="panel">
+      <span class="meta">Stage 3</span><h3 style="margin-top: 1mm">Delivery</h3>
+      <p class="muted" style="margin-top: 1.5mm">Orders are scheduled, delivered and invoiced.</p>
+      <div class="card grid" style="margin-top: 4mm; gap: 2.6mm"><div style="display:flex;justify-content:space-between"><span>Matching invoices</span><span class="muted">3 hrs</span></div><div class="bar"><i style="width: 50%"></i></div><span class="meta">Tools: accounts system, inbox</span></div>
+    </div>
+    <div class="panel">
+      <span class="meta">Stage 4</span><h3 style="margin-top: 1mm">Retention and business health</h3>
+      <p class="muted" style="margin-top: 1.5mm">Keeping customers informed and coming back.</p>
+      <div class="card grid" style="margin-top: 4mm; gap: 2.6mm"><div style="display:flex;justify-content:space-between"><span>Client updates</span><span class="muted">1.5 hrs</span></div><div class="bar"><i style="width: 25%"></i></div><span class="meta">Tools: inbox, phone</span></div>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 8mm; margin-top: 9mm">
+    <div><h3>What's working</h3><p class="muted" style="margin-top: 2mm">The sales process wins work, and customers stay. These are the systems that got you here, so we build on them.</p></div>
+    <div><h3>Where it leaks</h3><p class="muted" style="margin-top: 2mm">Most of the lost time is in stage 2. Quotes are written by hand and followed up from memory.</p></div>
+  </div>
+  <div class="foot"><span>Example report · figures are illustrative</span><img src="../../public/logo.svg" alt="Roadmap Labs"><span>3</span></div>
+</section>
+
+<!-- 4. Ranked automations -->
+<section class="page">
+  <span class="eyebrow">3. Your automation roadmap</span>
+  <h2>Every automation, ranked by what it saves over 12 months</h2>
+  <p class="lead">You pick what to build. We'd start at the top and work down, one at a time.</p>
+
+  <table style="margin-top: 7mm">
+    <thead><tr><th style="width: 7mm">#</th><th>Automation</th><th class="num">Hours a week now</th><th class="num">After</th><th>Effort</th><th class="num">Saving over 12 months</th></tr></thead>
+    <tbody>
+      <tr class="top"><td>1</td><td><strong style="font-weight:600">Quote follow-ups</strong> <span class="pill">Top value</span><br><span class="muted">Drafts each follow-up from the quote and the customer's history, ready for a person to send.</span></td><td class="num">6</td><td class="num">1.5</td><td>Small</td><td class="num"><strong style="font-weight:600">$14,040</strong></td></tr>
+      <tr><td>2</td><td><strong style="font-weight:600">Building proposals</strong><br><span class="muted">Writes the first draft from the enquiry, your price list and past jobs like it.</span></td><td class="num">5</td><td class="num">1.5</td><td>Medium</td><td class="num"><strong style="font-weight:600">$10,920</strong></td></tr>
+      <tr><td>3</td><td><strong style="font-weight:600">Invoice matching</strong><br><span class="muted">Matches supplier invoices to orders and flags the ones that don't agree.</span></td><td class="num">3</td><td class="num">0.5</td><td>Medium</td><td class="num"><strong style="font-weight:600">$7,800</strong></td></tr>
+      <tr><td>4</td><td><strong style="font-weight:600">Weekly reporting</strong><br><span class="muted">Pulls the week's numbers from ads, sales and accounts into one page.</span></td><td class="num">2</td><td class="num">0.5</td><td>Small</td><td class="num"><strong style="font-weight:600">$4,680</strong></td></tr>
+      <tr><td>5</td><td><strong style="font-weight:600">Client updates</strong><br><span class="muted">Drafts order and delivery updates for the team to check and send.</span></td><td class="num">1.5</td><td class="num">0.5</td><td>Small</td><td class="num"><strong style="font-weight:600">$3,120</strong></td></tr>
+    </tbody>
+    <tfoot><tr><td></td><td>Total</td><td class="num">17.5</td><td class="num">4.5</td><td></td><td class="num">$40,560</td></tr></tfoot>
+  </table>
+  <p class="muted" style="margin-top: 4mm; font-size: 8.5pt">Worked example for row 1: 4.5 hours saved a week × $65 an hour × 48 weeks = $14,040. Effort is a guide to the size of the build: small, medium or large.</p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 6mm">
+    <div class="panel"><span class="meta">What it costs to run</span><p style="margin-top: 2mm">There are two running costs: subscriptions and tokens. A team account usually runs at around $100 a month per employee, and token costs depend on the automations you build. We design each one to run at the lowest cost that gets the right result.</p></div>
+    <div class="panel"><span class="meta">Security</span><p style="margin-top: 2mm">We look at your current tech stack first and flag any risk we see along the way. You decide whether to fix it with your IT provider, or we can help with that too.</p></div>
+  </div>
+  <div class="foot"><span>Example report · figures are illustrative</span><img src="../../public/logo.svg" alt="Roadmap Labs"><span>4</span></div>
+</section>
+
+<!-- 5. First build and next steps -->
+<section class="page">
+  <span class="eyebrow">4. Where we'd start, and what happens next</span>
+  <h2>First build: quote follow-ups</h2>
+  <p class="lead">It's the process that already wins you work, done faster. Nothing new for the team to learn, and no new system.</p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 8mm">
+    <div class="panel">
+      <span class="meta">Today</span>
+      <ul class="ticks" style="margin-top: 3mm">
+        <li><span class="muted">1</span><span>A quote goes out from the CRM.</span></li>
+        <li><span class="muted">2</span><span>Someone remembers to chase it, or doesn't.</span></li>
+        <li><span class="muted">3</span><span>Each follow-up is written from scratch.</span></li>
+      </ul>
+      <div style="margin-top: 4mm; display:flex; justify-content:space-between; border-top: .3mm solid var(--mist); padding-top: 3mm"><span>Time each week</span><strong style="font-weight:600">6 hours</strong></div>
+    </div>
+    <div class="panel" style="background: #f5f8ff">
+      <span class="meta" style="color: var(--blue)">With the automation</span>
+      <ul class="ticks" style="margin-top: 3mm">
+        <li><span class="muted">1</span><span>A quote goes out from the CRM, as it does now.</span></li>
+        <li><span class="muted">2</span><span>A follow-up is drafted on the right day, using the quote and the customer's history.</span></li>
+        <li><span class="muted">3</span><span>A person checks it and sends it.</span></li>
+      </ul>
+      <div style="margin-top: 4mm; display:flex; justify-content:space-between; border-top: .3mm solid var(--mist); padding-top: 3mm"><span>Time each week</span><strong style="font-weight:600">1.5 hours</strong></div>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 4mm; margin-top: 8mm">
+    <div style="border-top: .6mm solid var(--ink); padding-top: 3mm"><span class="meta">Step 1</span><h3 style="margin-top: 1mm">Scope</h3><p class="muted" style="margin-top: 1.5mm">We agree the scope and price before work starts.</p></div>
+    <div style="border-top: .6mm solid var(--ink); padding-top: 3mm"><span class="meta">Step 2</span><h3 style="margin-top: 1mm">Build</h3><p class="muted" style="margin-top: 1.5mm">On the systems you already have. Accounts stay in your name.</p></div>
+    <div style="border-top: .6mm solid var(--ink); padding-top: 3mm"><span class="meta">Step 3</span><h3 style="margin-top: 1mm">Test</h3><p class="muted" style="margin-top: 1.5mm">With the people who'll use it, on real work.</p></div>
+    <div style="border-top: .6mm solid var(--ink); padding-top: 3mm"><span class="meta">Step 4</span><h3 style="margin-top: 1mm">Train</h3><p class="muted" style="margin-top: 1.5mm">We hand it over and train your team to use it.</p></div>
+  </div>
+
+  <div class="panel" style="margin-top: 9mm; background: var(--abyss); color: #fff">
+    <h3 style="font-size: 16pt; letter-spacing: -0.02em">It's your call from here</h3>
+    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 4mm">
+      <div><span class="meta" style="color: var(--mist)">Build it with us</span><p style="margin-top: 1.5mm; color: #dfe1ea">Pick the automations worth doing. A typical engagement ranges from $5,000 to $50,000, depending on what we're building. Afterwards there's an optional retainer to keep it all running and find new opportunities.</p></div>
+      <div><span class="meta" style="color: var(--mist)">Or run it yourself</span><p style="margin-top: 1.5mm; color: #dfe1ea">This report is yours. Build it with your team or take it to another provider. There's no lock-in and no obligation.</p></div>
+    </div>
+    <p style="margin-top: 5mm; font-weight: 500">dan@roadmaplabs.com.au · roadmaplabs.com.au</p>
+  </div>
+  <div class="foot"><span>Example report · figures are illustrative</span><img src="../../public/logo.svg" alt="Roadmap Labs"><span>5</span></div>
+</section>
+
+</body>
+</html>
