@@ -45,7 +45,7 @@
 .post-head h1 { margin: 0; font-size: clamp(38px, 5.2vw, 64px); line-height: 1.04; letter-spacing: -0.035em; font-weight: 600; }
 .post-standfirst { margin: 0; font-size: clamp(19px, 2vw, 23px); line-height: 1.45; letter-spacing: -0.012em; color: var(--text-secondary); max-width: 36em; }
 .post-byline { display: flex; align-items: center; gap: 14px; padding-top: 4px; }
-.post-byline img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: 50% 0; background: var(--gradient-signal); }
+.post-byline img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: 50% 0; background: var(--fog); }
 .post-byline .who { display: grid; gap: 2px; }
 .post-byline .who a { font: 600 15px/20px var(--font-sans); color: var(--ink); text-decoration: none; }
 .post-byline .who a:hover { text-decoration: underline; }
@@ -74,7 +74,7 @@
 .post-cta .post-action { margin: 0; }
 .post-cta .post-action a, .post-body .post-action a, .post-cta .post-action a:hover { color: var(--paper); text-decoration: none; }
 .post-author { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 18px; align-items: start; margin: 48px 0 0; padding-top: 32px; border-top: 1px solid var(--border); font-size: 16px; line-height: 1.55; }
-.post-author img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: 50% 0; background: var(--gradient-signal); }
+.post-author img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: 50% 0; background: var(--fog); }
 .post-author p { margin: 4px 0 8px; color: var(--text-secondary); }
 .post-author strong { font-size: 17px; }
 .post-share { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 32px 0 0; font-size: 14px; color: var(--text-secondary); }
