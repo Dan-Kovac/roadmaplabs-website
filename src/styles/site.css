@@ -117,3 +117,14 @@ details[open] .faq-plus { transform: rotate(45deg); }
 }
 .ev-scene--43 { aspect-ratio: 4 / 3; }
 @media (max-width: 720px) { .ev-scene--43 { aspect-ratio: auto; } }
+
+/* Phones: the announcement bar is one compact line, and the hero gets to the point faster. */
+@media (max-width: 720px) {
+  .rl-announce { flex-wrap: nowrap !important; gap: 8px !important; padding: 8px 12px !important; font-size: 12px !important; line-height: 18px !important; white-space: nowrap; }
+  .ev-announce-extra { display: none; }
+  .ev-hero-grid { padding: 28px 16px 56px !important; gap: 28px !important; }
+  .ev-hero-grid > div { gap: 18px !important; }
+  .ev-hero-grid h1 { font-size: 40px !important; }
+  .ev-hero-grid p { font-size: 17px !important; line-height: 26px !important; }
+}
+@media (max-width: 359px) { .rl-announce { white-space: normal; flex-wrap: wrap !important; } }
