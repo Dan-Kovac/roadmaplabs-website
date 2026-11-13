@@ -7,7 +7,9 @@ import Faq from '../components/Faq.astro';
 import { HOME_FAQ, faqSchema } from '../data/site';
 import danKovac from '../assets/images/dan-kovac.jpg';
 import Scene from '../components/Scene.astro';
-import bgHero from '../assets/images/backgrounds/warehouse-aisle-colleagues.jpg';
+import reportCover from '../assets/images/report/example-report-cover.png';
+import reportSummary from '../assets/images/report/example-report-summary.png';
+import reportRoadmap from '../assets/images/report/example-report-roadmap.png';
 import bgMap from '../assets/images/backgrounds/process-diagram-whiteboard.jpg';
 import bgFind from '../assets/images/backgrounds/factory-conveyor-line.jpg';
 import bgBuild from '../assets/images/backgrounds/warehouse-clipboard.jpg';
@@ -20,44 +22,32 @@ import bgSession from '../assets/images/backgrounds/talking-at-laptop.jpg';
   schema={[faqSchema(HOME_FAQ)]}
 >
 
-<section style="background: var(--paper)">
-  <div class="ev-hero-grid" style="max-width: 1200px; margin: 0 auto; padding: 104px 24px 112px; box-sizing: border-box; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 72px; align-items: center">
-    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 28px">
-      <span class="rl-tag rl-rise">Melbourne-based · Working across Australia</span>
-      <h1 class="rl-rise rl-d1" style="margin: 0; font-size: clamp(44px, 5.6vw, 72px); line-height: 1.0; letter-spacing: -0.035em; font-weight: 600; color: var(--ink)">The AI consulting partner for established Australian businesses</h1>
-      <p class="rl-rise rl-d2" style="margin: 0; font-size: 20px; line-height: 30px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 30em">You can see what AI could do for your business. We make it work with the systems you already run on, get the whole team using it safely, and put a 12-month dollar figure on every automation before anything gets built.</p>
-      <div class="rl-rise rl-d4" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; padding-top: 4px">
+<section class="hm-hero">
+  <div class="hm-hero__inner">
+    <div class="hm-hero__copy">
+      <h1 class="rl-rise">AI consulting for established Australian businesses.</h1>
+      <p class="hm-hero__lead rl-rise rl-d1">We make AI work with the systems you already run on, and put a 12-month dollar figure on every automation before anything gets built.</p>
+      <div class="hm-hero__actions rl-rise rl-d2">
         <a class="rl-btn rl-btn--lg" href="/contact">Book your free session</a>
-        <a class="rl-link-action" href="/work" style="padding: 12px 0">See the work</a>
+        <a class="rl-link-action" href="/work">See the work</a>
       </div>
+      <p class="hm-hero__note rl-rise rl-d2">Melbourne-based, working across Australia.</p>
     </div>
-    <Scene bg={bgHero} eager class="ev-scene--hero rl-rise rl-d3 ev-hero-photo" label="Example: a process map, three automations ranked by 12-month value, and what one bottleneck costs each year">
-      <div class="rl-ui ev-scene__a">
-        <div class="rl-ui__row"><span class="rl-ui__meta">Process map</span><span class="rl-pill rl-pill--quiet">Example</span></div>
-        <div class="ev-flow"><span>Lead</span><i></i><span>Proposal</span><i></i><span>Sale</span><i></i><span>Invoice</span></div>
-      </div>
-      <div class="rl-ui ev-scene__b">
-        <div class="rl-ui__row"><span class="rl-ui__meta">Automation roadmap</span><span class="rl-live">Analysing</span></div>
-        <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>1. Quote follow-ups</span><span class="rl-pill">Top value</span></div><div class="rl-bar rl-bar--signal"><i style="width: 92%"></i></div></div>
-        <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>2. Building proposals</span></div><div class="rl-bar rl-bar--signal"><i style="width: 64%"></i></div></div>
-        <div style="display: grid; gap: 4px"><div class="rl-ui__row"><span>3. Invoice matching</span></div><div class="rl-bar rl-bar--signal"><i style="width: 41%"></i></div></div>
-        <span class="rl-ui__meta">Ranked by 12-month value</span>
-      </div>
-      <div class="rl-ui ev-scene__c">
-        <div class="rl-ui__row"><span class="rl-ui__meta">Bottleneck</span></div>
-        <div style="font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em">Following up quotes</div>
-        <div class="rl-ui__row" style="color: var(--text-secondary)"><span>6 hrs a week × $65 × 48 weeks</span></div>
-        <div class="rl-ui__row" style="border-top: 1px solid var(--border); padding-top: 10px; align-items: baseline"><span>Cost each year</span><span style="font: 600 24px/28px var(--font-sans); letter-spacing: -0.02em; color: var(--ink)">$18,720</span></div>
-      </Scene>
+  </div>
+  <div class="hm-stage rl-rise rl-d1" role="img" aria-label="An example Roadmap Labs report: the cover, a summary showing about $33,000 expected in year one, and five automations ranked by what each returns">
+    <div class="hm-stage__slab" aria-hidden="true">
+      <Img src={reportSummary} alt="" class="hm-page hm-page--summary" sizes="(max-width: 999px) 46vw, 420px" widths={[320, 480, 640, 911]} eager />
+      <Img src={reportRoadmap} alt="" class="hm-page hm-page--roadmap" sizes="(max-width: 999px) 46vw, 420px" widths={[320, 480, 640, 911]} eager priority />
+      <Img src={reportCover} alt="" class="hm-page hm-page--cover" sizes="(max-width: 999px) 46vw, 420px" widths={[320, 480, 640, 911]} eager />
     </div>
   </div>
 </section>
 
-<section id="how" class="ev-dark ev-signal">
+<section id="how" class="ev-dark">
   <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 56px">
     <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px">
       <span class="ev-eyebrow">Sound familiar?</span>
-      <h2 style="margin: 0; font-size: clamp(36px, 4.4vw, 56px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 600; max-width: 18ch; color: var(--paper)">Feeling behind on AI? We'll get you ahead of it.</h2>
+      <h2 style="margin: 0; font-size: clamp(36px, 4.4vw, 56px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 500; max-width: 18ch; color: var(--paper)">Feeling behind on AI? We'll get you ahead of it.</h2>
     </div>
     <ul class="ev-worries" aria-label="Common worries">
       <li class="ev-worry"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Our competitors are already using it</li>
@@ -75,7 +65,7 @@ import bgSession from '../assets/images/backgrounds/talking-at-laptop.jpg';
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px 48px">
       <div style="display: flex; flex-direction: column; gap: 12px">
         <span class="ev-eyebrow">How our AI consulting works</span>
-        <h3 style="margin: 0; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.2; letter-spacing: -0.025em; font-weight: 600; color: var(--paper)">How we get you there, in three steps</h3>
+        <h3 style="margin: 0; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.2; letter-spacing: -0.025em; font-weight: 500; color: var(--paper)">How we get you there, in three steps</h3>
       </div>
       <a class="rl-btn rl-btn--lg" href="/contact" style="background: var(--paper); color: var(--ink)">Book your free session</a>
     </div>
@@ -137,7 +127,7 @@ import bgSession from '../assets/images/backgrounds/talking-at-laptop.jpg';
   <div class="ev-pad--top" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
     <div style="display: flex; flex-direction: column; gap: 12px; max-width: 720px">
       <span class="ev-eyebrow">Why established businesses work with us</span>
-      <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">We build on the systems that made you successful</h2>
+      <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 500">We build on the systems that made you successful</h2>
     </div>
     <div class="ev-why">
       <div class="ev-why__card">
@@ -169,7 +159,7 @@ import bgSession from '../assets/images/backgrounds/talking-at-laptop.jpg';
     <div class="rl-split" style="align-items: stretch">
       <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 20px">
         <span class="rl-tag">Free · 1 hour · Online</span>
-        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 600">A free hour on where AI fits in your business</h2>
+        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.15; letter-spacing: -0.025em; font-weight: 500">A free hour on where AI fits in your business</h2>
         <ul class="ev-checklist">
           <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span><strong style="font-weight: 600">Your bottlenecks.</strong> <span style="color: var(--text-secondary)">Where the time and money go, and what's holding the business back.</span></span></li>
           <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg><span><strong style="font-weight: 600">Your goals.</strong> <span style="color: var(--text-secondary)">Where you want the business to be, and what AI can realistically do to get it there.</span></span></li>
@@ -205,7 +195,7 @@ import bgSession from '../assets/images/backgrounds/talking-at-laptop.jpg';
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
       <div style="display: flex; flex-direction: column; gap: 12px">
         <span class="ev-eyebrow">Our work</span>
-        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.2; letter-spacing: -0.025em; font-weight: 600">AI and automation case studies</h2>
+        <h2 style="margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.2; letter-spacing: -0.025em; font-weight: 500">AI and automation case studies</h2>
       </div>
       <a class="rl-link-action" href="/work">All case studies</a>
     </div>
@@ -243,7 +233,7 @@ import bgSession from '../assets/images/backgrounds/talking-at-laptop.jpg';
     <figure class="rl-photo" style="aspect-ratio: 4 / 5; max-width: 460px; width: 100%; justify-self: center; background: var(--fog)"><Img src={danKovac} alt="Dan Kovac, founder of Roadmap Labs" style="filter: none; mix-blend-mode: normal; object-position: 50% 0%" sizes="(max-width: 720px) calc(100vw - 48px), 460px" /></figure>
     <div>
       <span class="ev-eyebrow" style="margin-bottom: 16px">Who you'll work with</span>
-      <h2>Hi, I'm Dan. I'm passionate about helping Aussie businesses scale with AI</h2>
+      <h2 style="font-weight: 500">Hi, I'm Dan. I'm passionate about helping Aussie businesses scale with AI</h2>
       <p>I spent 10 years running a digital marketing agency, and I've been implementing AI systems since 2012, long before ChatGPT made it mainstream. That's the experience I bring to every roadmap.</p>
       <a class="rl-link-action" href="/about">More about Dan</a>
     </div>
@@ -254,7 +244,7 @@ import bgSession from '../assets/images/backgrounds/talking-at-laptop.jpg';
   <div class="ev-pad" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 48px">
     <div style="flex: 1 1 280px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px">
       <span class="ev-eyebrow">FAQ</span>
-      <h2 style="margin: 0; font-size: 36px; line-height: 1.21; letter-spacing: -0.02em; font-weight: 600">Common questions</h2>
+      <h2 style="margin: 0; font-size: 36px; line-height: 1.21; letter-spacing: -0.02em; font-weight: 500">Common questions</h2>
     </div>
     <Faq items={HOME_FAQ} />
   </div>
