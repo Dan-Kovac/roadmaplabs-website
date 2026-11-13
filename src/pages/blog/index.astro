@@ -62,7 +62,7 @@ const schema = [
   {sections.length > 1 && (
     <section style="background: var(--fog)">
       <div class="ins-band" style="padding-top: 80px; padding-bottom: 80px; display: grid; gap: 32px">
-        <h2 style="margin: 0; font-size: clamp(28px, 3.4vw, 36px); line-height: 1.21; letter-spacing: -0.02em; font-weight: 600">Browse by section</h2>
+        <h2 style="margin: 0; font-size: clamp(28px, 3.4vw, 36px); line-height: 1.21; letter-spacing: -0.02em; font-weight: 500">Browse by section</h2>
         <div class="ins-sections">
           {sections.map((c) => <a href={`/blog/topics/${c.slug}`}><strong>{c.name}</strong><span>{c.description}</span></a>)}
         </div>

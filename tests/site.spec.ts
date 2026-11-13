@@ -5,7 +5,7 @@ import path from 'node:path';
 const site = 'https://roadmaplabs.com.au';
 
 const routes: { path: string; nav: string | null; noindex?: boolean }[] = [
-  { path: '/', nav: 'Home' },
+  { path: '/', nav: null },
   { path: '/work', nav: 'Our work' },
   { path: '/work/compass-buyers-agency', nav: null },
   { path: '/work/reviewbuddy', nav: null },

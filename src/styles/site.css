@@ -54,7 +54,7 @@ details[open] .faq-plus { transform: rotate(45deg); }
 
 /* The white-button rule for blue .rl-signal panels shouldn't reach the white form card inside one:
    keep the submit button blue there so it reads as the primary action. */
-.rl-signal .rl-card .rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]) { background-image: linear-gradient(135deg, #3a74ff 0%, #0a4cff 45%, #0636c2 100%); background-color: var(--action); color: var(--paper); }
+.rl-signal .rl-card .rl-btn:not(.rl-btn--outline):not(.rl-btn--ghost):not([disabled]) { background-color: var(--action); color: var(--paper); }
 
 /* Looping decorative animations pause while their section is off screen (see Base.astro). */
 [data-offscreen] :not(.rl-reveal):not(.rl-rise),
@@ -62,22 +62,55 @@ details[open] .faq-plus { transform: rotate(45deg); }
 [data-offscreen] :not(.rl-reveal):not(.rl-rise)::after,
 [data-offscreen]::before, [data-offscreen]::after { animation-play-state: paused !important; }
 
-/* Home hero fits one laptop screen: asymmetric split (text about 55%), H1 sized to the column,
-   photo height capped to the viewport. 115px is the announcement bar plus nav. */
+/* Header: one quiet row sitting directly on the page. No strip above it and no rule below it. */
+.hd { position: relative; z-index: 3; width: 100%; background: transparent; }
+.hd__nav { max-width: 1200px; margin: 0 auto; padding: 16px 24px; box-sizing: border-box; display: flex; align-items: center; gap: 12px 20px; }
+.hd__logo { display: flex; align-items: center; min-height: 44px; margin-right: 20px; }
+.hd__links { margin: 0 auto 0 0; padding: 0; list-style: none; display: flex; align-items: center; gap: 4px; }
+.hd__links .rl-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--radius-surface); color: var(--graphite); transition: color .15s ease; }
+.hd__links .rl-link:hover, .hd__links .rl-link[aria-current="page"] { color: var(--ink); }
+.hd__offer { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font: 500 14px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--graphite); text-decoration: none; }
+.hd__offer::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--roadmap-blue); }
+.hd__offer:hover { color: var(--ink); }
+.hd .ev-nav-cta { min-height: 44px; padding: 10px 16px; }
+.hd .ev-menu-btn { border: 0; }
+@media (max-width: 1000px) { .hd__offer { display: none; } }
+@media (max-width: 720px) { .hd__logo { margin-right: auto; } }
+
+/* Page headings sit at 500, not 600: the tight tracking carries the weight. */
+.rl-split h2 { font-weight: 500; }
+
+/* Home hero: a short promise on the left, the real example report laid out on a pale stage to the right.
+   The pages run off the right and bottom edges on purpose. The hero slides up under the 76px header
+   so the two share one surface on desktop; on smaller screens the header takes the hero's
+   background instead, so the open menu sits on it too. */
+.hd:has(~ main .hm-hero) { background: var(--fog); }
+.hm-hero { position: relative; overflow: hidden; background: var(--fog); }
+.hm-hero__inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 56px 24px 0; box-sizing: border-box; }
+.hm-hero__copy { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+.hm-hero h1 { margin: 0; font: 500 clamp(36px, 4.1vw, 58px)/1.04 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); }
+.hm-hero h1 span { display: block; color: var(--pewter); }
+.hm-hero__lead { margin: 0; max-width: 26em; font: 400 20px/28px var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); }
+.hm-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding-top: 8px; }
+.hm-hero__actions .rl-link-action { padding: 12px 0; }
+.hm-hero__note { margin: 0; font: 400 14px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); }
+.hm-stage { position: relative; height: 340px; margin-top: 40px; }
+.hm-stage__slab { position: absolute; left: 50%; top: 0; width: 620px; height: 620px; margin-left: -150px; transform: rotate(-8deg); transform-origin: 30% 0; }
+.hm-page { position: absolute; width: 300px; height: auto; max-width: none; border-radius: 6px; box-shadow: 0 1px 0 rgba(0,7,16,.06), 0 30px 60px -30px rgba(0,7,16,.35); }
+.hm-page--summary { left: 250px; top: 60px; }
+.hm-page--roadmap { left: 120px; top: 30px; }
+.hm-page--cover { left: -20px; top: 0; }
 @media (min-width: 1000px) {
-  .ev-hero-grid {
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) !important;
-    gap: 56px !important;
-    padding: 40px 24px 48px !important;
-    min-height: min(calc(100svh - 115px), 820px);
-  }
-  .ev-hero-grid h1 { font-size: clamp(48px, 4.6vw, 66px) !important; }
-  .ev-hero-grid > div { gap: 24px !important; }
-  .ev-hero-photo {
-    aspect-ratio: auto !important;
-    height: clamp(420px, calc(100svh - 115px - 88px), 640px);
-    min-height: 0 !important;
-  }
+  .hm-hero { min-height: clamp(640px, 100svh, 860px); display: flex; align-items: center; box-sizing: border-box; margin-top: -76px; padding-top: 76px; }
+  .hm-hero__inner { width: 100%; padding: 72px 24px 88px; }
+  .hm-hero__copy { max-width: 700px; gap: 28px; }
+  .hm-hero h1 { max-width: 12em; }
+  .hm-stage { position: absolute; inset: 0 0 0 57%; height: auto; margin: 0; perspective: 2200px; perspective-origin: 30% 40%; }
+  .hm-stage__slab { left: 0; top: 50%; width: 1100px; height: 800px; margin: -330px 0 0 40px; transform: rotateX(42deg) rotateZ(-24deg); transform-origin: 40% 40%; transform-style: preserve-3d; }
+  .hm-page { width: 440px; box-shadow: 0 1px 0 rgba(0,7,16,.06), 24px 40px 60px -28px rgba(0,7,16,.4); }
+  .hm-page--summary { left: 560px; top: -140px; }
+  .hm-page--roadmap { left: 300px; top: 60px; transform: translateZ(14px); }
+  .hm-page--cover { left: 20px; top: 240px; transform: translateZ(28px); }
 }
 
 /* Scenes: interface cards on a blurred photo with the brand's blue wash. Used in place of stock photos. */
@@ -86,13 +119,6 @@ details[open] .faq-plus { transform: rotate(45deg); }
 .ev-scene::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(160deg, rgba(10,76,255,.10) 0%, rgba(0,7,60,.30) 100%); }
 .ev-scene__cards { position: relative; height: 100%; }
 .ev-scene .rl-ui { display: grid; gap: 10px; padding: 18px 20px; border: 0; font-size: 14px; line-height: 20px; box-shadow: 0 14px 34px rgba(0,7,16,.28); animation: none; }
-
-/* Hero: three overlapping cards. */
-.ev-scene--hero { min-height: 420px; }
-.ev-scene--hero .rl-ui { position: absolute; }
-.ev-scene__a { left: 7%; right: 22%; top: 8%; }
-.ev-scene__b { left: 7%; width: 66%; top: 29%; }
-.ev-scene__c { right: 6%; width: 60%; bottom: 7%; }
 
 /* One centred card. */
 .ev-scene--center .ev-scene__cards { display: grid; place-items: center; padding: clamp(24px, 4vw, 48px); min-height: inherit; box-sizing: border-box; }
@@ -107,14 +133,6 @@ details[open] .faq-plus { transform: rotate(45deg); }
 .ev-total { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 9px; border-top: 1px solid #e6e7ec; }
 .ev-total strong { font: 600 16px/20px var(--font-sans); letter-spacing: -0.01em; }
 .ev-scene .rl-pill, .ev-scene .ev-flow span { white-space: nowrap; }
-/* Phones and tablets: the hero cards stack instead of overlapping. */
-@media (max-width: 999px) {
-  .ev-scene--hero { min-height: 0; }
-  .ev-scene--hero .ev-scene__cards { display: grid; gap: 12px; padding: 20px; }
-  .ev-scene--hero .rl-ui { position: static; width: auto; padding: 16px 18px; }
-  .ev-scene .ev-flow { font-size: 12px; gap: 5px; }
-  .ev-scene .ev-flow span { padding: 4px 7px; }
-}
 .ev-scene--43 { aspect-ratio: 4 / 3; }
 @media (max-width: 720px) { .ev-scene--43 { aspect-ratio: auto; } }
 
@@ -122,9 +140,8 @@ details[open] .faq-plus { transform: rotate(45deg); }
 @media (max-width: 720px) {
   .rl-announce { flex-wrap: nowrap !important; gap: 8px !important; padding: 8px 12px !important; font-size: 12px !important; line-height: 18px !important; white-space: nowrap; }
   .ev-announce-extra { display: none; }
-  .ev-hero-grid { padding: 28px 16px 56px !important; gap: 28px !important; }
-  .ev-hero-grid > div { gap: 18px !important; }
-  .ev-hero-grid h1 { font-size: 40px !important; }
-  .ev-hero-grid p { font-size: 17px !important; line-height: 26px !important; }
+  .hm-hero__inner { padding: 36px 16px 0; }
+  .hm-hero__copy { gap: 18px; }
+  .hm-hero__lead { font-size: 17px; line-height: 26px; }
 }
 @media (max-width: 359px) { .rl-announce { white-space: normal; flex-wrap: wrap !important; } }
