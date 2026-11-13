@@ -58,15 +58,15 @@
 .ev-case__body h3 { margin: 0; font: 500 24px/32px var(--font-sans); letter-spacing: -.015em; }
 .ev-case__body p { margin: 0; font: 400 16px/24px var(--font-sans); letter-spacing: -.01em; color: var(--text-secondary); }
 
-/* ---------- Closing call to action (shared): centred, on a flat night band ---------- */
-.ev-cta { position: relative; overflow: hidden; color: var(--paper); text-align: center; background: var(--abyss); }
+/* ---------- Closing call to action (shared): centred, the signal rises from the bottom ---------- */
+.ev-cta { position: relative; overflow: hidden; color: var(--paper); text-align: center; background: linear-gradient(0deg, rgba(0,7,16,0) 0%, rgba(0,7,16,.45) 24%, rgba(0,7,16,.88) 52%, #000710 76%), var(--gradient-signal); }
 .ev-cta__inner { max-width: 1200px; margin: 0 auto; padding: 136px 24px 88px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 24px; }
 .ev-cta h2 { margin: 0; max-width: 16ch; font: 500 clamp(36px, 4.4vw, 56px)/1.05 var(--font-sans); letter-spacing: -.03em; color: var(--paper); }
 .ev-cta p { margin: 0; max-width: 46ch; font: 400 18px/28px var(--font-sans); letter-spacing: -.01em; color: rgba(255,255,255,.8); }
 .ev-cta__actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px 28px; margin-top: 8px; }
 .ev-cta__actions .rl-link-action, .ev-cta__actions .rl-link-action:hover { color: var(--paper); }
-.ev-cta__steps { list-style: none; margin: 64px 0 0; padding: 0; width: 100%; max-width: 980px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; text-align: left; }
-.ev-cta__steps li { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(255,255,255,.2); border-radius: 0; padding: 20px 0 0; }
+.ev-cta__steps { list-style: none; margin: 64px 0 0; padding: 0; width: 100%; max-width: 980px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; text-align: left; }
+.ev-cta__steps li { display: flex; flex-direction: column; gap: 6px; padding: 22px 24px; border-radius: var(--radius-surface); background: rgba(0,7,16,.42); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .ev-cta__steps span { font: 500 12px/18px var(--font-sans); letter-spacing: .02em; text-transform: uppercase; color: rgba(255,255,255,.78); }
 .ev-cta__steps strong { font: 500 18px/26px var(--font-sans); letter-spacing: -.01em; color: var(--paper); }
 .ev-cta__steps em { font: 400 15px/22px var(--font-sans); font-style: normal; letter-spacing: -.01em; color: rgba(255,255,255,.85); }

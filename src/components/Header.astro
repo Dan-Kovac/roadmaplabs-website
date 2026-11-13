@@ -1,6 +1,5 @@
 ---
 const links = [
-  { href: '/', label: 'Home' },
   { href: '/work', label: 'Our work' },
   { href: '/about', label: 'About' },
   { href: '/blog', label: 'Insights' },
@@ -9,22 +8,18 @@ const links = [
 const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
 const current = (href: string) => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/'));
 ---
-<header class="rl" style="width: 100%; background: #ffffff">
-  <div class="rl-announce" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 12px; font-size: 13px; line-height: 20px; padding: 10px 16px">
-    <span class="rl-pill" style="background: var(--paper); color: var(--ink)">Free</span>
-    <span>1-hour AI strategy session<span class="ev-announce-extra">, with a custom report within 48 hours.</span></span>
-    <a href="/contact" style="font-weight: 600">Book your session →</a>
-  </div>
-  <nav class="ev-nav" aria-label="Main" style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px">
-    <a href="/" aria-label="Roadmap Labs home" style="display: flex; align-items: center; min-height: 44px">
+<header class="rl hd">
+  <nav class="ev-nav hd__nav" aria-label="Main">
+    <a class="hd__logo" href="/" aria-label="Roadmap Labs home">
       <img class="rl-nav__logo" src="/logo.svg" alt="Roadmap Labs" width="133" height="40" style="height: 40px" fetchpriority="high">
     </a>
-    <ul class="ev-nav-links" style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px">
+    <ul class="ev-nav-links hd__links">
       {links.map((l) => (
-        <li><a class="rl-link" href={l.href} aria-current={current(l.href) ? 'page' : undefined} style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; color: #000000">{l.label}</a></li>
+        <li><a class="rl-link" href={l.href} aria-current={current(l.href) ? 'page' : undefined}>{l.label}</a></li>
       ))}
     </ul>
-    <a class="rl-btn ev-nav-cta" href="/contact" style="min-height: 44px; padding: 10px 16px">Book your free session</a>
+    <a class="hd__offer" href="/contact">Free 1-hour AI strategy session</a>
+    <a class="rl-btn ev-nav-cta" href="/contact">Book a session</a>
     <button class="ev-menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" style="color: #000000">
       <svg class="icon-open" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       <svg class="icon-close" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -36,7 +31,6 @@ const current = (href: string) => (href === '/' ? path === '/' : path === href |
     ))}
     <a class="rl-btn rl-btn--lg" href="/contact">Book your free session</a>
   </div>
-  <div style="height: 1px; background: #b9bbc6"></div>
 </header>
 <script is:inline>
   (function () {

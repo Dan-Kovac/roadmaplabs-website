@@ -62,12 +62,29 @@ details[open] .faq-plus { transform: rotate(45deg); }
 [data-offscreen] :not(.rl-reveal):not(.rl-rise)::after,
 [data-offscreen]::before, [data-offscreen]::after { animation-play-state: paused !important; }
 
+/* Header: one quiet row sitting directly on the page. No strip above it and no rule below it. */
+.hd { position: relative; z-index: 3; width: 100%; background: transparent; }
+.hd__nav { max-width: 1200px; margin: 0 auto; padding: 16px 24px; box-sizing: border-box; display: flex; align-items: center; gap: 12px 20px; }
+.hd__logo { display: flex; align-items: center; min-height: 44px; margin-right: 20px; }
+.hd__links { margin: 0 auto 0 0; padding: 0; list-style: none; display: flex; align-items: center; gap: 4px; }
+.hd__links .rl-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--radius-surface); color: var(--graphite); transition: color .15s ease; }
+.hd__links .rl-link:hover, .hd__links .rl-link[aria-current="page"] { color: var(--ink); }
+.hd__offer { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font: 500 14px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--graphite); text-decoration: none; }
+.hd__offer::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--roadmap-blue); }
+.hd__offer:hover { color: var(--ink); }
+.hd .ev-nav-cta { min-height: 44px; padding: 10px 16px; }
+.hd .ev-menu-btn { border: 0; }
+@media (max-width: 1000px) { .hd__offer { display: none; } }
+@media (max-width: 720px) { .hd__logo { margin-right: auto; } }
+
 /* Home hero: a short promise on the left, the real example report laid out on a pale stage to the right.
-   The pages run off the right and bottom edges on purpose. 115px is the announcement bar plus nav. */
-.hm-hero { position: relative; overflow: hidden; background: var(--fog); }
+   The pages run off the right and bottom edges on purpose. The hero slides up under the 76px header
+   so the two share one surface. */
+.hm-hero { position: relative; overflow: hidden; background: var(--fog); margin-top: -76px; padding-top: 76px; }
 .hm-hero__inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 56px 24px 0; box-sizing: border-box; }
 .hm-hero__copy { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
-.hm-hero h1 { margin: 0; font: 500 clamp(40px, 4.6vw, 64px)/1.02 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); }
+.hm-hero h1 { margin: 0; font: 500 clamp(36px, 4.1vw, 58px)/1.04 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); }
+.hm-hero h1 span { display: block; color: var(--pewter); }
 .hm-hero__lead { margin: 0; max-width: 26em; font: 400 20px/28px var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); }
 .hm-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding-top: 8px; }
 .hm-hero__actions .rl-link-action { padding: 12px 0; }
@@ -79,10 +96,10 @@ details[open] .faq-plus { transform: rotate(45deg); }
 .hm-page--roadmap { left: 120px; top: 30px; }
 .hm-page--cover { left: -20px; top: 0; }
 @media (min-width: 1000px) {
-  .hm-hero { min-height: clamp(600px, calc(100svh - 115px), 800px); display: flex; align-items: center; }
+  .hm-hero { min-height: clamp(640px, 100svh, 860px); display: flex; align-items: center; box-sizing: border-box; }
   .hm-hero__inner { width: 100%; padding: 72px 24px 88px; }
   .hm-hero__copy { max-width: 700px; gap: 28px; }
-  .hm-hero h1 { max-width: 11.2em; }
+  .hm-hero h1 { max-width: 12em; }
   .hm-stage { position: absolute; inset: 0 0 0 57%; height: auto; margin: 0; perspective: 2200px; perspective-origin: 30% 40%; }
   .hm-stage__slab { left: 0; top: 50%; width: 1100px; height: 800px; margin: -330px 0 0 40px; transform: rotateX(42deg) rotateZ(-24deg); transform-origin: 40% 40%; transform-style: preserve-3d; }
   .hm-page { width: 440px; box-shadow: 0 1px 0 rgba(0,7,16,.06), 24px 40px 60px -28px rgba(0,7,16,.4); }
