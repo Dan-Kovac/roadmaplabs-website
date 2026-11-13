@@ -77,10 +77,15 @@ details[open] .faq-plus { transform: rotate(45deg); }
 @media (max-width: 1000px) { .hd__offer { display: none; } }
 @media (max-width: 720px) { .hd__logo { margin-right: auto; } }
 
+/* Page headings sit at 500, not 600: the tight tracking carries the weight. */
+.rl-split h2 { font-weight: 500; }
+
 /* Home hero: a short promise on the left, the real example report laid out on a pale stage to the right.
    The pages run off the right and bottom edges on purpose. The hero slides up under the 76px header
-   so the two share one surface. */
-.hm-hero { position: relative; overflow: hidden; background: var(--fog); margin-top: -76px; padding-top: 76px; }
+   so the two share one surface on desktop; on smaller screens the header takes the hero's
+   background instead, so the open menu sits on it too. */
+.hd:has(~ main .hm-hero) { background: var(--fog); }
+.hm-hero { position: relative; overflow: hidden; background: var(--fog); }
 .hm-hero__inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 56px 24px 0; box-sizing: border-box; }
 .hm-hero__copy { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
 .hm-hero h1 { margin: 0; font: 500 clamp(36px, 4.1vw, 58px)/1.04 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); }
@@ -96,7 +101,7 @@ details[open] .faq-plus { transform: rotate(45deg); }
 .hm-page--roadmap { left: 120px; top: 30px; }
 .hm-page--cover { left: -20px; top: 0; }
 @media (min-width: 1000px) {
-  .hm-hero { min-height: clamp(640px, 100svh, 860px); display: flex; align-items: center; box-sizing: border-box; }
+  .hm-hero { min-height: clamp(640px, 100svh, 860px); display: flex; align-items: center; box-sizing: border-box; margin-top: -76px; padding-top: 76px; }
   .hm-hero__inner { width: 100%; padding: 72px 24px 88px; }
   .hm-hero__copy { max-width: 700px; gap: 28px; }
   .hm-hero h1 { max-width: 12em; }
