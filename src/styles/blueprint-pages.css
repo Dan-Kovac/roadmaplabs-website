@@ -72,7 +72,11 @@
   .bp-col-4, .bp-col-8, .bp-num, .bp-step__body { grid-column: auto; }
   .bp-num { font-size: 40px; }
   .bp-acc__btn { font-size: 17px; line-height: 24px; }
-  .bp-jump-wrap { padding-bottom: 16px; }
+}
+
+/* Phone: keep the question-group links clear of the first heading. Desktop padding stays 32px. */
+@media (max-width: 767px) {
+  .bp-jump-wrap { padding-bottom: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

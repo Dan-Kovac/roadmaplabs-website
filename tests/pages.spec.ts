@@ -141,7 +141,7 @@ test('process shows the four steps and the optional label', async ({ page }) => 
   await expect(page.getByText('$5,000 to $50,000')).toBeVisible();
 });
 
-test('faq accordion toggles, deep-links and keeps a visible focus ring', async ({ page }) => {
+test('faq accordion toggles, deep-links and keeps a visible focus ring', async ({ page }, testInfo) => {
   await page.goto('/faq');
   const price = page.locator(`#${FAQ_OPEN_ID} button`);
   const next = page.locator('#what-changes-the-price button');
@@ -183,6 +183,15 @@ test('faq accordion toggles, deep-links and keeps a visible focus ring', async (
   await expect(page.locator('a[href="#security"]')).toBeVisible();
   await expect(page.locator('a[href="#price"]')).toBeVisible();
   await expect(page.locator('a[href="#team"]')).toHaveText('Your team, your systems and support');
+
+  const gap = await page.evaluate(() => {
+    const links = document.querySelector('.bp-jump');
+    const heading = document.querySelector('#price h2');
+    if (!links || !heading) return -1;
+    return heading.getBoundingClientRect().top - links.getBoundingClientRect().bottom;
+  });
+  const mobile = testInfo.project.name.startsWith('mobile');
+  expect(Math.round(gap)).toBe(mobile ? 44 : 32);
 });
 
 test('sitemap lists the three pages', async ({ request }, testInfo) => {
