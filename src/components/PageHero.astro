@@ -1,0 +1,17 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  lead: string;
+  cta: string;
+  microcopy?: string;
+}
+const { eyebrow, title, lead, cta, microcopy } = Astro.props;
+---
+<header class="bp-wrap bp-hero">
+  <p class="bp-kicker">{eyebrow}</p>
+  <h1>{title}</h1>
+  <p class="bp-lead">{lead}</p>
+  <a class="rl-btn rl-btn--lg" href="/contact">{cta}</a>
+  {microcopy && <p class="bp-micro">{microcopy}</p>}
+</header>
