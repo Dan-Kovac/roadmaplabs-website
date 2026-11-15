@@ -1,0 +1,64 @@
+---
+import '../styles/blueprint-pages.css';
+import Base from '../layouts/Base.astro';
+import ClosingCTA from '../components/ClosingCTA.astro';
+import PageHero from '../components/PageHero.astro';
+import {
+  PROCESS_NUMBERS,
+  PROCESS_PAGE,
+  PROCESS_STEPS,
+  PROCESS_STEPS_HEADING,
+  PROCESS_TOGETHER,
+} from '../data/process';
+---
+<Base title={PROCESS_PAGE.title} description={PROCESS_PAGE.description} path="/process">
+  <div class="bp-page">
+    <PageHero
+      eyebrow={PROCESS_PAGE.eyebrow}
+      title={PROCESS_PAGE.h1}
+      lead={PROCESS_PAGE.lead}
+      cta={PROCESS_PAGE.cta}
+      microcopy={PROCESS_PAGE.microcopy}
+    />
+
+    <section class="bp-wrap">
+      <h2>{PROCESS_STEPS_HEADING}</h2>
+      <ol class="bp-steps">
+        {PROCESS_STEPS.map((step) => (
+          <li class="bp-step">
+            <p class="bp-num">{step.numeral}</p>
+            <div class="bp-step__body">
+              <p class="bp-kicker">{step.label}</p>
+              <h3>{step.title}</h3>
+              {step.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="bp-wrap">
+      <div class="bp-grid">
+        <div class="bp-col-4"><h2>{PROCESS_NUMBERS.heading}</h2></div>
+        <div class="bp-col-8 bp-prose">
+          {PROCESS_NUMBERS.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          <a class="rl-link-action" href={PROCESS_NUMBERS.link.href}>{PROCESS_NUMBERS.link.label}</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="bp-wrap">
+      <h2>{PROCESS_TOGETHER.heading}</h2>
+      <div class="bp-trio">
+        {PROCESS_TOGETHER.items.map((item) => (
+          <article>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </article>
+        ))}
+      </div>
+      <p class="bp-follow"><a class="rl-link-action" href={PROCESS_TOGETHER.link.href}>{PROCESS_TOGETHER.link.label}</a></p>
+    </section>
+  </div>
+  <ClosingCTA />
+</Base>
