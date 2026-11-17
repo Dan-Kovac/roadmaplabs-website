@@ -38,7 +38,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     --tint: rgba(10,76,255,.06);
     --tint-2: rgba(10,76,255,.12);
     position: relative; isolation: isolate; overflow: hidden;
-    height: calc(100svh - var(--ik-top)); min-height: 560px;
+    height: calc(100vh - var(--ik-top)); /* fallback for browsers without svh */
+    height: calc(100svh - var(--ik-top)); min-height: 440px;
     display: flex; flex-direction: column;
     background: linear-gradient(180deg, #f7f8fc 0%, var(--paper) 38%);
     border-top: 1px solid rgba(0,7,16,.06);
@@ -53,8 +54,8 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   /* ---------- Top bar: identity, mode switch, progress ---------- */
   .ik-top { flex: none; position: relative; z-index: 3; }
-  .ik-top__row { display: flex; align-items: center; gap: 12px; height: 64px; }
-  .ik-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ik-top__row { display: flex; align-items: center; gap: 12px; height: 64px; overflow: hidden; }
+  .ik-id { flex: 1 1 auto; display: flex; align-items: center; gap: 10px; min-width: 0; }
   .ik-id__text { display: flex; flex-direction: column; min-width: 0; }
   .ik-id__name { font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
   .ik-id__meta { font: 500 12px/16px var(--font-sans); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -107,7 +108,10 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   /* ---------- Conversation ---------- */
   .ik-log { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; mask-image: linear-gradient(180deg, transparent 0, #000 72px); -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 72px); }
-  .ik-log__inner { display: flex; flex-direction: column; gap: 18px; padding: 72px 0 28px; min-height: 100%; box-sizing: border-box; justify-content: flex-end; }
+  .ik-log__inner { display: flex; flex-direction: column; gap: 18px; padding: 72px 0 calc(28px + var(--ik-dock, 0px)); min-height: 100%; box-sizing: border-box; justify-content: flex-end; }
+  .ik-log { scroll-padding-bottom: calc(16px + var(--ik-dock, 0px)); }
+  /* While Harry offers a choice there's nothing to type: hide the composer so the options have the room. */
+  .ik[data-choosing] .ik-composer, .ik[data-choosing] .ik-chips, .ik[data-choosing] .ik-skip { display: none; }
   .ik-turn { display: flex; gap: 14px; align-items: flex-start; animation: ik-in .5s var(--ease) both; }
   .ik-turn .ik-orb { margin-top: 2px; }
   .ik-turn__body { min-width: 0; flex: 1; }
@@ -311,8 +315,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     .ik-id .ik-orb--sm { --size: 30px; }
     .ik:not([data-view="welcome"]) .ik-id__name { display: none; }
     .ik[data-view="welcome"] .ik-id__meta { display: none; }
-    .ik-id__meta { white-space: normal; }
-    .ik-id__meta b { display: block; font: 600 14px/18px var(--font-sans); color: var(--ink); }
+    .ik-id__meta { display: flex; flex-direction: column; min-width: 0; }
+    .ik-id__meta b, .ik-id__meta span { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .ik-id__meta b { font: 600 14px/18px var(--font-sans); color: var(--ink); }
     .ik-id__meta i { display: none; }
     .ik-skip small { display: none; }
     .ik-skip, .ik-meta__right button { white-space: nowrap; }
@@ -554,6 +559,31 @@ const svg = (d: string, size = 20, sw = 2) =>
   const fit = () => root.style.setProperty('--ik-top', `${siteHeader?.offsetHeight ?? 76}px`);
   fit();
   addEventListener('resize', fit);
+  /** How much of the thread is covered (by the dock, or by an on-screen keyboard): pad the thread by exactly that. */
+  const dockEl = document.querySelector<HTMLElement>('.ik-dock')!;
+  const logEl = document.getElementById('ik-log')!;
+  function measureCover() {
+    const vv = window.visualViewport;
+    const visibleBottom = vv ? vv.offsetTop + vv.height : innerHeight;
+    const clearBottom = Math.min(dockEl.getBoundingClientRect().top, visibleBottom);
+    const cover = Math.max(0, Math.round(logEl.getBoundingClientRect().bottom - clearBottom));
+    root.style.setProperty('--ik-dock', `${cover}px`);
+  }
+  if ('ResizeObserver' in window) new ResizeObserver(measureCover).observe(dockEl);
+  window.visualViewport?.addEventListener('resize', measureCover);
+  addEventListener('resize', measureCover);
+  /** Scroll the thread so an element (choice buttons) sits fully in the clear area above the composer. */
+  function reveal(target: HTMLElement) {
+    requestAnimationFrame(() => {
+      measureCover();
+      const lr = logEl.getBoundingClientRect();
+      const vv = window.visualViewport;
+      const limit = Math.min(lr.bottom, dockEl.getBoundingClientRect().top, vv ? vv.offsetTop + vv.height : innerHeight) - 12;
+      const r = target.getBoundingClientRect();
+      if (r.bottom > limit) logEl.scrollTop += r.bottom - limit;
+      else if (r.top < lr.top + 8) logEl.scrollTop -= lr.top + 8 - r.top;
+    });
+  }
   /** Keep the stage in view: focusing fields inside the thread can scroll the page down to the footer. */
   const anchor = () => { if (scrollY > 0) scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); };
 
@@ -918,6 +948,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     box.append(row);
     scroll();
+    reveal(row);
     return row;
   }
   function prefill(text: string) {
@@ -940,6 +971,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (s.type === 'choice') {
       lock(true);
       settleQuestions();
+      root.dataset.choosing = '';
+      anchor();
       const card = milestone(true);
       if (i !== pos) return;
       const wrap = el('div', 'ik-choices');
@@ -949,6 +982,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       );
       card.append(wrap);
       scroll();
+      reveal(wrap);
       if (!replaying && mode === 'chat') (wrap.firstChild as HTMLButtonElement).focus({ preventScroll: true });
       return;
     }
@@ -961,6 +995,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     if (s.type === 'another') {
       lock(true);
+      root.dataset.choosing = '';
+      anchor();
       const q = await harrySays(stepText(s), { question: true });
       if (i !== pos) return;
       const opts: { label: string; primary?: boolean; v: string }[] = [];
@@ -1153,6 +1189,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (a.t === 'p') { pending.set(a.k, { v: a.v, s: a.s }); actions.push(a); save(); return true; }
     const render = apply(a);
     if (!render) return false;
+    delete root.dataset.choosing;
     actions.push(a);
     const chain: (() => unknown)[] = [render];
     // Voice answers given ahead of their turn: take them now, in order, so nothing is asked twice.
