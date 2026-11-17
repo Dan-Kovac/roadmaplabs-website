@@ -1,8 +1,25 @@
 ---
 import Base from '../layouts/Base.astro';
 
-// Public, so it can sit in the page. Unset means voice mode shows a "coming online" note and chat carries everything.
+// Public, so it can sit in the page. Unset means voice mode shows a "coming online" state and chat carries everything.
 const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
+
+const icons = {
+  clip: '<path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  screen: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.2" fill="currentColor" stroke="none"/>',
+  up: '<path d="M12 19V5M5 12l7-7 7 7"/>',
+  chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  wave: '<path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"/>',
+  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  skip: '<path d="M5 12h12M13 6l6 6-6 6"/>',
+  save: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
+};
+const svg = (d: string, size = 20, sw = 2) =>
+  `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 ---
 <Base
   title="Client intake | Roadmap Labs"
@@ -11,233 +28,451 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   noindex
 >
 <style is:global>
-  .ik-hero { max-width: 880px; margin: 0 auto; padding: 72px 24px 32px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
-  .ik-hero h1 { margin: 0; font-size: clamp(38px, 5vw, 60px); line-height: 1.04; letter-spacing: -0.03em; font-weight: 500; max-width: 18ch; }
-  .ik-hero p { margin: 0; font-size: 18px; line-height: 28px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 40em; }
-  .ik-shell { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; box-sizing: border-box; }
-
-  /* ---------- The one component ---------- */
-  .ik { position: relative; display: flex; flex-direction: column; height: min(800px, calc(100svh - 96px)); min-height: 600px; background: var(--paper); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-float); overflow: hidden; }
-  .ik-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 14px 20px; border-bottom: 1px solid var(--border); }
-  .ik-avatar { position: relative; width: 38px; height: 38px; flex: none; border-radius: 50%; background: var(--gradient-signal); color: #fff; display: grid; place-items: center; font: 600 15px/1 var(--font-sans); }
-  .ik-avatar::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; background: #00a3ff; border: 2px solid var(--paper); box-shadow: 0 0 0 0 rgba(0,163,255,.6); animation: rl-pulse 1.8s ease-out infinite; }
-  .ik-who { display: flex; flex-direction: column; min-width: 0; }
-  .ik-who strong { font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; }
-  .ik-who span { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ik-modes { margin-left: auto; display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: var(--fog); flex: none; }
-  .ik-modes button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 600 13px/20px var(--font-sans); cursor: pointer; transition: background-color .2s ease, color .2s ease; }
-  .ik-modes button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px rgba(0,7,16,.12); }
-  .ik-modes button:focus-visible { outline: 2px solid var(--roadmap-blue); outline-offset: 1px; }
-  .ik-bar { height: 3px; background: var(--fog); flex: none; }
-  .ik-bar i { display: block; height: 100%; width: 0; background: var(--gradient-signal); transition: width .4s ease; }
-
-  /* Voice stage: only in voice mode */
-  .ik-stage { display: none; position: relative; flex: none; height: 300px; background: var(--gradient-signal-dark); background-size: 160% 160%; animation: rl-pan 14s ease-in-out infinite alternate; color: var(--paper); overflow: hidden; isolation: isolate; }
-  .ik[data-mode="voice"] .ik-stage { display: block; }
-  .ik-stage::before { content: ""; position: absolute; inset: -30%; z-index: -1; background: radial-gradient(40% 40% at 50% 45%, rgba(0,163,255,.35), transparent 70%); animation: rl-drift 16s ease-in-out infinite alternate; }
-  .ik-stage__inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px; text-align: center; }
-  .ik-orb { position: relative; width: 140px; height: 140px; flex: none; }
-  .ik-orb i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(0,163,255,.6); animation: ik-ring 3.6s cubic-bezier(.2,.7,.2,1) infinite; }
-  .ik-orb i:nth-child(2) { animation-delay: 1.2s; }
-  .ik-orb i:nth-child(3) { animation-delay: 2.4s; }
-  .ik-orb b { position: absolute; inset: 32px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #5fc4ff, #0a4cff 60%, #052a8f); box-shadow: 0 0 44px rgba(0,163,255,.5); animation: ik-breathe 3.6s ease-in-out infinite; }
-  .ik-orb svg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #fff; }
-  .ik-stage[data-speaking] .ik-orb b { animation-duration: .9s; }
-  .ik-stage[data-speaking] .ik-orb i { animation-duration: 1.4s; }
-  .ik-stage--off .ik-orb i { border-color: rgba(255,255,255,.22); }
-  .ik-stage--off .ik-orb b { background: radial-gradient(circle at 35% 30%, #4b5563, #15191e 70%); box-shadow: none; }
-  .ik-stage__status { margin: 0; max-width: 40ch; font: 500 14px/20px var(--font-sans); color: rgba(255,255,255,.88); }
-  .ik-stage__pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,.1); font: 500 13px/18px var(--font-sans); color: var(--paper); }
-  /* The ElevenLabs widget renders with fixed positioning. A transformed box becomes the containing block
-     for its fixed children, so the widget lives inside the stage instead of the page corner. */
-  .ik-widget { position: absolute; inset: 0; transform: translateZ(0); }
-  .ik-stage__inner--agent { justify-content: flex-start; padding-top: 28px; }
-  @keyframes ik-ring { 0% { transform: scale(.55); opacity: .9; } 100% { transform: scale(1.15); opacity: 0; } }
-  @keyframes ik-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-
-  /* Thread */
-  .ik-log { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-  .ik-msg { margin: 0; max-width: 82%; padding: 12px 16px; border-radius: 18px; font: 400 16px/24px var(--font-sans); letter-spacing: -0.01em; white-space: pre-wrap; overflow-wrap: anywhere; animation: rl-rise .35s cubic-bezier(.2,.7,.2,1) both; }
-  .ik-msg--riley { align-self: flex-start; background: var(--fog); color: var(--ink); border-bottom-left-radius: 6px; }
-  .ik-msg--q { font-weight: 500; }
-  .ik-msg--error { background: #fef3f2; color: #b42318; }
-  .ik-msg--you { align-self: flex-end; background: var(--roadmap-blue); color: var(--paper); border-bottom-right-radius: 6px; }
-  .ik-msg--spoken::before { content: "Spoken"; display: block; margin-bottom: 2px; font: 600 11px/16px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; opacity: .75; }
-  .ik-msg--skip { align-self: flex-end; background: transparent; border: 1px dashed var(--border-control); color: var(--text-secondary); font-style: italic; }
-  .ik-msg--file { align-self: flex-end; display: inline-flex; align-items: center; gap: 10px; background: var(--paper); color: var(--ink); border: 1px solid var(--border); border-bottom-right-radius: 6px; }
-  .ik-msg--file svg { flex: none; color: var(--roadmap-blue); }
-  .ik-msg--typing { display: inline-flex; gap: 4px; padding: 15px 16px; }
-  .ik-msg--typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--steel); animation: ik-dot 1s ease-in-out infinite; }
-  .ik-msg--typing span:nth-child(2) { animation-delay: .15s; } .ik-msg--typing span:nth-child(3) { animation-delay: .3s; }
-  @keyframes ik-dot { 0%, 100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
-  .ik-divider { display: flex; align-items: center; gap: 12px; margin: 8px 0 0; font: 600 12px/18px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--roadmap-blue); }
-  .ik-divider::before, .ik-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-  .ik-choices { display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; }
-  .ik-note { margin: 0; align-self: flex-start; font: 400 13px/18px var(--font-sans); color: var(--text-muted); }
-  .ik-note button { padding: 0; border: 0; background: none; font: inherit; color: var(--roadmap-blue); text-decoration: underline; cursor: pointer; }
-
-  /* Attach tray + chips */
-  .ik-tray { flex: none; margin: 0 12px; padding: 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--fog); display: grid; gap: 10px; }
-  .ik-tray[hidden] { display: none; }
-  .ik-tray__row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .ik-tray__row .rl-input { min-height: 40px; padding: 8px 12px; font-size: 15px; }
-  .ik-tray small { font: 400 12px/18px var(--font-sans); color: var(--text-secondary); }
-  .ik-recdot { display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: #e5484d; flex: none; }
-  .ik-recbar { flex: none; margin: 8px 12px 0; padding: 8px 8px 8px 14px; display: flex; align-items: center; gap: 10px; border-radius: 14px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); }
-  .ik-recbar[hidden] { display: none; }
-  .ik-recbar .ik-recdot { margin: 0; animation: ik-blink 1.2s ease-in-out infinite; }
-  .ik-recbar[data-uploading] .ik-recdot { background: #00a3ff; }
-  .ik-recbar__meter { flex: 1; min-width: 40px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.18); overflow: hidden; }
-  .ik-recbar__meter i { display: block; height: 100%; width: 0; background: var(--gradient-signal); transition: width .4s ease; }
-  .ik-recbar .rl-btn { min-height: 32px; padding: 4px 14px; background: var(--paper); color: var(--ink); }
-  .ik-recbar[data-uploading] .rl-btn { display: none; }
-  @keyframes ik-blink { 50% { opacity: .35; } }
-  .ik-chips { flex: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px; }
-  .ik-chips:empty { display: none; }
-  .ik-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 6px 4px 10px; border-radius: 999px; background: var(--fog); font: 500 12px/18px var(--font-sans); color: var(--ink); }
-  .ik-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
-  .ik-chip button { width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--text-secondary); cursor: pointer; font: 600 14px/1 var(--font-sans); }
-  .ik-chip button:hover { background: var(--mist); color: var(--ink); }
-
-  /* Composer */
-  .ik-composer { flex: none; margin: 10px 12px 0; display: flex; align-items: flex-end; gap: 6px; padding: 6px; border: 1px solid var(--border-control); border-radius: 18px; background: var(--paper); transition: border-color .2s ease, box-shadow .2s ease; }
-  .ik-composer:focus-within { border-color: var(--roadmap-blue); box-shadow: 0 0 0 3px rgba(10,76,255,.12); }
-  .ik-composer textarea { flex: 1; min-width: 0; resize: none; border: 0; outline: 0; background: transparent; padding: 9px 6px; max-height: 200px; min-height: 40px; box-sizing: border-box; font: 400 16px/22px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
-  .ik-composer textarea::placeholder { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ik-icon { width: 40px; height: 40px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--graphite); cursor: pointer; transition: background-color .2s ease, color .2s ease; }
-  .ik-icon:hover { background: var(--fog); color: var(--ink); }
-  .ik-icon:focus-visible, .ik-skip:focus-visible { outline: 2px solid var(--roadmap-blue); outline-offset: 1px; }
-  .ik-icon[aria-pressed="true"], .ik-icon[aria-expanded="true"] { background: rgba(10,76,255,.1); color: var(--roadmap-blue); }
-  .ik-mic[aria-pressed="true"] { background: var(--roadmap-blue); color: var(--paper); box-shadow: 0 0 0 0 rgba(10,76,255,.5); animation: ik-listen 1.4s ease-out infinite; }
-  @keyframes ik-listen { 0% { box-shadow: 0 0 0 0 rgba(10,76,255,.45); } 100% { box-shadow: 0 0 0 10px rgba(10,76,255,0); } }
-  .ik-send { background: var(--roadmap-blue); color: var(--paper); }
-  .ik-send:hover { background: #083fd6; color: var(--paper); }
-  .ik-skip { flex: none; height: 40px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 600 13px/20px var(--font-sans); cursor: pointer; }
-  .ik-skip:hover { background: var(--fog); color: var(--ink); }
-  .ik-composer[data-locked] textarea, .ik-composer[data-locked] .ik-skip, .ik-composer[data-locked] .ik-send, .ik-composer[data-locked] .ik-mic { opacity: .45; pointer-events: none; }
-  .ik-foot { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; padding: 8px 18px 12px; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
-  .ik-foot a { color: inherit; }
-  .ik-foot button { padding: 0; border: 0; background: none; font: 600 12px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; }
+  /* ======================================================================
+     /intake: one focused conversation stage. Brand tokens from rl-tokens.css.
+     ====================================================================== */
+  .ik {
+    --ik-top: 76px;
+    --lvl: 0;
+    --ease: cubic-bezier(.2,.7,.2,1);
+    --tint: rgba(10,76,255,.06);
+    --tint-2: rgba(10,76,255,.12);
+    position: relative; isolation: isolate; overflow: hidden;
+    height: calc(100svh - var(--ik-top)); min-height: 560px;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, #f7f8fc 0%, var(--paper) 38%);
+    border-top: 1px solid rgba(0,7,16,.06);
+  }
+  .ik::before, .ik::after { content: ""; position: absolute; z-index: -1; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: .16; }
+  .ik::before { width: 560px; height: 560px; left: -180px; top: -320px; background: #0a4cff; animation: rl-drift 20s ease-in-out infinite alternate; }
+  .ik::after { width: 460px; height: 460px; right: -160px; top: -260px; background: #00a3ff; animation: rl-drift 24s ease-in-out -6s infinite alternate-reverse; }
+  .ik-col { width: 100%; max-width: 760px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
   .ik-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ik button { font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; }
+  .ik :focus-visible { outline: 2px solid var(--roadmap-blue); outline-offset: 2px; }
 
+  /* ---------- Top bar: identity, mode switch, progress ---------- */
+  .ik-top { flex: none; position: relative; z-index: 3; }
+  .ik-top__row { display: flex; align-items: center; gap: 12px; height: 64px; }
+  .ik-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ik-id__text { display: flex; flex-direction: column; min-width: 0; }
+  .ik-id__name { font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
+  .ik-id__meta { font: 500 12px/16px var(--font-sans); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ik-id__meta b { font-weight: 500; }
+  .ik-modes { position: relative; margin-left: auto; flex: none; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 999px; background: rgba(0,7,16,.05); }
+  .ik-modes::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--paper); box-shadow: 0 1px 2px rgba(0,7,16,.08), 0 4px 12px rgba(0,7,16,.08); transition: transform .45s var(--ease); }
+  .ik[data-mode="voice"] .ik-modes::before { transform: translateX(100%); }
+  .ik-modes button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 600 13px/18px var(--font-sans); cursor: pointer; transition: color .3s ease; white-space: nowrap; }
+  .ik-modes button[aria-pressed="true"] { color: var(--ink); }
+  .ik-progress { position: relative; height: 3px; background: rgba(0,7,16,.06); border-radius: 3px; overflow: hidden; }
+  .ik-progress i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 3px; background: var(--gradient-signal); transition: width .8s var(--ease); }
+  .ik-progress i::after { content: ""; position: absolute; right: 0; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #00a3ff; box-shadow: 0 0 0 4px rgba(0,163,255,.18); }
+  .ik[data-view="welcome"] .ik-progress { opacity: 0; }
+
+  /* ---------- Orbs ---------- */
+  .ik-orb { --size: 36px; position: relative; width: var(--size); height: var(--size); flex: none; border-radius: 50%; }
+  .ik-orb__core { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 32% 28%, #9fd8ff 0%, #2f86ff 34%, #0a4cff 62%, #04227a 100%); box-shadow: inset 0 -6px 14px rgba(0,7,16,.25), 0 6px 20px rgba(10,76,255,.28); transform: scale(calc(1 + var(--lvl) * .14)); transition: transform .12s linear; }
+  .ik-orb__core::before { content: ""; position: absolute; inset: -25%; background: conic-gradient(from 0deg, transparent 0 20%, rgba(0,163,255,.85) 30%, transparent 45% 62%, rgba(124,196,255,.7) 72%, transparent 85%); filter: blur(calc(var(--size) * .12)); animation: ik-spin 9s linear infinite; mix-blend-mode: screen; }
+  .ik-orb__core::after { content: ""; position: absolute; left: 18%; top: 12%; width: 42%; height: 30%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.75), transparent); filter: blur(2px); }
+  .ik-orb__halo { position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 calc(var(--size) * (.06 + var(--lvl) * .22)) rgba(0,163,255,.16), 0 0 calc(var(--size) * (.3 + var(--lvl) * .6)) rgba(10,76,255,.35); transition: box-shadow .14s linear; }
+  .ik-orb--sm { --size: 36px; animation: ik-breathe 4.5s ease-in-out infinite; }
+  .ik-orb--sm .ik-orb__halo { box-shadow: 0 0 0 calc(2px + var(--lvl) * 6px) rgba(0,163,255,.18); }
+  .ik-orb--hero { --size: clamp(150px, 26vh, 220px); animation: ik-breathe 5.5s ease-in-out infinite; }
+  .ik-orb--hero .ik-orb__ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(10,76,255,.28); animation: ik-ring 4.2s var(--ease) infinite; pointer-events: none; }
+  .ik-orb--hero .ik-orb__ring:nth-child(2) { animation-delay: 1.4s; }
+  .ik-orb--hero .ik-orb__ring:nth-child(3) { animation-delay: 2.8s; }
+  .ik-orb--off .ik-orb__core { background: radial-gradient(circle at 32% 28%, #ffffff 0%, #d9e4ff 30%, #9fb4e6 66%, #6c80b8 100%); box-shadow: inset 0 -6px 14px rgba(0,7,16,.12), 0 6px 20px rgba(10,76,255,.12); }
+  .ik-orb--off .ik-orb__core::before { opacity: .35; }
+  .ik-orb--off .ik-orb__halo { box-shadow: 0 0 0 10px rgba(0,7,16,.04); }
+  .ik-orb--off .ik-orb__ring { border-color: rgba(0,7,16,.1); }
+  @keyframes ik-spin { to { transform: rotate(360deg); } }
+  @keyframes ik-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+  @keyframes ik-ring { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.45); opacity: 0; } }
+
+  /* ---------- Voice hero (expands in voice mode) ---------- */
+  .ik-voice { flex: none; display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s var(--ease), opacity .4s ease; opacity: 0; }
+  .ik[data-mode="voice"]:not([data-view="welcome"]):not([data-view="finish"]) .ik-voice { grid-template-rows: 1fr; opacity: 1; }
+  .ik-voice > div { min-height: 0; overflow: hidden; }
+  .ik-voice__inner { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 22px 0 8px; text-align: center; }
+  .ik-voice__status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: rgba(0,7,16,.05); font: 600 12px/16px var(--font-sans); color: var(--text-secondary); }
+  .ik-voice__status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--steel); }
+  .ik-voice__status[data-live]::before { background: #00a3ff; box-shadow: 0 0 0 0 rgba(0,163,255,.6); animation: rl-pulse 1.8s ease-out infinite; }
+  .ik-voice__caption { margin: 0; max-width: 34ch; font: 500 clamp(17px, 2.2vw, 20px)/1.4 var(--font-sans); letter-spacing: -0.015em; color: var(--ink); min-height: 1.4em; }
+  .ik-voice__hint { margin: 0; max-width: 42ch; font: 400 14px/20px var(--font-sans); color: var(--text-secondary); }
+  .ik-voice__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* The ElevenLabs widget renders with fixed positioning; a transformed box becomes its containing block, so it sits here. */
+  .ik-widget { position: relative; width: min(100%, 420px); height: 168px; margin: -12px 0 -4px; transform: translateZ(0); }
+  .ik[data-mode="voice"] .ik-q.is-current { font-size: 17px; line-height: 1.5; color: var(--ink); }
+  .ik[data-mode="voice"] .ik-log { mask-image: linear-gradient(180deg, transparent 0, #000 56px); -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 56px); }
+
+  /* ---------- Conversation ---------- */
+  .ik-log { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; mask-image: linear-gradient(180deg, transparent 0, #000 72px); -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 72px); }
+  .ik-log__inner { display: flex; flex-direction: column; gap: 18px; padding: 72px 0 28px; min-height: 100%; box-sizing: border-box; justify-content: flex-end; }
+  .ik-turn { display: flex; gap: 14px; align-items: flex-start; animation: ik-in .5s var(--ease) both; }
+  .ik-turn .ik-orb { margin-top: 2px; }
+  .ik-turn__body { min-width: 0; flex: 1; }
+  .ik-say { margin: 0; font: 400 17px/1.55 var(--font-sans); letter-spacing: -0.01em; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .ik-q { margin: 0; font: 500 16px/1.5 var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); white-space: pre-wrap; overflow-wrap: anywhere; transition: font-size .45s var(--ease), color .45s ease, line-height .45s ease; }
+  .ik-q.is-current { font-size: clamp(22px, 3.3vw, 30px); line-height: 1.28; letter-spacing: -0.022em; color: var(--ink); }
+  .ik-turn--q:not(:has(.is-current)) .ik-orb { opacity: .35; transform: scale(.8); transition: opacity .4s ease, transform .4s ease; animation: none; }
+  .ik-turn--q:not(:has(.is-current)) .ik-orb__core::before { animation: none; }
+  .ik-a { align-self: flex-end; max-width: min(82%, 560px); margin: 0; padding: 12px 16px; border-radius: 18px 18px 6px 18px; background: var(--tint); color: var(--ink); font: 400 16px/1.55 var(--font-sans); letter-spacing: -0.01em; white-space: pre-wrap; overflow-wrap: anywhere; animation: ik-settle .45s var(--ease) both; }
+  .ik-a--spoken::before { content: "Spoken"; display: block; margin-bottom: 2px; font: 600 10px/14px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-a--skip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 4px; background: none; color: var(--text-muted); font-size: 14px; }
+  .ik-a--file { display: inline-flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid rgba(0,7,16,.1); box-shadow: 0 1px 2px rgba(0,7,16,.04); }
+  .ik-a--file svg { flex: none; color: var(--roadmap-blue); }
+  .ik-a--file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ik-note { align-self: center; margin: 0; padding: 6px 14px; border-radius: 999px; background: rgba(0,7,16,.04); font: 500 13px/18px var(--font-sans); color: var(--text-secondary); text-align: center; animation: ik-in .4s var(--ease) both; }
+  .ik-note button { padding: 0; border: 0; background: none; font: 600 13px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .ik-note--error { background: #fef3f2; color: #b42318; }
+  .ik-section { display: flex; flex-direction: column; gap: 2px; margin: 18px 0 2px; padding-top: 18px; border-top: 1px solid rgba(0,7,16,.08); animation: ik-in .5s var(--ease) both; }
+  .ik-section span { font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-section strong { font: 600 18px/26px var(--font-sans); letter-spacing: -0.015em; color: var(--ink); }
+  .ik-think { display: inline-flex; gap: 5px; padding: 12px 0; }
+  .ik-think i { width: 6px; height: 6px; border-radius: 50%; background: var(--steel); animation: ik-dot 1s ease-in-out infinite; }
+  .ik-think i:nth-child(2) { animation-delay: .15s; } .ik-think i:nth-child(3) { animation-delay: .3s; }
+  @keyframes ik-dot { 0%, 100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+  @keyframes ik-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes ik-settle { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+
+  /* Cards inside the conversation (milestone, sharing) */
+  .ik-card { margin: 6px 0; padding: 24px; border-radius: 20px; background: var(--paper); border: 1px solid rgba(0,7,16,.08); box-shadow: 0 1px 2px rgba(0,7,16,.04), 0 12px 32px rgba(0,7,16,.06); animation: ik-in .55s var(--ease) both; }
+  .ik-card h3 { margin: 0; font: 600 22px/1.25 var(--font-sans); letter-spacing: -0.02em; color: var(--ink); }
+  .ik-card p { margin: 6px 0 0; font: 400 15px/1.55 var(--font-sans); color: var(--text-secondary); }
+  .ik-mile { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center; }
+  .ik-mile__ring { grid-row: span 2; position: relative; width: 64px; height: 64px; }
+  .ik-mile__ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .ik-mile__ring circle { fill: none; stroke-width: 5; }
+  .ik-mile__ring .bg { stroke: var(--tint-2); }
+  .ik-mile__ring .fg { stroke: url(#ik-grad); stroke-linecap: round; stroke-dasharray: 176; stroke-dashoffset: 176; animation: ik-draw 1.1s .15s var(--ease) forwards; }
+  .ik-mile__ring b { position: absolute; inset: 0; display: grid; place-items: center; font: 700 15px/1 var(--font-sans); color: var(--ink); }
+  .ik-mile .ik-choices { grid-column: 1 / -1; margin-top: 14px; }
+  @keyframes ik-draw { to { stroke-dashoffset: 0; } }
+  .ik-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
+  .ik-opt { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 76px; padding: 14px 16px; border: 1px solid rgba(0,7,16,.12); border-radius: 16px; background: var(--paper); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease), box-shadow .2s ease; }
+  .ik-opt:hover { border-color: var(--roadmap-blue); box-shadow: 0 6px 18px rgba(10,76,255,.12); transform: translateY(-1px); }
+  .ik-opt strong { display: flex; align-items: center; gap: 8px; font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em; }
+  .ik-opt small { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-opt--primary { background: var(--roadmap-blue); border-color: var(--roadmap-blue); color: var(--paper); }
+  .ik-opt--primary small { color: rgba(255,255,255,.82); }
+  .ik-opt--primary:hover { background: #083fd6; }
+  .ik-opt[disabled] { opacity: .5; pointer-events: none; }
+  .ik-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 10px; margin-top: 16px; }
+  .ik-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; border: 1px solid rgba(0,7,16,.1); border-radius: 16px; background: #fbfbfd; color: var(--ink); cursor: pointer; text-align: left; transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease); }
+  .ik-tile:hover { border-color: var(--roadmap-blue); background: var(--paper); transform: translateY(-1px); }
+  .ik-tile span.ik-tile__icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--tint); color: var(--roadmap-blue); }
+  .ik-tile strong { font: 600 15px/20px var(--font-sans); }
+  .ik-tile small { font: 400 12px/17px var(--font-sans); color: var(--text-secondary); }
+  .ik-share__send { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+  .ik-share__send small { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+
+  .ik-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 24px; border: 0; border-radius: 999px; background: var(--roadmap-blue); color: var(--paper); font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em; cursor: pointer; transition: background-color .2s ease, transform .2s var(--ease), box-shadow .2s ease; box-shadow: 0 8px 24px rgba(10,76,255,.28); text-decoration: none; }
+  .ik-cta:hover { background: #083fd6; transform: translateY(-1px); }
+  .ik-cta[disabled] { opacity: .6; cursor: progress; transform: none; }
+  .ik-cta--quiet { background: var(--paper); color: var(--ink); border: 1px solid rgba(0,7,16,.14); box-shadow: none; }
+  .ik-cta--quiet:hover { background: var(--paper); border-color: var(--ink); }
+  .ik-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; animation: ik-spin .8s linear infinite; }
+
+  /* ---------- Welcome ---------- */
+  .ik-welcome { display: none; flex: 1; min-height: 0; overflow-y: auto; }
+  .ik[data-view="welcome"] .ik-welcome { display: flex; }
+  .ik[data-view="welcome"] .ik-log, .ik[data-view="welcome"] .ik-dock { display: none; }
+  .ik-welcome .ik-col { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; margin: auto; padding-top: 24px; padding-bottom: 48px; }
+  .ik-welcome h1 { margin: 0; font: 500 clamp(36px, 5.4vw, 56px)/1.04 var(--font-sans); letter-spacing: -0.035em; color: var(--ink); max-width: 15ch; }
+  .ik-welcome h1 span { background: var(--gradient-signal); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .ik-welcome__lead { margin: 0; max-width: 36em; font: 400 18px/1.55 var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); }
+  .ik-points { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 10px; }
+  .ik-points li { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 999px; background: rgba(0,7,16,.04); font: 500 14px/20px var(--font-sans); color: var(--ink); }
+  .ik-points svg { color: var(--roadmap-blue); }
+  .ik-welcome__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ik-welcome__fine { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
+  .ik-welcome__fine a { color: inherit; }
+  .ik-welcome .ik-orb--hero { --size: clamp(84px, 13vh, 112px); }
+  .ik-welcome > .ik-col > * { animation: ik-in .7s var(--ease) both; }
+  .ik-welcome > .ik-col > :nth-child(2) { animation-delay: .06s; } .ik-welcome > .ik-col > :nth-child(3) { animation-delay: .12s; }
+  .ik-welcome > .ik-col > :nth-child(4) { animation-delay: .18s; } .ik-welcome > .ik-col > :nth-child(5) { animation-delay: .24s; } .ik-welcome > .ik-col > :nth-child(6) { animation-delay: .3s; }
+
+  /* ---------- Dock: one composer ---------- */
+  .ik-dock { flex: none; position: relative; z-index: 4; padding: 8px 0 14px; background: linear-gradient(180deg, rgba(255,255,255,0), var(--paper) 22px); }
+  .ik-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+  .ik-chips:empty { display: none; }
+  .ik-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 30px; padding: 0 4px 0 10px; border-radius: 999px; background: var(--paper); border: 1px solid rgba(0,7,16,.1); font: 500 12px/16px var(--font-sans); color: var(--ink); animation: ik-settle .3s var(--ease) both; }
+  .ik-chip svg { flex: none; color: var(--roadmap-blue); }
+  .ik-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+  .ik-chip button { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--text-secondary); cursor: pointer; font: 600 15px/1 var(--font-sans); }
+  .ik-chip button:hover { background: rgba(0,7,16,.06); color: var(--ink); }
+  .ik-composer { display: flex; align-items: flex-end; gap: 4px; padding: 6px; border-radius: 26px; background: var(--paper); border: 1px solid rgba(0,7,16,.12); box-shadow: 0 1px 2px rgba(0,7,16,.04), 0 10px 30px rgba(0,7,16,.08); transition: border-color .2s ease, box-shadow .2s ease; }
+  .ik-composer:focus-within { border-color: rgba(10,76,255,.55); box-shadow: 0 0 0 4px rgba(10,76,255,.1), 0 10px 30px rgba(0,7,16,.08); }
+  .ik-composer:focus-within :focus-visible { outline-offset: -2px; }
+  .ik-composer textarea:focus-visible { outline: none; }
+  .ik-composer textarea { flex: 1; min-width: 0; align-self: center; resize: none; border: 0; outline: 0; background: transparent; padding: 10px 6px; max-height: 180px; min-height: 44px; box-sizing: border-box; font: 400 16px/24px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
+  .ik-composer textarea::placeholder { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ik-ico { position: relative; width: 44px; height: 44px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--graphite); cursor: pointer; transition: background-color .2s ease, color .2s ease, transform .2s var(--ease); }
+  .ik-ico:hover { background: rgba(0,7,16,.05); color: var(--ink); }
+  .ik-ico[aria-expanded="true"] { background: var(--tint-2); color: var(--roadmap-blue); }
+  .ik-ico[aria-expanded="true"] svg { transform: rotate(-20deg); transition: transform .3s var(--ease); }
+  .ik-mic[aria-pressed="true"] { background: var(--roadmap-blue); color: var(--paper); box-shadow: 0 0 0 calc(3px + var(--lvl) * 10px) rgba(10,76,255,.18); transition: box-shadow .1s linear; }
+  .ik-send { background: var(--roadmap-blue); color: var(--paper); }
+  .ik-send:hover { background: #083fd6; color: var(--paper); transform: translateY(-1px); }
+  .ik-composer[data-locked] .ik-send { background: rgba(0,7,16,.08); color: var(--text-muted); }
+  .ik-composer[data-locked] textarea, .ik-composer[data-locked] .ik-mic { opacity: .45; pointer-events: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .ik [data-tip]:hover::after, .ik [data-tip]:focus-visible::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); padding: 6px 10px; border-radius: 8px; background: var(--abyss); color: var(--paper); font: 500 12px/16px var(--font-sans); white-space: nowrap; pointer-events: none; animation: ik-in .18s ease both; }
+  }
+  .ik-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; min-height: 36px; margin-top: 6px; padding: 0 6px; }
+  .ik-skip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; margin-left: -12px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 500 13px/18px var(--font-sans); cursor: pointer; transition: background-color .2s ease, color .2s ease; }
+  .ik-skip:hover { background: rgba(0,7,16,.05); color: var(--ink); }
+  .ik-skip small { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+  .ik-skip[disabled] { visibility: hidden; }
+  .ik-meta__right { display: flex; align-items: center; gap: 14px; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+  .ik-meta__right button { padding: 0; border: 0; background: none; font: 600 12px/16px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; }
+  .ik-saved { display: inline-flex; align-items: center; gap: 5px; }
+  .ik-saved svg { color: #12a150; }
+
+  /* Attach menu: a popover on desktop, a bottom sheet on phones */
+  .ik-menu { position: absolute; left: 0; bottom: calc(100% - 4px); width: min(360px, 100%); padding: 8px; border-radius: 20px; background: var(--paper); border: 1px solid rgba(0,7,16,.1); box-shadow: 0 18px 50px rgba(0,7,16,.18); transform-origin: bottom left; animation: ik-pop .22s var(--ease) both; }
+  .ik-menu[hidden] { display: none; }
+  @keyframes ik-pop { from { opacity: 0; transform: translateY(6px) scale(.97); } to { opacity: 1; transform: none; } }
+  .ik-menu__item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 10px; border: 0; border-radius: 14px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+  .ik-menu__item:hover, .ik-menu__item:focus-visible { background: rgba(0,7,16,.04); }
+  .ik-menu__item > span:first-child { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 12px; background: var(--tint); color: var(--roadmap-blue); }
+  .ik-menu__item strong { display: block; font: 600 14px/20px var(--font-sans); }
+  .ik-menu__item small { display: block; font: 400 12px/16px var(--font-sans); color: var(--text-secondary); }
+  .ik-menu__link { display: flex; gap: 6px; padding: 6px 4px 4px; }
+  .ik-menu__link[hidden] { display: none; }
+  .ik-menu__link input { flex: 1; min-width: 0; min-height: 44px; padding: 0 14px; border: 1px solid rgba(0,7,16,.14); border-radius: 12px; font: 400 15px/20px var(--font-sans); color: var(--ink); background: var(--paper); }
+  .ik-menu__link input:focus { outline: 0; border-color: var(--roadmap-blue); box-shadow: 0 0 0 3px rgba(10,76,255,.12); }
+  .ik-menu__link button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--roadmap-blue); color: var(--paper); font: 600 14px/20px var(--font-sans); cursor: pointer; }
+  .ik-menu__foot { margin: 4px 10px 4px; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+
+  /* Recording pill */
+  .ik-recbar { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; padding: 6px 6px 6px 16px; border-radius: 999px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; animation: ik-settle .3s var(--ease) both; }
+  .ik-recbar[hidden] { display: none; }
+  .ik-recdot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: #e5484d; box-shadow: 0 0 0 0 rgba(229,72,77,.6); animation: ik-rec 1.4s ease-out infinite; }
+  .ik-recbar[data-uploading] .ik-recdot { background: #00a3ff; animation: rl-pulse 1.4s ease-out infinite; }
+  .ik-recbar__meter { flex: 1; min-width: 40px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.16); overflow: hidden; }
+  .ik-recbar__meter i { display: block; height: 100%; width: 0; background: var(--gradient-signal); transition: width .5s ease; }
+  .ik-recbar button { min-height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--paper); color: var(--ink); font: 600 13px/18px var(--font-sans); cursor: pointer; }
+  .ik-recbar[data-uploading] button { display: none; }
+  @keyframes ik-rec { 0% { box-shadow: 0 0 0 0 rgba(229,72,77,.55); } 100% { box-shadow: 0 0 0 9px rgba(229,72,77,0); } }
+
+  /* Toast (welcome back, errors that aren't in the thread) */
+  .ik-toast { position: absolute; z-index: 5; left: 50%; top: 76px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); box-shadow: 0 10px 30px rgba(0,7,16,.25); animation: ik-pop .3s var(--ease) both; white-space: nowrap; }
+  .ik-toast[hidden] { display: none; }
+  .ik-toast button { min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: rgba(255,255,255,.14); color: var(--paper); font: 600 12px/16px var(--font-sans); cursor: pointer; }
+
+  /* ---------- Finish ---------- */
+  .ik-finish { display: none; flex: 1; min-height: 0; overflow-y: auto; }
+  .ik[data-view="finish"] .ik-finish { display: block; }
+  .ik[data-view="finish"] .ik-log, .ik[data-view="finish"] .ik-dock, .ik[data-view="finish"] .ik-modes { display: none; }
+  .ik-finish .ik-col { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; padding-top: 40px; padding-bottom: 56px; }
+  .ik-done { position: relative; width: 76px; height: 76px; border-radius: 50%; background: var(--gradient-signal); display: grid; place-items: center; box-shadow: 0 12px 34px rgba(10,76,255,.35); animation: ik-pop .5s var(--ease) both; }
+  .ik-done svg path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: ik-tick .5s .35s var(--ease) forwards; }
+  @keyframes ik-tick { to { stroke-dashoffset: 0; } }
+  .ik-finish h2 { margin: 0; font: 500 clamp(32px, 4.6vw, 48px)/1.06 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); max-width: 18ch; }
+  .ik-finish__lead { margin: 0; max-width: 36em; font: 400 18px/1.55 var(--font-sans); color: var(--text-secondary); }
+  .ik-captured { width: 100%; margin: 0; padding: 18px 20px; list-style: none; display: grid; gap: 10px; border-radius: 18px; background: #f7f8fc; border: 1px solid rgba(0,7,16,.06); }
+  .ik-captured li { display: flex; align-items: center; gap: 10px; font: 500 15px/22px var(--font-sans); color: var(--ink); }
+  .ik-captured li svg { flex: none; color: #12a150; }
+  .ik-captured li small { color: var(--text-secondary); font-weight: 400; font-size: 14px; }
+  .ik-next { width: 100%; margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px; counter-reset: ik; }
+  .ik-next li { counter-increment: ik; padding: 18px; border-radius: 16px; border: 1px solid rgba(0,7,16,.08); background: var(--paper); font: 400 14px/20px var(--font-sans); color: var(--text-secondary); }
+  .ik-next li::before { content: counter(ik); display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 10px; border-radius: 50%; background: var(--tint); color: var(--roadmap-blue); font: 700 13px/1 var(--font-sans); }
+  .ik-next strong { display: block; margin-bottom: 2px; font: 600 15px/22px var(--font-sans); color: var(--ink); }
+  .ik-finish__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+  .ik-finish__actions p { margin: 0; font: 400 13px/18px var(--font-sans); color: var(--text-muted); }
+  .ik-finish__actions a { color: inherit; }
+
+  /* ---------- Phones ---------- */
   @media (max-width: 640px) {
-    .ik-hero { padding-top: 48px; }
-    .ik-shell { padding: 0 12px 64px; }
-    .ik { height: calc(100svh - 80px); min-height: 520px; border-radius: 16px; }
-    .ik-head { padding: 12px; }
-    .ik-modes button { padding: 6px 10px; }
-    .ik-modes .ik-modes__label { display: none; }
-    .ik-stage { height: 240px; }
-    .ik-orb { transform: scale(.8); margin: -14px 0; }
-    .ik-log { padding: 14px; }
-    .ik-msg { max-width: 90%; }
-    .ik-skip { padding: 0 8px; }
-    .ik-chip span { max-width: 180px; }
+    .ik-col { padding: 0 16px; }
+    .ik-top__row { height: 58px; }
+    .ik-id .ik-orb--sm { --size: 30px; }
+    .ik:not([data-view="welcome"]) .ik-id__name { display: none; }
+    .ik[data-view="welcome"] .ik-id__meta { display: none; }
+    .ik-id__meta { white-space: normal; }
+    .ik-id__meta b { display: block; font: 600 14px/18px var(--font-sans); color: var(--ink); }
+    .ik-id__meta i { display: none; }
+    .ik-skip small { display: none; }
+    .ik-skip, .ik-meta__right button { white-space: nowrap; }
+    .ik-meta__right { gap: 12px; }
+    .ik-welcome .ik-orb--hero { --size: 72px; }
+    .ik-welcome .ik-col { gap: 18px; }
+    .ik-welcome__lead { font-size: 17px; }
+    .ik-menu { box-shadow: 0 0 0 100vmax rgba(0,7,16,.32), 0 18px 50px rgba(0,7,16,.18); z-index: 20; }
+    .ik-modes button { padding: 0 12px; }
+    .ik-modes__long { display: none; }
+    .ik-log__inner { padding-top: 56px; gap: 16px; }
+    .ik-turn { gap: 10px; }
+    .ik-turn .ik-orb--sm { --size: 26px; }
+    .ik-q.is-current { font-size: 22px; }
+    .ik-a { max-width: 88%; }
+    .ik-voice__inner { padding-top: 14px; gap: 10px; }
+    .ik-orb--hero { --size: clamp(96px, 16vh, 130px); }
+    .ik-widget { height: 160px; }
+    .ik-menu { position: fixed; left: 8px; right: 8px; bottom: 8px; width: auto; border-radius: 24px; padding: 10px; transform-origin: bottom center; }
+    .ik-meta__hint { display: none; }
+    .ik-card { padding: 18px; }
+    .ik-toast { top: 66px; max-width: calc(100% - 24px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ik-orb__core, .ik-orb__halo { transition: none; }
+    .ik-log { scroll-behavior: auto; }
   }
 </style>
 
-<section class="ik-hero">
-  <span class="rl-tag">Client intake</span>
-  <h1>Let's build your business's operating system</h1>
-  <p>Riley will ask how the business runs today: what you sell, who buys it, and the work behind the scenes. The core takes about 10 minutes. Type, speak or switch to a voice interview at any point, and skip anything you're not sure of. We'll fill the gaps together on a short follow-up call.</p>
-</section>
+<section class="ik" id="ik" data-mode="chat" data-view="welcome" data-agent={agentId || undefined} aria-label="Intake interview with Riley">
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true"><defs><linearGradient id="ik-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a4cff"/><stop offset="1" stop-color="#00a3ff"/></linearGradient></defs></svg>
 
-<div class="ik-shell">
-  <section class="ik" id="ik" data-mode="chat" data-agent={agentId || undefined} aria-label="Intake interview with Riley">
-    <header class="ik-head">
-      <span class="ik-avatar" aria-hidden="true">R</span>
-      <div class="ik-who">
-        <strong>Riley</strong>
-        <span id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
+  <!-- Top bar -->
+  <div class="ik-top">
+    <div class="ik-col">
+      <div class="ik-top__row">
+        <div class="ik-id">
+          <span class="ik-orb ik-orb--sm" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+          <div class="ik-id__text">
+            <span class="ik-id__name">Riley</span>
+            <span class="ik-id__meta" id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
+          </div>
+        </div>
+        <div class="ik-modes" role="group" aria-label="How you'd like to answer">
+          <button type="button" data-mode="chat" aria-pressed="true"><Fragment set:html={svg(icons.chat, 16)} /><span>Chat</span></button>
+          <button type="button" data-mode="voice" aria-pressed="false"><Fragment set:html={svg(icons.wave, 16)} /><span>Voice<span class="ik-modes__long"> interview</span></span></button>
+        </div>
       </div>
-      <div class="ik-modes" role="group" aria-label="How you'd like to answer">
-        <button type="button" data-mode="chat" aria-pressed="true">
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
-          <span class="ik-modes__label">Chat</span>
-        </button>
-        <button type="button" data-mode="voice" aria-pressed="false">
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"/></svg>
-          <span class="ik-modes__label">Voice interview</span>
-        </button>
-      </div>
-    </header>
-    <div class="ik-bar" aria-hidden="true"><i id="ik-bar"></i></div>
+      <div class="ik-progress" aria-hidden="true"><i id="ik-bar"></i></div>
+    </div>
+  </div>
 
-    <div class:list={['ik-stage', { 'ik-stage--off': !agentId }]} id="ik-stage">
-      <div class:list={['ik-stage__inner', { 'ik-stage__inner--agent': agentId }]}>
+  <div class="ik-toast" id="ik-toast" role="status" hidden></div>
+
+  <!-- Welcome -->
+  <div class="ik-welcome" id="ik-welcome">
+    <div class="ik-col">
+      <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+      <h1 id="ik-hello">Let's map how your business <span>really runs.</span></h1>
+      <p class="ik-welcome__lead">I'm Riley. I'll ask about what you sell, who buys it and the work behind the scenes, one question at a time. Type, talk, or switch to a voice interview whenever you like.</p>
+      <ul class="ik-points">
+        <li><Fragment set:html={svg(icons.clock, 18)} />Core takes about 10 minutes</li>
+        <li><Fragment set:html={svg(icons.skip, 18)} />Skip anything you're unsure of</li>
+        <li><Fragment set:html={svg(icons.save, 18)} />Saved as you go</li>
+      </ul>
+      <div class="ik-welcome__actions">
+        <button class="ik-cta" type="button" id="ik-start-chat"><Fragment set:html={svg(icons.chat, 18)} />Start in chat</button>
+        <button class="ik-cta ik-cta--quiet" type="button" id="ik-start-voice"><Fragment set:html={svg(icons.wave, 18)} />Start a voice interview</button>
+      </div>
+      <p class="ik-welcome__fine">Your answers go straight to Roadmap Labs and are only used for your project. <a href="/privacy">Privacy policy</a></p>
+    </div>
+  </div>
+
+  <!-- Voice hero -->
+  <div class="ik-voice" id="ik-voice" aria-hidden="true">
+    <div>
+      <div class="ik-col ik-voice__inner">
+        <span class:list={['ik-orb', 'ik-orb--hero', { 'ik-orb--off': !agentId }]} id="ik-hero-orb" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
         {agentId ? (
           <>
-            <p class="ik-stage__status" id="ik-stage-status">Start the call and Riley picks up where you are. Your answers appear in the thread below.</p>
+            <span class="ik-voice__status" id="ik-voice-status">Ready when you are</span>
+            <p class="ik-voice__caption" id="ik-voice-caption"></p>
             <div class="ik-widget" id="ik-widget"></div>
           </>
         ) : (
           <>
-            <div class="ik-orb" aria-hidden="true">
-              <i></i><i></i><i></i><b></b>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            <span class="ik-voice__status">Voice interview coming online</span>
+            <p class="ik-voice__hint">Riley's voice is nearly ready. For now you can still talk your answers: the mic in the chat turns speech into text.</p>
+            <div class="ik-voice__actions">
+              <button class="ik-cta" type="button" id="ik-voice-fallback"><Fragment set:html={svg(icons.mic, 18)} />Talk my answers in chat</button>
             </div>
-            <span class="ik-stage__pill" role="status">Voice interview coming online: use the chat for now</span>
-            <p class="ik-stage__status">You can still speak your answers: press the mic in the chat box below.</p>
           </>
         )}
       </div>
     </div>
+  </div>
 
-    <div class="ik-log" id="ik-log" role="log" aria-live="polite" aria-relevant="additions">
-      <noscript><p class="ik-msg ik-msg--riley">The interview needs JavaScript. Please turn it on, or email dan@roadmaplabs.com.au and we'll send the questions another way.</p></noscript>
+  <!-- Conversation -->
+  <div class="ik-log" id="ik-log" role="log" aria-live="polite" aria-relevant="additions">
+    <div class="ik-col ik-log__inner" id="ik-thread">
+      <noscript><p class="ik-say">The interview needs JavaScript. Please turn it on, or email dan@roadmaplabs.com.au and we'll send the questions another way.</p></noscript>
     </div>
+  </div>
 
-    <div class="ik-tray" id="ik-tray" hidden>
-      <div class="ik-tray__row">
-        <label class="rl-btn rl-btn--outline" for="ik-files" style="cursor: pointer">Add files</label>
-        <input class="ik-sr" id="ik-files" type="file" multiple>
-        <small>Up to about 4MB in total. For anything bigger, paste a link instead.</small>
+  <!-- Dock -->
+  <div class="ik-dock">
+    <div class="ik-col" style="position: relative">
+      <div class="ik-menu" id="ik-tray" role="dialog" aria-label="Share something" hidden>
+        <label class="ik-menu__item" for="ik-files">
+          <span><Fragment set:html={svg(icons.file)} /></span>
+          <span><strong>Upload files</strong><small>Price lists, brand guides, documents · about 4MB in total</small></span>
+        </label>
+        <input class="ik-sr" id="ik-files" type="file" multiple tabindex="-1">
+        <button class="ik-menu__item" type="button" id="ik-menu-link">
+          <span><Fragment set:html={svg(icons.link)} /></span>
+          <span><strong>Add a link</strong><small>Google Drive, Dropbox, Loom. Best for anything big</small></span>
+        </button>
+        <form class="ik-menu__link" id="ik-linkform" hidden>
+          <label class="ik-sr" for="ik-link">Link</label>
+          <input id="ik-link" type="text" inputmode="url" autocomplete="off" placeholder="Paste a Drive, Dropbox or Loom/screen-recording link">
+          <button type="submit">Add link</button>
+        </form>
+        <button class="ik-menu__item" type="button" id="ik-rec" hidden>
+          <span><Fragment set:html={svg(icons.screen)} /></span>
+          <span><strong>Record your screen</strong><small>Talk us through it · up to 5 minutes</small></span>
+        </button>
+        <p class="ik-menu__foot">Big files or long videos? A link works best.</p>
       </div>
-      <div class="ik-tray__row" id="ik-rec-row" hidden>
-        <button class="rl-btn rl-btn--outline" type="button" id="ik-rec"><span class="ik-recdot" aria-hidden="true"></span>Record your screen</button>
-        <small>Talk us through it. Keep it short: up to 5 minutes. Longer? Paste a Loom link instead.</small>
+
+      <div class="ik-recbar" id="ik-recbar" role="status" hidden>
+        <span class="ik-recdot" aria-hidden="true"></span>
+        <span id="ik-rec-label">Recording 0:00</span>
+        <span class="ik-recbar__meter" aria-hidden="true"><i id="ik-rec-meter"></i></span>
+        <button type="button" id="ik-rec-stop">Stop</button>
       </div>
-      <form class="ik-tray__row" id="ik-linkform">
-        <label class="ik-sr" for="ik-link">Link</label>
-        <input class="rl-input" id="ik-link" type="text" inputmode="url" autocomplete="off" placeholder="A Drive or Dropbox link, or paste a Loom/screen-recording link">
-        <button class="rl-btn" type="submit">Add link</button>
+      <div class="ik-chips" id="ik-chips" aria-label="Shared so far"></div>
+
+      <form class="ik-composer" id="ik-composer" data-locked>
+        <button class="ik-ico" type="button" id="ik-attach" aria-label="Share a file, link or screen recording" aria-expanded="false" aria-controls="ik-tray" data-tip="Share a file or link"><Fragment set:html={svg(icons.clip)} /></button>
+        <label class="ik-sr" for="ik-input">Your answer</label>
+        <textarea id="ik-input" rows="1" placeholder="Type your answer…" autocomplete="off" enterkeyhint="send"></textarea>
+        <button class="ik-ico" type="button" id="ik-rec-quick" aria-label="Record your screen" data-tip="Record your screen" hidden><Fragment set:html={svg(icons.screen)} /></button>
+        <button class="ik-ico ik-mic" type="button" id="ik-mic" aria-label="Speak your answer" aria-pressed="false" data-tip="Speak your answer" hidden><Fragment set:html={svg(icons.mic)} /></button>
+        <button class="ik-ico ik-send" type="submit" id="ik-send" aria-label="Send answer" data-tip="Send · Enter"><Fragment set:html={svg(icons.up, 20, 2.4)} /></button>
       </form>
+      <div class="ik-meta">
+        <button class="ik-skip" type="button" id="ik-skip">Skip for now <small>· we'll cover it on the call</small></button>
+        <span class="ik-meta__right">
+          <span class="ik-saved"><Fragment set:html={svg(icons.check, 14, 2.6)} />Saved</span>
+          <span class="ik-meta__hint">Shift+Enter for a new line</span>
+          <button type="button" id="ik-send-now" hidden>Finish early</button>
+        </span>
+      </div>
     </div>
-    <div class="ik-recbar" id="ik-recbar" role="status" hidden>
-      <span class="ik-recdot" aria-hidden="true"></span>
-      <span id="ik-rec-label">Recording 0:00</span>
-      <span class="ik-recbar__meter" aria-hidden="true"><i id="ik-rec-meter"></i></span>
-      <button class="rl-btn" type="button" id="ik-rec-stop">Stop</button>
-    </div>
-    <div class="ik-chips" id="ik-chips" aria-label="Attached"></div>
+  </div>
 
-    <form class="ik-composer" id="ik-composer" data-locked>
-      <button class="ik-icon" type="button" id="ik-attach" aria-label="Attach files or a link" aria-expanded="false" aria-controls="ik-tray">
-        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>
-      </button>
-      <label class="ik-sr" for="ik-input">Your answer</label>
-      <textarea id="ik-input" rows="1" placeholder="Type your answer…" autocomplete="off"></textarea>
-      <button class="ik-icon ik-mic" type="button" id="ik-mic" aria-label="Speak your answer" aria-pressed="false" hidden>
-        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-      </button>
-      <button class="ik-skip" type="button" id="ik-skip">Skip</button>
-      <button class="ik-icon ik-send" type="submit" id="ik-send" aria-label="Send">
-        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-      </button>
-    </form>
-    <div class="ik-foot">
-      <span id="ik-hint">Enter to send · Paperclip for files (about 4MB in total), links or a screen recording</span>
-      <span><button type="button" id="ik-send-now" hidden>Send what I have so far</button></span>
+  <!-- Finish -->
+  <div class="ik-finish" id="ik-finish" tabindex="-1">
+    <div class="ik-col">
+      <span class="ik-done" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <h2 id="ik-finish-title">That's everything. Thank you.</h2>
+      <p class="ik-finish__lead">Everything you shared is safely with Roadmap Labs. We'll follow up within 2 business days.</p>
+      <ul class="ik-captured" id="ik-captured" aria-label="What we received"></ul>
+      <ol class="ik-next" aria-label="What happens next">
+        <li><strong>We read it all</strong>Roadmap Labs reviews your answers, files and recordings.</li>
+        <li><strong>We get in touch</strong>We follow up within 2 business days to book a time.</li>
+        <li><strong>A short call to fill the gaps</strong>Around 30 minutes on anything you skipped or we need to clarify.</li>
+      </ol>
+      <div class="ik-finish__actions">
+        <button class="ik-cta ik-cta--quiet" type="button" id="ik-download"><Fragment set:html={svg(icons.save, 18)} />Download a copy of your answers</button>
+        <p>Questions in the meantime? <a href="mailto:dan@roadmaplabs.com.au">dan@roadmaplabs.com.au</a></p>
+      </div>
     </div>
-  </section>
-  <p style="margin: 14px 4px 0; font-size: 12px; line-height: 18px; color: var(--text-muted)">Your answers go straight to Roadmap Labs and are only used for your project. See our <a href="/privacy" style="color: inherit">privacy policy</a>.</p>
-</div>
+  </div>
+</section>
 
 <script>
   import { QUESTIONS, CORE, FULL, SESSIONS, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
 
   type Step =
-    | { type: 'q'; qid: number; text: string; phase: 'core' | 'full' | 'closing'; divider?: string }
+    | { type: 'q'; qid: number; text: string; phase: 'core' | 'full' | 'closing'; section?: number }
     | { type: 'choice' }
     | { type: 'files' };
   /** a = answer (s: spoken in a voice interview), c = path choice. */
@@ -247,14 +482,18 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
 
   const STORE = 'rl-intake-v1';
   const CHOICE_TEXT = "That's the core done - about 10 minutes. Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.";
-  const FILES_TEXT = "Last thing: if there's anything you can share, like a price list, a brand guide or a quick recording of your screen as you walk through how something works, add it with the paperclip below. Then press Send everything and you're done.";
   const TOO_BIG = "That's too big to send through the page (about 4MB in total). Put it in Google Drive or Dropbox and paste the link instead.";
+  const SECONDS = { core: 40, full: 31, closing: 45 } as const; // rough time per question, for "about N min left"
 
   const byN = new Map(QUESTIONS.map((q) => [q.n, q]));
+  const textByQid = new Map<number, string>([...QUESTIONS.map((q) => [q.qid, q.text] as [number, string]), [CLOSING.anythingElse.qid, CLOSING.anythingElse.text]]);
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = matchMedia('(pointer: fine)').matches;
 
   const root = $<HTMLElement>('ik');
   const log = $<HTMLDivElement>('ik-log');
+  const thread = $<HTMLDivElement>('ik-thread');
   const composer = $<HTMLFormElement>('ik-composer');
   const input = $<HTMLTextAreaElement>('ik-input');
   const skipBtn = $<HTMLButtonElement>('ik-skip');
@@ -268,15 +507,21 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   const chips = $<HTMLDivElement>('ik-chips');
   const progress = $<HTMLSpanElement>('ik-progress');
   const bar = $<HTMLElement>('ik-bar');
-  const stage = $<HTMLElement>('ik-stage');
   const sendNow = $<HTMLButtonElement>('ik-send-now');
-  const recRow = $<HTMLDivElement>('ik-rec-row');
   const recBtn = $<HTMLButtonElement>('ik-rec');
+  const recQuick = $<HTMLButtonElement>('ik-rec-quick');
   const recBar = $<HTMLDivElement>('ik-recbar');
   const recLabel = $<HTMLSpanElement>('ik-rec-label');
   const recMeter = $<HTMLElement>('ik-rec-meter');
   const recStop = $<HTMLButtonElement>('ik-rec-stop');
+  const toast = $<HTMLDivElement>('ik-toast');
   const agentId = root.dataset.agent || '';
+
+  // Fit the stage to the viewport under the site header.
+  const header = document.querySelector<HTMLElement>('header.hd');
+  const fit = () => root.style.setProperty('--ik-top', `${header?.offsetHeight ?? 76}px`);
+  fit();
+  addEventListener('resize', fit);
 
   // Per-employee / per-client links: ?employee=&client=
   const params = new URLSearchParams(location.search);
@@ -318,79 +563,122 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     try { localStorage.removeItem(STORE); } catch {}
   }
 
+  // ---------- Orb level: Riley's voice, your mic, or text streaming ----------
+  let lvl = 0;
+  let lvlTarget = 0;
+  let lvlRaf = 0;
+  function bump(v: number) {
+    if (reduced) return;
+    lvlTarget = Math.max(lvlTarget, Math.min(1, v));
+    if (!lvlRaf) lvlRaf = requestAnimationFrame(lvlLoop);
+  }
+  function lvlLoop() {
+    lvl += (lvlTarget - lvl) * 0.28;
+    lvlTarget *= 0.9;
+    root.style.setProperty('--lvl', lvl.toFixed(3));
+    if (lvl > 0.003 || lvlTarget > 0.003) lvlRaf = requestAnimationFrame(lvlLoop);
+    else { lvlRaf = 0; root.style.setProperty('--lvl', '0'); }
+  }
+
   // ---------- Rendering ----------
   function scroll() {
     if (!replaying) log.scrollTop = log.scrollHeight;
   }
   function add<T extends HTMLElement>(el: T): T {
     if (replaying) el.style.animation = 'none';
-    log.appendChild(el);
+    thread.appendChild(el);
     scroll();
     return el;
   }
-  function msg(text: string, who: 'riley' | 'you' | 'skip', extraClass = '') {
-    const p = document.createElement('p');
-    p.className = `ik-msg ik-msg--${who} ${extraClass}`.trim();
-    p.textContent = text;
-    return add(p);
+  const el = (tag: string, cls: string, text?: string) => {
+    const e = document.createElement(tag);
+    e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  };
+  const ORB = '<span class="ik-orb ik-orb--sm" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>';
+
+  /** One of Riley's turns: a mini orb and a line of text (a question is shown large while it's current). */
+  function rileyTurn(isQuestion: boolean) {
+    const turn = el('div', `ik-turn${isQuestion ? ' ik-turn--q' : ''}`);
+    turn.innerHTML = ORB;
+    const body = el('div', 'ik-turn__body');
+    turn.append(body);
+    add(turn);
+    return body;
+  }
+  function settleQuestions() {
+    thread.querySelectorAll('.ik-q.is-current').forEach((q) => q.classList.remove('is-current'));
+  }
+  function answer(text: string, kind: 'you' | 'spoken' | 'skip') {
+    if (kind === 'skip') {
+      const p = el('p', 'ik-a ik-a--skip');
+      p.innerHTML = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h12M13 6l6 6-6 6"/></svg>';
+      p.append("Skipped. We'll cover it on the call");
+      return add(p);
+    }
+    return add(el('p', `ik-a${kind === 'spoken' ? ' ik-a--spoken' : ''}`, text));
   }
   function fileMsg(text: string) {
-    const p = document.createElement('p');
-    p.className = 'ik-msg ik-msg--file';
+    const p = el('p', 'ik-a ik-a--file');
     p.innerHTML = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>';
-    const span = document.createElement('span');
-    span.textContent = text;
-    p.append(span);
+    p.append(el('span', '', text));
     return add(p);
   }
-  function divider(text: string) {
-    const d = document.createElement('div');
-    d.className = 'ik-divider';
-    d.textContent = text;
+  function section(n: number) {
+    const d = el('div', 'ik-section ik-divider');
+    d.append(el('span', '', `Part ${n} of 4`), el('strong', '', SESSIONS[n as 1 | 2 | 3 | 4]));
     return add(d);
   }
-  function note(text: string, linkText?: string, onClick?: () => void) {
-    const p = document.createElement('p');
-    p.className = 'ik-note';
+  function note(text: string, linkText?: string, onClick?: () => void, error = false) {
+    const p = el('p', `ik-note${error ? ' ik-note--error' : ''}`);
     p.append(text);
     if (linkText && onClick) {
-      const b = document.createElement('button');
+      const b = el('button', '', linkText) as HTMLButtonElement;
       b.type = 'button';
-      b.textContent = linkText;
       b.addEventListener('click', onClick);
       p.append(' ', b);
     }
     return add(p);
   }
-  function buttons(list: { label: string; primary?: boolean; onClick: () => void }[]) {
-    const wrap = document.createElement('div');
-    wrap.className = 'ik-choices';
-    for (const b of list) {
-      const el = document.createElement('button');
-      el.type = 'button';
-      el.className = b.primary ? 'rl-btn' : 'rl-btn rl-btn--outline';
-      el.textContent = b.label;
-      el.addEventListener('click', b.onClick);
-      wrap.append(el);
+
+  const wait = (ms: number) => (replaying || reduced ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
+
+  /** Riley "types": a short think, then the words stream in. Screen readers get the full line at once. */
+  async function rileySays(text: string, opts: { question?: boolean; error?: boolean } = {}) {
+    if (opts.error) return note(text, undefined, undefined, true);
+    if (opts.question) settleQuestions();
+    const body = rileyTurn(!!opts.question);
+    const p = el('p', opts.question ? 'ik-q is-current' : 'ik-say');
+    body.append(p);
+    if (replaying || reduced) {
+      p.textContent = text;
+      return p;
     }
-    return add(wrap);
+    const think = el('span', 'ik-think');
+    think.innerHTML = '<i></i><i></i><i></i>';
+    think.setAttribute('aria-hidden', 'true');
+    p.append(think);
+    scroll();
+    await wait(380);
+    p.textContent = '';
+    const sr = el('span', 'ik-sr', text);
+    const vis = el('span', '');
+    vis.setAttribute('aria-hidden', 'true');
+    p.append(sr, vis);
+    const words = text.split(/(\s+)/);
+    const per = Math.max(18, Math.min(55, 1100 / Math.max(1, words.length / 2)));
+    let out = '';
+    for (const w of words) {
+      out += w;
+      vis.textContent = out;
+      if (w.trim()) { bump(0.28 + Math.random() * 0.25); scroll(); await wait(per); }
+    }
+    p.textContent = text;
+    scroll();
+    return p;
   }
 
-  const wait = (ms: number) => (replaying ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
-  async function rileySays(text: string, extraClass = '') {
-    if (!replaying) {
-      const t = document.createElement('div');
-      t.className = 'ik-msg ik-msg--riley ik-msg--typing';
-      t.setAttribute('aria-hidden', 'true');
-      t.innerHTML = '<span></span><span></span><span></span>';
-      add(t);
-      await wait(Math.min(900, 320 + text.length * 6));
-      t.remove();
-    }
-    return msg(text, 'riley', extraClass);
-  }
-
-  const finePointer = matchMedia('(pointer: fine)').matches;
   function lock(locked: boolean) {
     if (locked) composer.setAttribute('data-locked', '');
     else composer.removeAttribute('data-locked');
@@ -398,7 +686,16 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     skipBtn.disabled = locked;
     sendBtn.disabled = locked;
     micBtn.disabled = locked;
+    input.placeholder = locked ? (steps[pos]?.type === 'q' || !steps[pos] ? 'Riley is typing…' : 'Pick an option above') : 'Type your answer…';
+    if (steps[pos]?.type === 'files') input.placeholder = 'All questions answered';
     if (!locked && !replaying && mode === 'chat' && (actions.length || finePointer)) input.focus({ preventScroll: true });
+  }
+
+  function minutesLeft(): string {
+    const rest = steps.slice(pos).filter((s): s is Extract<Step, { type: 'q' }> => s.type === 'q');
+    const secs = rest.reduce((sum, s) => sum + SECONDS[s.phase], 0);
+    if (secs < 60) return 'under a minute left';
+    return `about ${Math.round(secs / 60)} min left`;
   }
 
   function updateProgress() {
@@ -408,41 +705,96 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     const fullDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'full').length;
     let label = '';
     let pct = 0;
-    if (sent) { label = 'Sent. Thank you'; pct = 100; }
-    else if (!s || s.type === 'files') { label = 'All questions done'; pct = 100; }
+    if (root.dataset.view === 'welcome') { label = 'Roadmap Labs intake'; pct = 0; }
+    else if (sent) { label = 'All sent'; pct = 100; }
+    else if (!s || s.type === 'files') { label = 'All questions done · ready to send'; pct = 100; }
     else if (s.type === 'choice') { label = 'Core done'; pct = 34; }
-    else if (s.phase === 'core') { label = `Core · question ${coreDone + 1} of ${CORE.length}`; pct = (coreDone / CORE.length) * 34; }
-    else if (s.phase === 'full') { label = `Full set · question ${fullDone + 1} of ${fullTotal}`; pct = 34 + (fullDone / fullTotal) * 60; }
+    else if (s.phase === 'core') { label = `Question ${coreDone + 1} of ${CORE.length} · ${minutesLeft()}`; pct = (coreDone / CORE.length) * 34; }
+    else if (s.phase === 'full') { label = `Deeper set · ${fullDone + 1} of ${fullTotal} · ${minutesLeft()}`; pct = 34 + (fullDone / fullTotal) * 60; }
     else { label = 'Last question'; pct = 96; }
-    progress.textContent = label;
-    bar.style.width = `${Math.round(pct)}%`;
+    const [main, ...rest] = label.split(' · ');
+    progress.textContent = '';
+    progress.append(el('b', '', main));
+    if (rest.length) progress.append(el('i', '', ' · '), el('span', '', rest.join(' · ')));
+    bar.style.width = `${Math.max(2, Math.round(pct))}%`;
     sendNow.hidden = sent || answers.size === 0 || s?.type === 'files';
+    const caption = document.getElementById('ik-voice-caption');
+    if (caption) caption.textContent = s?.type === 'q' ? s.text : s?.type === 'choice' ? "That's the core done. Keep going, or wrap up?" : 'All questions done.';
   }
 
   // ---------- Flow ----------
+  function milestone(live: boolean) {
+    const card = el('div', 'ik-card ik-mile');
+    card.innerHTML = `<span class="ik-mile__ring" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28"/></svg><b>${CORE.length}/${CORE.length}</b></span>`;
+    card.append(el('h3', '', "That's the core done"));
+    card.append(el('p', '', 'Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.'));
+    card.setAttribute('aria-label', CHOICE_TEXT);
+    if (replaying || !live) card.querySelector<SVGCircleElement>('.fg')!.style.cssText = 'animation: none; stroke-dashoffset: 0';
+    add(card);
+    return card;
+  }
+  function option(label: string, sub: string, primary: boolean, onClick: () => void, data: string) {
+    const b = el('button', `ik-opt${primary ? ' ik-opt--primary' : ''}`) as HTMLButtonElement;
+    b.type = 'button';
+    b.dataset.choice = data;
+    b.append(el('strong', '', label), el('small', '', sub));
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
   async function present(i = pos) {
     updateProgress();
     const s = steps[i];
     if (!s || sent) return;
     if (s.type === 'q') {
-      if (s.divider) divider(s.divider);
-      await rileySays(s.text, 'ik-msg--q');
+      if (s.section) section(s.section);
+      await rileySays(s.text, { question: true });
       if (i === pos) lock(false);
     } else if (s.type === 'choice') {
       lock(true);
-      await rileySays(CHOICE_TEXT);
+      settleQuestions();
+      const card = milestone(true);
       if (i !== pos) return;
-      const wrap = buttons([
-        { label: 'Keep going', primary: true, onClick: () => { wrap.remove(); act({ t: 'c', v: 'more' }); } },
-        { label: 'Wrap up now', onClick: () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); } },
-      ]);
+      const wrap = el('div', 'ik-choices');
+      wrap.append(
+        option('Keep going', 'Deeper brand and workflow questions · about 15 min', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more'),
+        option('Wrap up now', 'One last question, then share anything useful', false, () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); }, 'wrap'),
+      );
+      card.append(wrap);
+      scroll();
       if (!replaying && mode === 'chat') (wrap.firstChild as HTMLButtonElement).focus({ preventScroll: true });
     } else if (s.type === 'files') {
       lock(true);
-      await rileySays(FILES_TEXT);
-      buttons([{ label: 'Send everything', primary: true, onClick: () => sendAll() }]);
-      openTray(true);
+      settleQuestions();
+      await rileySays('Last thing: anything you can share? Files, links and quick screen recordings all help us understand the business faster.');
+      shareCard();
     }
+  }
+
+  function shareCard() {
+    const card = el('div', 'ik-card ik-share');
+    card.append(el('h3', '', 'Share anything useful'), el('p', '', 'A price list, a brand guide, a proposal you send, or a quick recording of how something works. All optional.'));
+    const tiles = el('div', 'ik-tiles');
+    const tile = (icon: string, title: string, sub: string, onClick: () => void) => {
+      const b = el('button', 'ik-tile') as HTMLButtonElement;
+      b.type = 'button';
+      b.innerHTML = `<span class="ik-tile__icon">${icon}</span>`;
+      b.append(el('strong', '', title), el('small', '', sub));
+      b.addEventListener('click', onClick);
+      tiles.append(b);
+    };
+    tile(document.querySelector('#ik-tray label svg')!.outerHTML, 'Upload files', 'About 4MB in total', () => fileInput.click());
+    tile(document.querySelector('#ik-menu-link svg')!.outerHTML, 'Add a link', 'Drive, Dropbox or Loom', () => { openTray(true); showLinkField(); });
+    if (canRecord) tile(document.querySelector('#ik-rec svg')!.outerHTML, 'Record your screen', 'Talk us through it · up to 5 min', () => startRecording());
+    card.append(tiles);
+    const row = el('div', 'ik-share__send ik-choices');
+    const send = el('button', 'ik-cta', 'Send everything') as HTMLButtonElement;
+    send.type = 'button';
+    send.id = 'ik-send-all';
+    send.addEventListener('click', () => sendAll());
+    row.append(send, el('small', '', 'You can send now; sharing is optional.'));
+    card.append(row);
+    add(card);
   }
 
   function addClosing() {
@@ -458,16 +810,16 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     let render: () => void;
     if (a.t === 'a' && s.type === 'q') {
       answers.set(s.qid, a.v);
-      render = () => (a.v === SKIPPED ? msg('Skipped for now', 'skip') : msg(a.v, 'you', a.s ? 'ik-msg--spoken' : ''));
+      render = () => { answer(a.v, a.v === SKIPPED ? 'skip' : a.s ? 'spoken' : 'you'); };
     } else if (a.t === 'c' && s.type === 'choice') {
-      render = () => msg(a.v === 'more' ? 'Keep going' : 'Wrap up now', 'you');
+      render = () => { answer(a.v === 'more' ? 'Keep going' : 'Wrap up now', 'you'); };
       if (a.v === 'more') {
         let session = 0;
         for (const n of FULL) {
           const q = byN.get(n)!;
-          const div = q.session !== session ? SESSIONS[q.session] : undefined;
+          const sec = q.session !== session ? q.session : undefined;
           session = q.session;
-          steps.push({ type: 'q', qid: q.qid, text: q.text, phase: 'full', divider: div });
+          steps.push({ type: 'q', qid: q.qid, text: q.text, phase: 'full', section: sec });
         }
       }
       addClosing();
@@ -491,10 +843,12 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     actions.push(a);
     save();
     lock(true);
+    updateProgress();
     const next = pos;
     enqueue(async () => {
       render();
       if (a.t === 'c' && a.v === 'wrap') await rileySays('No problem. One last question before you go.');
+      if (a.t === 'c' && a.v === 'more') await rileySays("Great. Same as before: answer what you can and skip what you can't.");
       await present(next);
     });
     return true;
@@ -536,10 +890,9 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
       lock(true);
       const reply = await askRiley(text, s.text);
       if (reply) {
-        msg(text, 'you');
+        answer(text, 'you');
         await rileySays(reply);
-        note('Back to it:');
-        await rileySays(s.text, 'ik-msg--q');
+        await rileySays(s.text, { question: true });
         const at = pos;
         const keep = note('Was that actually your answer?', 'Save it as my answer', () => {
           keep.remove();
@@ -565,7 +918,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   });
   function autosize() {
     input.style.height = 'auto';
-    input.style.height = `${Math.min(input.scrollHeight, 200)}px`;
+    input.style.height = `${Math.min(input.scrollHeight, 180)}px`;
   }
   input.addEventListener('input', autosize);
 
@@ -573,11 +926,41 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
   let rec: any = null;
   if (SR) micBtn.hidden = false;
+  let meter: { stream: MediaStream; ctx: AudioContext; raf: number } | null = null;
+  async function startMeter() {
+    // Desktop only: a second mic capture can upset speech recognition on phones.
+    if (!finePointer || reduced || meter) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const ctx = new AudioContext();
+      const an = ctx.createAnalyser();
+      an.fftSize = 512;
+      ctx.createMediaStreamSource(stream).connect(an);
+      const buf = new Uint8Array(an.fftSize);
+      meter = { stream, ctx, raf: 0 };
+      const tick = () => {
+        if (!meter) return;
+        an.getByteTimeDomainData(buf);
+        let sum = 0;
+        for (const v of buf) { const d = (v - 128) / 128; sum += d * d; }
+        bump(Math.sqrt(sum / buf.length) * 5);
+        meter.raf = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {}
+  }
+  function stopMeter() {
+    if (!meter) return;
+    cancelAnimationFrame(meter.raf);
+    meter.stream.getTracks().forEach((t) => t.stop());
+    meter.ctx.close().catch(() => {});
+    meter = null;
+  }
   function stopListening() {
     if (rec) { try { rec.stop(); } catch {} }
   }
-  micBtn.addEventListener('click', () => {
-    if (rec) { stopListening(); return; }
+  function startListening() {
+    if (rec || !SR || input.disabled) return;
     const base = input.value.trim() ? input.value.trimEnd() + ' ' : '';
     rec = new SR();
     rec.lang = 'en-AU';
@@ -594,8 +977,10 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     };
     rec.onend = () => {
       rec = null;
+      stopMeter();
       micBtn.setAttribute('aria-pressed', 'false');
       micBtn.setAttribute('aria-label', 'Speak your answer');
+      micBtn.dataset.tip = 'Speak your answer';
       input.placeholder = 'Type your answer…';
       input.focus({ preventScroll: true });
     };
@@ -603,51 +988,65 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
       rec.start();
       micBtn.setAttribute('aria-pressed', 'true');
       micBtn.setAttribute('aria-label', 'Stop listening');
-      input.placeholder = 'Listening… press the mic again when you’re done';
+      micBtn.dataset.tip = 'Stop listening';
+      input.placeholder = 'Listening… tap the mic when you’re done';
+      startMeter();
     } catch {
       rec = null;
     }
-  });
+  }
+  micBtn.addEventListener('click', () => (rec ? stopListening() : startListening()));
 
-  // ---------- Attachments ----------
+  // ---------- Sharing: files, links, screen recordings ----------
   function openTray(open: boolean) {
     tray.hidden = !open;
     attachBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) linkForm.hidden = true;
+  }
+  function showLinkField() {
+    linkForm.hidden = false;
+    linkInput.focus({ preventScroll: true });
   }
   attachBtn.addEventListener('click', () => openTray(tray.hidden));
+  $<HTMLButtonElement>('ik-menu-link').addEventListener('click', showLinkField);
+  document.addEventListener('pointerdown', (e) => {
+    if (!tray.hidden && !tray.contains(e.target as Node) && !attachBtn.contains(e.target as Node)) openTray(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !tray.hidden) { openTray(false); attachBtn.focus(); }
+  });
 
   const fmtSize = (b: number) => (b < 1024 * 1024 ? `${Math.max(1, Math.round(b / 1024))} KB` : `${(b / 1024 / 1024).toFixed(1)} MB`);
   const totalBytes = () => files.reduce((sum, f) => sum + f.size, 0);
+  const CHIP_ICON = { file: document.querySelector('#ik-tray label svg')!.outerHTML, link: document.querySelector('#ik-menu-link svg')!.outerHTML, rec: document.querySelector('#ik-rec svg')!.outerHTML };
 
   function renderChips() {
     chips.textContent = '';
-    const chip = (label: string, onRemove: () => void) => {
-      const c = document.createElement('span');
-      c.className = 'ik-chip';
-      const s = document.createElement('span');
-      s.textContent = label;
-      const x = document.createElement('button');
+    const chip = (icon: string, label: string, onRemove: () => void) => {
+      const c = el('span', 'ik-chip');
+      c.innerHTML = icon.replace(/width="\d+" height="\d+"/, 'width="14" height="14"');
+      const x = el('button', '', '×') as HTMLButtonElement;
       x.type = 'button';
-      x.textContent = '×';
       x.setAttribute('aria-label', `Remove ${label}`);
       x.addEventListener('click', onRemove);
-      c.append(s, x);
+      c.append(el('span', '', label), x);
       chips.append(c);
     };
-    files.forEach((f, i) => chip(`${f.name} · ${fmtSize(f.size)}`, () => { files.splice(i, 1); renderChips(); }));
-    links.forEach((l, i) => chip(linkLabel(l), () => { links.splice(i, 1); save(); renderChips(); }));
+    files.forEach((f, i) => chip(CHIP_ICON.file, `${f.name} · ${fmtSize(f.size)}`, () => { files.splice(i, 1); renderChips(); }));
+    links.forEach((l, i) => chip(l.startsWith('Screen recording') ? CHIP_ICON.rec : CHIP_ICON.link, linkLabel(l), () => { links.splice(i, 1); save(); renderChips(); }));
   }
 
   fileInput.addEventListener('change', () => {
     for (const f of Array.from(fileInput.files || [])) {
       if (totalBytes() + f.size > MAX_UPLOAD_BYTES) {
-        rileySays(`${f.name}: ${TOO_BIG}`);
+        note(`${f.name}: ${TOO_BIG}`, undefined, undefined, true);
         continue;
       }
       files.push(f);
       fileMsg(`${f.name} · ${fmtSize(f.size)}`);
     }
     fileInput.value = '';
+    openTray(false);
     renderChips();
   });
 
@@ -658,7 +1057,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     if (/^[\w-]+(\.[\w-]+)+([/?#:]\S*)?$/.test(t)) return `https://${t}`;
     return t;
   }
-  const linkLabel = (l: string) => (l.startsWith('Screen recording') ? l.split(': ')[0] : l);
+  const linkLabel = (l: string) => (l.startsWith('Screen recording') ? l.split(': ')[0] : l.replace(/^https?:\/\//, ''));
   function addLink(raw: string, label?: string) {
     const v = normaliseLink(raw);
     if (!v || links.includes(v)) return false;
@@ -670,12 +1069,12 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   }
   linkForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (addLink(linkInput.value)) linkInput.value = '';
+    if (addLink(linkInput.value)) { linkInput.value = ''; openTray(false); }
   });
 
   // ---------- Screen recording (getDisplayMedia -> MediaRecorder -> private Supabase bucket) ----------
   const canRecord = !!navigator.mediaDevices?.getDisplayMedia && typeof MediaRecorder !== 'undefined';
-  if (canRecord) recRow.hidden = false;
+  if (canRecord) { recBtn.hidden = false; recQuick.hidden = false; }
   let recBusy = false;
   let stopRecording: ((why?: 'time' | 'size') => void) | null = null;
   const fmtDur = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -690,6 +1089,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
 
   async function startRecording() {
     if (recBusy) return;
+    openTray(false);
     let display: MediaStream;
     try {
       display = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15, max: 24 } }, audio: true });
@@ -698,7 +1098,6 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
       return;
     }
     recBusy = true;
-    openTray(false);
     // Narration from the mic if allowed; system/tab audio if the browser shared it. Mix both when there are two.
     let mic: MediaStream | null = null;
     try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); } catch {}
@@ -713,9 +1112,9 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
       tracks.push(dest.stream.getAudioTracks()[0]);
     }
     const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) || '';
-    let rec: MediaRecorder;
+    let mr: MediaRecorder;
     try {
-      rec = new MediaRecorder(new MediaStream(tracks), { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: RECORDING.videoBitsPerSecond, audioBitsPerSecond: 64_000 });
+      mr = new MediaRecorder(new MediaStream(tracks), { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: RECORDING.videoBitsPerSecond, audioBitsPerSecond: 64_000 });
     } catch {
       [display, mic].forEach((s) => s?.getTracks().forEach((t) => t.stop()));
       recBusy = false;
@@ -729,9 +1128,9 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     const elapsed = () => (Date.now() - started) / 1000;
     stopRecording = (why) => {
       stoppedBy ??= why;
-      if (rec.state !== 'inactive') rec.stop();
+      if (mr.state !== 'inactive') mr.stop();
     };
-    rec.ondataavailable = (e) => {
+    mr.ondataavailable = (e) => {
       if (!e.data.size) return;
       chunks.push(e.data);
       bytes += e.data.size;
@@ -739,30 +1138,30 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     };
     const tick = window.setInterval(() => {
       const s = elapsed();
-      showRecBar(`Recording ${fmtDur(s)} of ${MAX_LABEL}`, Math.max(s / RECORDING.maxSeconds, bytes / RECORDING.stopAtBytes));
+      showRecBar(`Recording ${fmtDur(s)} / ${MAX_LABEL}`, Math.max(s / RECORDING.maxSeconds, bytes / RECORDING.stopAtBytes));
       if (s >= RECORDING.maxSeconds) stopRecording?.('time');
     }, 500);
     display.getVideoTracks()[0]?.addEventListener('ended', () => stopRecording?.());
-    rec.onstop = async () => {
+    mr.onstop = async () => {
       clearInterval(tick);
       stopRecording = null;
       [display, mic].forEach((s) => s?.getTracks().forEach((t) => t.stop()));
       ctx?.close().catch(() => {});
       const seconds = elapsed();
-      const blob = new Blob(chunks, { type: (rec.mimeType || mime || 'video/webm').split(';')[0] });
+      const blob = new Blob(chunks, { type: (mr.mimeType || mime || 'video/webm').split(';')[0] });
       if (stoppedBy === 'time') note(`That's ${MAX_LABEL}, so the recording stopped there. Shorter is better; for anything longer, paste a Loom link.`);
       if (stoppedBy === 'size') note('The recording reached the size limit, so it stopped there. For anything longer, paste a Loom link.');
       try {
         await uploadRecording(blob, seconds);
       } catch (err) {
-        rileySays(err instanceof Error && err.message ? err.message : "The recording couldn't be saved. Please try again, or paste a Loom link instead.", 'ik-msg--error');
+        note(err instanceof Error && err.message ? err.message : "The recording couldn't be saved. Please try again, or paste a Loom link instead.", undefined, undefined, true);
       } finally {
         recBar.hidden = true;
         recBusy = false;
       }
     };
-    rec.start(1000);
-    showRecBar(`Recording 0:00 of ${MAX_LABEL}`, 0);
+    mr.start(1000);
+    showRecBar(`Recording 0:00 / ${MAX_LABEL}`, 0);
     recStop.focus({ preventScroll: true });
   }
 
@@ -800,6 +1199,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   }
 
   recBtn.addEventListener('click', () => startRecording());
+  recQuick.addEventListener('click', () => startRecording());
   recStop.addEventListener('click', () => stopRecording?.());
 
   // ---------- Submit ----------
@@ -807,14 +1207,14 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     if (sending || sent) return;
     stopListening();
     if (recBusy) {
-      rileySays('Hang on, your screen recording is still going. Stop it (or wait for the upload to finish), then press Send again.');
+      note('Hang on, your screen recording is still going. Stop it (or wait for the upload to finish), then send again.');
       return;
     }
     // A link typed into the box but never added still counts.
     if (linkInput.value.trim() && addLink(linkInput.value)) linkInput.value = '';
-    if (totalBytes() > MAX_UPLOAD_BYTES) { rileySays(TOO_BIG, 'ik-msg--error'); return; }
+    if (totalBytes() > MAX_UPLOAD_BYTES) { note(TOO_BIG, undefined, undefined, true); return; }
     if (!answers.size && !files.length && !links.length) {
-      rileySays("There's nothing to send yet. Answer a question or two first, or attach a file or link.");
+      note("There's nothing to send yet. Answer a question or two first, or share a file or link.");
       return;
     }
     const data = new FormData();
@@ -827,8 +1227,10 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
 
     sending = true;
     lock(true);
-    root.querySelectorAll<HTMLButtonElement>('.ik-choices button').forEach((b) => (b.disabled = true));
-    const sendingNote = note('Sending…');
+    const sendAllBtn = document.getElementById('ik-send-all') as HTMLButtonElement | null;
+    const label = sendAllBtn?.innerHTML;
+    if (sendAllBtn) { sendAllBtn.disabled = true; sendAllBtn.innerHTML = '<span class="ik-spin" aria-hidden="true"></span>Sending…'; }
+    const sendingNote = sendAllBtn ? null : note('Sending your answers…');
     try {
       const r = await fetch('/api/intake-submit', { method: 'POST', body: data });
       const d = await r.json().catch(() => null);
@@ -837,15 +1239,13 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
       sent = true;
       clear();
       openTray(false);
-      chips.textContent = '';
-      sendingNote.remove();
       updateProgress();
-      await rileySays("Thanks, that's everything. Roadmap Labs will review your answers and follow up within 2 business days. If anything's urgent, email dan@roadmaplabs.com.au.");
+      finish();
     } catch (err) {
-      sendingNote.remove();
-      await rileySays(err instanceof Error && err.message ? err.message : "That didn't send. Please try again.", 'ik-msg--error');
-      root.querySelectorAll<HTMLButtonElement>('.ik-choices button').forEach((b) => (b.disabled = false));
-      buttons([{ label: 'Try again', primary: true, onClick: () => sendAll() }]);
+      sendingNote?.remove();
+      if (sendAllBtn) { sendAllBtn.disabled = false; sendAllBtn.innerHTML = label ?? 'Send everything'; }
+      const msg = err instanceof Error && err.message ? err.message : "That didn't send. Please try again.";
+      note(`${msg} Nothing is lost: your answers are still saved here.`, 'Try again', () => sendAll(), true);
       if (steps[pos]?.type === 'q') lock(false);
     } finally {
       sending = false;
@@ -855,22 +1255,67 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     if (confirm("Send your answers so far? Anything you haven't reached yet will be left out.")) sendAll();
   });
 
+  // ---------- Finish ----------
+  const answeredCount = () => [...answers.values()].filter((v) => v !== SKIPPED).length;
+  function finish() {
+    stopListening();
+    const skipped = [...answers.values()].filter((v) => v === SKIPPED).length;
+    const recs = links.filter((l) => l.startsWith('Screen recording')).length;
+    const plainLinks = links.length - recs;
+    const tick = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    const list = $<HTMLUListElement>('ik-captured');
+    list.textContent = '';
+    const item = (main: string, sub?: string) => {
+      const li = el('li', '');
+      li.innerHTML = tick;
+      li.append(main);
+      if (sub) li.append(' ', el('small', '', sub));
+      list.append(li);
+    };
+    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
+    item(`${plural(answeredCount(), 'answer')} received`, skipped ? `· ${skipped} skipped, we'll cover ${skipped === 1 ? 'it' : 'them'} on the call` : undefined);
+    const shared = [files.length && plural(files.length, 'file'), plainLinks && plural(plainLinks, 'link'), recs && plural(recs, 'screen recording')].filter(Boolean);
+    if (shared.length) item(`${shared.join(', ')} shared`);
+    item('Saved to Roadmap Labs', `· ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
+    if (client) $<HTMLElement>('ik-finish-title').textContent = `That's everything, ${client}. Thank you.`;
+    root.dataset.view = 'finish';
+    $<HTMLElement>('ik-finish').focus({ preventScroll: true });
+  }
+  $<HTMLButtonElement>('ik-download').addEventListener('click', () => {
+    const lines = [`Roadmap Labs intake${client ? ` · ${client}` : ''}`, new Date().toLocaleString(), ''];
+    for (const [qid, v] of answers) lines.push(textByQid.get(qid) ?? `Question ${qid}`, v === SKIPPED ? '(skipped)' : v, '');
+    if (links.length) lines.push('Links shared', ...links, '');
+    if (files.length) lines.push('Files shared', ...files.map((f) => f.name), '');
+    const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'roadmap-labs-intake-answers.txt' });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
   // ---------- Modes ----------
   let widgetLoaded = false;
   function setMode(m: Mode, persist = true) {
     mode = m;
     root.dataset.mode = m;
+    $<HTMLElement>('ik-voice').setAttribute('aria-hidden', String(m !== 'voice'));
     root.querySelectorAll<HTMLButtonElement>('.ik-modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
     if (m === 'voice') {
       stopListening();
       loadWidget();
     }
     if (persist) save();
-    scroll();
+    setTimeout(scroll, 560);
   }
   root.querySelectorAll<HTMLButtonElement>('.ik-modes button').forEach((b) =>
-    b.addEventListener('click', () => setMode(b.dataset.mode as Mode)),
+    b.addEventListener('click', () => {
+      setMode(b.dataset.mode as Mode);
+      if (root.dataset.view === 'welcome') begin();
+    }),
   );
+  document.getElementById('ik-voice-fallback')?.addEventListener('click', () => {
+    setMode('chat');
+    setTimeout(startListening, 400);
+  });
 
   // ---------- Voice interview (ElevenLabs ConvAI widget) ----------
   // The agent runs the same script through client tools, so voice and chat share one thread and one state.
@@ -884,6 +1329,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     w.setAttribute('placement', 'bottom');
     w.setAttribute('transcript', 'false');
     w.setAttribute('text-input', 'false');
+    w.setAttribute('show-avatar-when-collapsed', 'false');
     w.setAttribute('avatar-orb-color-1', '#0a4cff');
     w.setAttribute('avatar-orb-color-2', '#00a3ff');
     w.setAttribute('text-contents', JSON.stringify({ main_label: 'Talk it through with Riley', start_call: 'Start voice interview', end_call: 'End interview' }));
@@ -891,6 +1337,10 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     const s = document.createElement('script');
     s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
     s.async = true;
+    s.onerror = () => {
+      const st = document.getElementById('ik-voice-status');
+      if (st) st.textContent = "Voice couldn't load. Chat works the same";
+    };
     document.head.append(s);
   }
 
@@ -900,10 +1350,21 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     if (!s) return 'The interview is finished.';
     if (s.type === 'q') return `Ask this question exactly as written, then wait for the answer: "${s.text}"`;
     if (s.type === 'choice') return `The core questions are done. Say exactly: "${CHOICE_TEXT}" Then call choose_path with path "keep_going" or "wrap_up".`;
-    return 'All the questions are done. Tell them they can add files or links in the chat with the paperclip button, then press Send everything on the screen. Thank them and end the call.';
+    return 'All the questions are done. Tell them they can add files, links or a screen recording on the screen, then press Send everything. Thank them and end the call.';
   }
 
-  let speakingTimer = 0;
+  /** Rough loudness of a base64 audio chunk from the agent (16-bit PCM); any chunk still counts as speech. */
+  function chunkLevel(b64: unknown) {
+    if (typeof b64 !== 'string') return 0.5;
+    try {
+      const bin = atob(b64.length > 6000 ? b64.slice(0, 6000) : b64);
+      const n = bin.length >> 1;
+      let sum = 0;
+      for (let i = 0; i < n; i++) { let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); if (v > 32767) v -= 65536; sum += v * v; }
+      return Math.max(0.25, Math.min(1, Math.sqrt(sum / Math.max(1, n)) / 6000));
+    } catch { return 0.5; }
+  }
+
   document.addEventListener('elevenlabs-convai:call', (event: any) => {
     const config = event?.detail?.config;
     if (!config) return;
@@ -929,52 +1390,75 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
         return `Done. Next: ${stepPrompt()}`;
       },
     };
+    const status = document.getElementById('ik-voice-status');
+    if (status) status.textContent = 'Connecting…';
     const onConnect = config.onConnect;
     config.onConnect = (...args: unknown[]) => {
-      stage.classList.add('ik-stage--live');
+      if (status) { status.textContent = 'Live with Riley'; status.setAttribute('data-live', ''); }
       onConnect?.(...args);
     };
     const onAudio = config.onAudio;
     config.onAudio = (...args: unknown[]) => {
-      stage.setAttribute('data-speaking', '');
-      clearTimeout(speakingTimer);
-      speakingTimer = window.setTimeout(() => stage.removeAttribute('data-speaking'), 1200);
+      bump(chunkLevel(args[0]));
       onAudio?.(...args);
     };
   });
 
   // ---------- Start ----------
-  async function start() {
+  function showToast(text: string, action?: string, onClick?: () => void) {
+    toast.textContent = text;
+    if (action && onClick) {
+      const b = el('button', '', action) as HTMLButtonElement;
+      b.type = 'button';
+      b.addEventListener('click', onClick);
+      toast.append(b);
+    }
+    toast.hidden = false;
+    setTimeout(() => { toast.hidden = true; }, 9000);
+  }
+
+  let begun = false;
+  async function begin() {
+    if (begun) return;
+    begun = true;
+    root.dataset.view = 'chat';
+    updateProgress();
+    await rileySays(`Hi${client ? ` ${client}` : ''}, I'm Riley. Answer in your own words; there are no wrong answers. We'll start with the core: ${CORE.length} questions, about 10 minutes.`);
+    enqueue(() => present());
+  }
+  $<HTMLButtonElement>('ik-start-chat').addEventListener('click', () => { setMode('chat'); begin(); });
+  $<HTMLButtonElement>('ik-start-voice').addEventListener('click', () => { setMode('voice'); begin(); });
+
+  function start() {
     lock(true);
+    if (client) $<HTMLElement>('ik-hello').innerHTML = `Hi ${client.replace(/[<>&"]/g, '')}. Let's map how your business <span>really runs.</span>`;
     const saved = load();
     links = Array.isArray(saved.links) ? saved.links.filter((l) => typeof l === 'string') : [];
     renderChips();
     setMode(saved.mode === 'voice' ? 'voice' : 'chat', false);
-    if (saved.actions.length) {
-      replaying = true;
-      msg(`Hi${client ? `, ${client}` : ''}. I'm Riley. Welcome back.`, 'riley');
-      for (const a of saved.actions) {
-        const s = steps[pos];
-        if (s?.type === 'q') { if (s.divider) divider(s.divider); msg(s.text, 'riley', 'ik-msg--q'); }
-        else if (s?.type === 'choice') msg(CHOICE_TEXT, 'riley');
-        const render = apply(a);
-        if (!render) break;
-        render();
-        actions.push(a);
-      }
-      note('Picked up where you left off.', 'Start over', () => {
-        if (!confirm('Clear your answers and start again?')) return;
-        clear();
-        location.reload();
-      });
-      replaying = false;
-      log.scrollTop = log.scrollHeight;
-      enqueue(() => present());
-      return;
+    if (!saved.actions.length) {
+      updateProgress();
+      return; // welcome screen until they pick chat or voice
     }
-    await rileySays(`Hi${client ? `, ${client}` : ''}. I'm Riley, and I'll be asking about the business one question at a time.`);
-    await rileySays(`Answer in your own words, by typing or with the mic. Prefer a proper conversation? Switch to Voice interview at the top at any point and we'll carry on from the same question. If you're not sure about one, press Skip and we'll come back to it on the follow-up call.`);
-    await rileySays(`We'll start with the core: ${CORE.length} questions, about 10 minutes.`);
+    begun = true;
+    root.dataset.view = 'chat';
+    replaying = true;
+    for (const a of saved.actions) {
+      const s = steps[pos];
+      if (s?.type === 'q') { if (s.section) section(s.section); rileySays(s.text, { question: true }); }
+      else if (s?.type === 'choice') milestone(false);
+      const render = apply(a);
+      if (!render) break;
+      render();
+      actions.push(a);
+    }
+    replaying = false;
+    log.scrollTop = log.scrollHeight;
+    showToast('Welcome back. Picked up where you left off', 'Start over', () => {
+      if (!confirm('Clear your answers and start again?')) return;
+      clear();
+      location.reload();
+    });
     enqueue(() => present());
   }
 
