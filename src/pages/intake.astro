@@ -37,16 +37,19 @@ const svg = (d: string, size = 20, sw = 2) =>
     --ease: cubic-bezier(.2,.7,.2,1);
     --tint: rgba(10,76,255,.06);
     --tint-2: rgba(10,76,255,.12);
-    position: relative; isolation: isolate; overflow: hidden;
+    position: relative; isolation: isolate;
+    overflow: hidden; /* fallback */
+    overflow: clip; /* clip, not a scroll container: it can't be scrolled sideways, even programmatically */
     height: calc(100vh - var(--ik-top)); /* fallback for browsers without svh */
     height: calc(100svh - var(--ik-top)); min-height: 440px;
     display: flex; flex-direction: column;
     background: linear-gradient(180deg, #f7f8fc 0%, var(--paper) 38%);
     border-top: 1px solid rgba(0,7,16,.06);
   }
-  .ik::before, .ik::after { content: ""; position: absolute; z-index: -1; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: .16; }
-  .ik::before { width: 560px; height: 560px; left: -180px; top: -320px; background: #0a4cff; animation: rl-drift 20s ease-in-out infinite alternate; }
-  .ik::after { width: 460px; height: 460px; right: -160px; top: -260px; background: #00a3ff; animation: rl-drift 24s ease-in-out -6s infinite alternate-reverse; }
+  .ik-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; overflow: clip; pointer-events: none; }
+  .ik-bg::before, .ik-bg::after { content: ""; position: absolute; z-index: -1; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: .16; }
+  .ik-bg::before { width: 560px; height: 560px; left: -180px; top: -320px; background: #0a4cff; animation: rl-drift 20s ease-in-out infinite alternate; }
+  .ik-bg::after { width: 460px; height: 460px; right: -160px; top: -260px; background: #00a3ff; animation: rl-drift 24s ease-in-out -6s infinite alternate-reverse; }
   .ik-col { width: 100%; max-width: 760px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
   .ik-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .ik button { font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; }
@@ -271,7 +274,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-menu__foot { margin: 4px 10px 4px; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
 
   /* Recording pill */
-  .ik-recbar { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; padding: 6px 6px 6px 16px; border-radius: 999px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; animation: ik-settle .3s var(--ease) both; }
+  .ik-recbar { min-width: 0; max-width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 12px; margin: 0 0 8px; padding: 6px 6px 6px 16px; border-radius: 999px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; animation: ik-settle .3s var(--ease) both; }
   .ik-recbar[hidden] { display: none; }
   .ik-recdot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: #e5484d; box-shadow: 0 0 0 0 rgba(229,72,77,.6); animation: ik-rec 1.4s ease-out infinite; }
   .ik-recbar[data-uploading] .ik-recdot { background: #00a3ff; animation: rl-pulse 1.4s ease-out infinite; }
@@ -282,7 +285,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   @keyframes ik-rec { 0% { box-shadow: 0 0 0 0 rgba(229,72,77,.55); } 100% { box-shadow: 0 0 0 9px rgba(229,72,77,0); } }
 
   /* Toast (welcome back, errors that aren't in the thread) */
-  .ik-toast { position: absolute; z-index: 5; left: 50%; top: 76px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); box-shadow: 0 10px 30px rgba(0,7,16,.25); animation: ik-pop .3s var(--ease) both; white-space: nowrap; }
+  .ik-toast { position: absolute; z-index: 5; left: 12px; right: 12px; top: 76px; width: fit-content; max-width: calc(100% - 24px); margin: 0 auto; box-sizing: border-box; display: inline-flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); box-shadow: 0 10px 30px rgba(0,7,16,.25); animation: ik-pop .3s var(--ease) both;  }
   .ik-toast[hidden] { display: none; }
   .ik-toast button { min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: rgba(255,255,255,.14); color: var(--paper); font: 600 12px/16px var(--font-sans); cursor: pointer; }
 
@@ -339,7 +342,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     .ik-menu { position: fixed; left: 8px; right: 8px; bottom: 8px; width: auto; border-radius: 24px; padding: 10px; transform-origin: bottom center; }
     .ik-meta__hint { display: none; }
     .ik-card { padding: 18px; }
-    .ik-toast { top: 66px; max-width: calc(100% - 24px); }
+    .ik-toast { top: 66px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .ik-orb__core, .ik-orb__halo { transition: none; }
@@ -348,6 +351,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 </style>
 
 <section class="ik" id="ik" data-mode="chat" data-view="welcome" data-agent={agentId || undefined} aria-label="Intake interview with Harry">
+  <div class="ik-bg" aria-hidden="true"></div>
   <svg width="0" height="0" style="position: absolute" aria-hidden="true"><defs><linearGradient id="ik-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a4cff"/><stop offset="1" stop-color="#00a3ff"/></linearGradient></defs></svg>
 
   <!-- Top bar -->
@@ -449,7 +453,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 
       <div class="ik-recbar" id="ik-recbar" role="status" hidden>
         <span class="ik-recdot" aria-hidden="true"></span>
-        <span id="ik-rec-label">Recording 0:00</span>
+        <span id="ik-rec-label" style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Recording 0:00</span>
         <span class="ik-recbar__meter" aria-hidden="true"><i id="ik-rec-meter"></i></span>
         <button type="button" id="ik-rec-stop">Stop</button>
       </div>
