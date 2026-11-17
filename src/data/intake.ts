@@ -1,79 +1,106 @@
-// The business OS intake interview: 44 questions, each mapped to its Jotform field (qid).
-// Ask them verbatim. The /intake page and /api/intake-submit both read from here.
+// The business OS intake: the spine from intake/QUESTIONS.md.
+// Stage 0 Setup, Stage 1 AI today, Stage 2 Tool stack (the core, about 10 minutes), then Stage 3 the business
+// journey (Acquire, Deliver, Operate) with the 8-question process drill. Each question maps to its Jotform field (qid)
+// on form 263198186491065. The /intake page, the voice agent tools and /api/intake-submit all read from here.
 
-export interface IntakeQuestion {
-  /** Interview number, 1 to 44. */
-  n: number;
-  /** Jotform field id on form 263198186491065. */
+export interface CoreQuestion {
+  /** Spine id, e.g. "A3". The voice agent uses these ids. */
+  id: string;
   qid: number;
+  /** Stage number: 0 Setup, 1 AI today, 2 Tool stack. */
+  stage: 0 | 1 | 2;
   text: string;
-  /** Section the question belongs to; shown as a divider on the full path. */
-  session: 1 | 2 | 3 | 4;
+  /** What this answer gives us, for Harry's end-of-stage recap ("I've got your CRM, ..."). */
+  topic: string;
+  /** Optional example line shown under the question. */
+  hint?: string;
 }
 
-export const SESSIONS: Record<IntakeQuestion['session'], string> = {
-  1: 'The offer and the customer',
-  2: "The customer's world and the brand",
-  3: 'The workflows',
-  4: 'The tools and the wrap',
-};
+export const CORE_STAGES = [
+  { n: 0, title: 'Setup', intro: "First, the basics." },
+  { n: 1, title: 'AI today', intro: 'Next: how AI shows up in the business today. Small jobs count.' },
+  { n: 2, title: 'Tool stack', intro: 'Now the software you run on, and how the team gets on with it.' },
+] as const;
 
-const Q: [number, number, string][] = [
-  [1, 145, "What's the business called, and what's a short name for the folder?"],
-  [2, 146, 'In a sentence or two, what does it sell, and to whom?'],
-  [3, 147, 'Is there anything you can hand me now: a website, a brand guide, a price list, existing documents?'],
-  [4, 148, 'Who else in the business should run this interview, so I get more than one perspective?'],
-  [5, 149, 'Where should the master copy live: the project files, a doc you edit, or Google Drive?'],
-  [6, 150, 'In one sentence, why does the business exist, and for whom?'],
-  [7, 151, "What does it look like in 3 to 5 years when it's working?"],
-  [8, 152, 'What 3 to 5 numbers would make the next 12 months a good year? Where is each one now?'],
-  [9, 153, "What do you do that competitors don't?"],
-  [10, 154, "What rules would you want followed when you're not in the room?"],
-  [11, 155, 'What work or customers do you say no to?'],
-  [12, 157, 'How does the business make money?'],
-  [13, 158, 'Walk me through every step a customer can take with you, from first contact to ongoing. What do they get and pay at each step?'],
-  [14, 159, "What's the one call to action you want on everything?"],
-  [15, 160, 'What proof are you allowed to use: results, names, reviews?'],
-  [16, 161, 'What are the top 3 priorities this quarter?'],
-  [17, 162, 'Who is the person who buys, and what kind of business or household are they in?'],
-  [18, 163, "Tell me about one real customer who's the clearest example."],
-  [19, 164, "What's happening in their world when they reach out?"],
-  [20, 165, 'What have they already tried?'],
-  [21, 167, 'What are they afraid of, biggest fear first?'],
-  [22, 168, 'What questions do they ask before buying?'],
-  [23, 169, 'What does success look like for them a year later?'],
-  [24, 170, "Who isn't a fit?"],
-  [25, 171, 'Where do they spend time, and who do they trust?'],
-  [26, 172, "Is there an existing brand guide or design system? If so, that's the master and this file summarises it."],
-  [27, 173, 'Three words for how the brand should feel?'],
-  [28, 174, 'Logo, colours and fonts: what exists, and where are the files?'],
-  [29, 175, 'Who\'s speaking on each channel: a named person, or "we"?'],
-  [30, 176, 'Any spelling, punctuation or wording rules? Any phrases that are banned?'],
-  [31, 177, 'One line that sounds exactly right, and one that sounds wrong?'],
-  [32, 179, 'How do customers find you today? (Attract)'],
-  [33, 180, 'How does a lead become a customer? (Convert)'],
-  [34, 181, 'What happens between a yes and the work being delivered? (Deliver)'],
-  [35, 182, 'What keeps them coming back or referring? (Keep and grow)'],
-  [36, 183, 'What starts each workflow: a time, or an event?'],
-  [37, 184, "Walk me through it step by step. For each step: what's done, in which tool, by whom, and what's handed on?"],
-  [38, 185, 'Where does someone have to say yes?'],
-  [39, 186, "How do you know it's working?"],
-  [40, 188, 'Which tools does the business pay for, and what does each cost a month?'],
-  [41, 189, 'Where does the data live: customers, sales, files?'],
-  [42, 190, 'Is anything already automated or scheduled?'],
-  [43, 191, 'Who are the key people outside the business: customers, partners, suppliers?'],
-  [44, 192, 'What assets does the business keep improving: a website, a list, a product, a template? Rate each 1 to 5.'],
+export const CORE_QUESTIONS: CoreQuestion[] = [
+  // Stage 0: Setup
+  { id: 'S1', qid: 145, stage: 0, text: "What's the business called, and what's a short name for the folder?", topic: 'the business name' },
+  { id: 'S2', qid: 146, stage: 0, text: 'Is there anything you can hand over now: a website, a price list, a proposal, a report? Attach it or paste a link.', topic: 'what you can hand over', hint: 'Use the paperclip to attach a file, paste a link, or record your screen.' },
+  // Stage 1: AI today
+  { id: 'A1', qid: 147, stage: 1, text: 'How are you using AI in the business today? Name the jobs it does, even small ones.', topic: 'how you use AI', hint: 'For example: drafting quotes, summarising calls, writing social posts, answering enquiries. "Not at all yet" is a fine answer.' },
+  { id: 'A2', qid: 148, stage: 1, text: 'Which AI tools, and who uses which?', topic: 'the AI tools and who uses them', hint: 'For example: ChatGPT for the owner, Copilot in Outlook for the office manager.' },
+  { id: 'A3', qid: 149, stage: 1, text: "What's been the best result so far? Give me one specific example.", topic: 'your best result' },
+  { id: 'A4', qid: 150, stage: 1, text: 'Roughly what do you spend on AI tools a month, in total?', topic: 'your monthly AI spend' },
+  { id: 'A5', qid: 151, stage: 1, text: 'What are your biggest challenges with AI right now?', topic: 'your challenges with AI' },
+  { id: 'A6', qid: 152, stage: 1, text: "What have you tried that didn't work, or that you stopped using?", topic: "what didn't stick" },
+  { id: 'A7', qid: 153, stage: 1, text: 'If AI took over three jobs in the next 90 days, which three, and what would "worked" look like: hours back, dollars saved, more sales?', topic: 'the three jobs you would hand to AI' },
+  // Stage 2: Tool stack
+  { id: 'T1', qid: 154, stage: 2, text: 'What software does the business run on day to day? List everything, with a rough monthly cost if you know it.', topic: 'your software and what it costs', hint: 'For example, a trades firm: Xero, ServiceM8, Google Workspace. A clinic: Cliniko, Mailchimp. An agency: Asana, Slack, HubSpot. A shop: Shopify, Square.' },
+  { id: 'T2', qid: 155, stage: 2, text: "What's your CRM (or the nearest thing: a spreadsheet, an inbox), and how well does it get used?", topic: 'your CRM' },
+  { id: 'T3', qid: 157, stage: 2, text: 'Where does work get stuck, get re-typed, or fall between tools?', topic: 'where work gets stuck', hint: 'For example: job details typed from email into the job system, then again into Xero.' },
+  { id: 'T4', qid: 158, stage: 2, text: 'What does your team like using?', topic: 'what the team likes' },
+  { id: 'T5', qid: 159, stage: 2, text: 'What do they avoid, work around or complain about?', topic: 'what the team avoids' },
 ];
 
-const sessionOf = (n: number): IntakeQuestion['session'] => (n <= 16 ? 1 : n <= 31 ? 2 : n <= 39 ? 3 : 4);
+/** Stage 3: the business journey. Each stage opens with a list question, then the process drill per process. */
+export const JOURNEY = [
+  {
+    id: 'J1',
+    key: 'acquire',
+    title: 'Acquire',
+    qid: 160,
+    slots: [163, 164, 165],
+    text: 'How do new customers and business come in? Name each way, one per line: marketing, word of mouth, partnerships, outbound, anything.',
+    hint: 'For example, a trades firm: builder referrals, Google reviews, a Facebook page. A clinic: GP referrals, online booking. An agency: LinkedIn, past clients. A shop: Instagram, walk-ins, an email list.',
+    intro: 'Now the journey, in three parts: how work comes in, how it gets done, and what runs around it. First, how new business comes in.',
+    example: 'referrals',
+  },
+  {
+    id: 'J2',
+    key: 'deliver',
+    title: 'Deliver',
+    qid: 161,
+    slots: [167, 168, 169],
+    text: 'How does the work you sold actually get done and delivered? Name each main process, one per line.',
+    hint: 'For example, a trades firm: quote, schedule the job, do the work, invoice. A clinic: intake forms, appointment, treatment notes. An agency: brief, drafts, review rounds, launch. A shop: pick, pack, ship.',
+    intro: 'Next, how the work you sell actually gets done.',
+    example: 'quoting',
+  },
+  {
+    id: 'J3',
+    key: 'operate',
+    title: 'Operate',
+    qid: 162,
+    slots: [170, 171, 172],
+    text: 'What runs around the work: looking after customers, keeping them happy, reaching back out, running the business day to day? Name each process, one per line.',
+    hint: 'For example, a trades firm: chasing unpaid invoices, warranty call-backs. A clinic: recall reminders. An agency: monthly reporting. A shop: returns, reorders, asking for reviews.',
+    intro: 'Last part: everything that runs around the work.',
+    example: 'invoicing',
+  },
+] as const;
 
-export const QUESTIONS: IntakeQuestion[] = Q.map(([n, qid, text]) => ({ n, qid, text, session: sessionOf(n) }));
+/** The process drill: identical for every process, saved as one labelled block in the stage's next slot. */
+export const DRILL = [
+  { id: 'D1', label: 'How', text: 'How do you do it today, step by step?' },
+  { id: 'D2', label: 'Tools', text: 'Which tools are involved?' },
+  { id: 'D3', label: 'Good looks like', text: 'What does good look like?' },
+  { id: 'D4', label: 'Example', text: 'Do you have an example I can see: a real email, proposal, checklist, screenshot? Attach it, paste it, or record your screen.' },
+  { id: 'D5', label: 'Hand to AI', text: 'Would you want to hand this to AI, keep it with a person, or split it? Why?' },
+  { id: 'D6', label: 'Time', text: 'How long does it take, how often? (e.g. 2 hours, twice a week)' },
+  { id: 'D7', label: 'Value', text: "What's it worth: what does it bring in or protect when it goes well?" },
+  { id: 'D8', label: 'Cost', text: "Roughly what does it cost? Tell me who does it, the hours per week, and their hourly cost or annual pay." },
+] as const;
 
-/** Core path (~10 minutes), always asked, in this order. */
-export const CORE = [1, 2, 3, 8, 12, 13, 17, 19, 21, 32, 33, 34, 35, 37, 40];
+export const D5_CHIPS = ['Hand it over', 'Split it', 'Keep it with a person'] as const;
 
-/** Full path: everything not in the core, in the original order. */
-export const FULL = QUESTIONS.map((q) => q.n).filter((n) => !CORE.includes(n));
+/** Up to three processes are drilled per journey stage; any more go into the closing answer under "More processes". */
+export const MAX_PROCESSES = 3;
+
+/** Rough benchmark for the D8 helper: annual pay divided by about 1,800 working hours, about 48 working weeks a year. */
+export const BENCHMARK = { hoursPerYear: 1800, weeksPerYear: 48 } as const;
+
+/** Rough minutes, for "about N min left". The core is about 10 minutes; the journey adds about 20. */
+export const TIMING = { coreSeconds: 43, journeySeconds: 40, closingSeconds: 45 } as const;
 
 export const CLOSING = {
   anythingElse: { qid: 194, text: "Anything we didn't ask that we should know?" },
@@ -83,9 +110,10 @@ export const CLOSING = {
   client: 198,
 } as const;
 
-/** Every text field the submit endpoint accepts. Files go to CLOSING.files. */
+/** Every text field the submit endpoint accepts: the core, the journey lists, the nine process slots, the closing fields. */
 export const TEXT_QIDS = new Set<number>([
-  ...QUESTIONS.map((q) => q.qid),
+  ...CORE_QUESTIONS.map((q) => q.qid),
+  ...JOURNEY.flatMap((j) => [j.qid, ...j.slots]),
   CLOSING.anythingElse.qid,
   CLOSING.link,
   CLOSING.employee,

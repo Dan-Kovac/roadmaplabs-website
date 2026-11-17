@@ -128,6 +128,27 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-section { display: flex; flex-direction: column; gap: 2px; margin: 18px 0 2px; padding-top: 18px; border-top: 1px solid rgba(0,7,16,.08); animation: ik-in .5s var(--ease) both; }
   .ik-section span { font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--roadmap-blue); }
   .ik-section strong { font: 600 18px/26px var(--font-sans); letter-spacing: -0.015em; color: var(--ink); }
+  .ik-section--proc { margin-top: 6px; padding-top: 12px; border-top: 1px dashed rgba(0,7,16,.12); }
+  .ik-section--proc strong { font-size: 16px; line-height: 22px; }
+  .ik-hint { margin: 8px 0 0; max-width: 60ch; font: 400 14px/1.5 var(--font-sans); color: var(--text-secondary); animation: ik-in .4s .1s var(--ease) both; }
+  .ik-help { margin-top: 12px; display: grid; gap: 8px; }
+  .ik-help:empty { display: none; }
+  .ik-turn--q:not(:has(.is-current)) .ik-hint, .ik-turn--q:not(:has(.is-current)) .ik-help { display: none; }
+  .ik-quick { display: flex; flex-wrap: wrap; gap: 8px; animation: ik-in .4s .1s var(--ease) both; }
+  .ik-chipbtn { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid rgba(0,7,16,.14); border-radius: 999px; background: var(--paper); color: var(--ink); font: 500 14px/20px var(--font-sans); cursor: pointer; transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease); }
+  .ik-chipbtn:hover { border-color: var(--roadmap-blue); background: var(--tint); }
+  .ik-chipbtn--primary { background: var(--roadmap-blue); border-color: var(--roadmap-blue); color: var(--paper); }
+  .ik-chipbtn--primary:hover { background: #083fd6; color: var(--paper); }
+  .ik-chipbtn[disabled] { opacity: .45; pointer-events: none; }
+  .ik-bench { display: grid; gap: 12px; padding: 16px; border-radius: 16px; background: var(--paper); border: 1px solid rgba(0,7,16,.1); box-shadow: 0 6px 20px rgba(0,7,16,.05); animation: ik-in .45s .1s var(--ease) both; justify-items: start; }
+  .ik-bench__head { display: flex; flex-direction: column; gap: 2px; }
+  .ik-bench__head strong { font: 600 15px/20px var(--font-sans); color: var(--ink); }
+  .ik-bench__head small { font: 400 12px/17px var(--font-sans); color: var(--text-secondary); }
+  .ik-bench__grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 10px; }
+  .ik-bench__grid label { display: grid; gap: 4px; font: 500 12px/16px var(--font-sans); color: var(--text-secondary); }
+  .ik-bench__grid input { min-height: 42px; padding: 0 12px; border: 1px solid rgba(0,7,16,.14); border-radius: 10px; font: 400 15px/20px var(--font-sans); color: var(--ink); background: var(--paper); min-width: 0; }
+  .ik-bench__grid input:focus { outline: 0; border-color: var(--roadmap-blue); box-shadow: 0 0 0 3px rgba(10,76,255,.12); }
+  .ik-bench__maths { margin: 0; width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; background: #f7f8fc; font: 500 13px/19px var(--font-sans); color: var(--ink); font-variant-numeric: tabular-nums; }
   .ik-think { display: inline-flex; gap: 5px; padding: 12px 0; }
   .ik-think i { width: 6px; height: 6px; border-radius: 50%; background: var(--steel); animation: ik-dot 1s ease-in-out infinite; }
   .ik-think i:nth-child(2) { animation-delay: .15s; } .ik-think i:nth-child(3) { animation-delay: .3s; }
@@ -272,8 +293,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-finish h2 { margin: 0; font: 500 clamp(32px, 4.6vw, 48px)/1.06 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); max-width: 18ch; }
   .ik-finish__lead { margin: 0; max-width: 36em; font: 400 18px/1.55 var(--font-sans); color: var(--text-secondary); }
   .ik-captured { width: 100%; margin: 0; padding: 18px 20px; list-style: none; display: grid; gap: 10px; border-radius: 18px; background: #f7f8fc; border: 1px solid rgba(0,7,16,.06); }
-  .ik-captured li { display: flex; align-items: center; gap: 10px; font: 500 15px/22px var(--font-sans); color: var(--ink); }
-  .ik-captured li svg { flex: none; color: #12a150; }
+  .ik-captured li { display: flex; align-items: flex-start; gap: 10px; font: 500 15px/22px var(--font-sans); color: var(--ink); }
+  .ik-captured li svg { flex: none; margin-top: 2px; color: #12a150; }
   .ik-captured li small { color: var(--text-secondary); font-weight: 400; font-size: 14px; }
   .ik-next { width: 100%; margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px; counter-reset: ik; }
   .ik-next li { counter-increment: ik; padding: 18px; border-radius: 16px; border: 1px solid rgba(0,7,16,.08); background: var(--paper); font: 400 14px/20px var(--font-sans); color: var(--text-secondary); }
@@ -351,7 +372,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     <div class="ik-col">
       <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
       <h1 id="ik-hello">Let's map how your business <span>really runs.</span></h1>
-      <p class="ik-welcome__lead">I'm Harry. I'll ask about what you sell, who buys it and the work behind the scenes, one question at a time. Type, talk, or switch to a voice interview whenever you like.</p>
+      <p class="ik-welcome__lead">I'm Harry. First the basics, how you use AI today and the tools you run on. Then, if you have time, we'll walk through how work comes in, gets done and gets looked after. Type, talk, or switch to a voice interview whenever you like.</p>
       <ul class="ik-points">
         <li><Fragment set:html={svg(icons.clock, 18)} />Core takes about 10 minutes</li>
         <li><Fragment set:html={svg(icons.skip, 18)} />Skip anything you're unsure of</li>
@@ -469,24 +490,36 @@ const svg = (d: string, size = 20, sw = 2) =>
 </section>
 
 <script>
-  import { QUESTIONS, CORE, FULL, SESSIONS, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
+  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, MAX_PROCESSES, BENCHMARK, TIMING, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
 
+  type J = 0 | 1 | 2;
   type Step =
-    | { type: 'q'; qid: number; text: string; phase: 'core' | 'full' | 'closing'; section?: number }
+    | { type: 'q'; qid: number; id: string; text: string; phase: 'core' | 'closing'; stage?: 0 | 1 | 2; hint?: string; first?: boolean }
     | { type: 'choice' }
+    | { type: 'list'; j: J }
+    | { type: 'name'; j: J; p: number; prompt: string; options: string[] }
+    | { type: 'drill'; j: J; p: number; d: number }
+    | { type: 'another'; j: J; p: number; next?: string }
     | { type: 'files' };
-  /** a = answer (s: spoken in a voice interview), c = path choice. */
-  type Action = { t: 'a'; v: string; s?: 1 } | { t: 'c'; v: 'more' | 'wrap' };
+  type Answerable = Extract<Step, { type: 'q' | 'list' | 'name' | 'drill' }>;
+  /** a = answer (s: spoken in a voice interview), c = a choice (milestone, "another one?"), p = a voice answer given ahead of its turn. */
+  type Action = { t: 'a'; v: string; s?: 1 } | { t: 'c'; v: string } | { t: 'p'; k: string; v: string; s?: 1 };
   type Mode = 'chat' | 'voice';
-  interface Saved { v: 2; actions: Action[]; links: string[]; mode: Mode }
+  interface Saved { v: 3; actions: Action[]; links: string[]; mode: Mode }
+  interface Proc { name: string; answers: (string | undefined)[]; skipped?: boolean }
 
-  const STORE = 'rl-intake-v1';
-  const CHOICE_TEXT = "That's the core done - about 10 minutes. Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.";
+  // A new key for the new spine, so progress saved under the old 44-question script never replays into it.
+  const STORE = 'rl-intake-v3';
+  const CHOICE_TEXT = "That's the core done, about 10 minutes. Want to keep going into the journey? It's about 20 more minutes on how work comes in, gets done and gets looked after. Or you can finish here.";
   const TOO_BIG = "That's too big to send through the page (about 4MB in total). Put it in Google Drive or Dropbox and paste the link instead.";
-  const SECONDS = { core: 40, full: 31, closing: 45 } as const; // rough time per question, for "about N min left"
+  const STAGE_NAME = ['the setup', 'AI today', 'your tool stack'] as const;
 
-  const byN = new Map(QUESTIONS.map((q) => [q.n, q]));
-  const textByQid = new Map<number, string>([...QUESTIONS.map((q) => [q.qid, q.text] as [number, string]), [CLOSING.anythingElse.qid, CLOSING.anythingElse.text]]);
+  const textByQid = new Map<number, string>([
+    ...CORE_QUESTIONS.map((q) => [q.qid, q.text] as [number, string]),
+    ...JOURNEY.map((j) => [j.qid, j.text] as [number, string]),
+    ...JOURNEY.flatMap((J) => J.slots.map((qid, p) => [qid, `${J.title} process ${p + 1}`] as [number, string])),
+    [CLOSING.anythingElse.qid, CLOSING.anythingElse.text],
+  ]);
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = matchMedia('(pointer: fine)').matches;
@@ -518,10 +551,12 @@ const svg = (d: string, size = 20, sw = 2) =>
   const agentId = root.dataset.agent || '';
 
   // Fit the stage to the viewport under the site header.
-  const header = document.querySelector<HTMLElement>('header.hd');
-  const fit = () => root.style.setProperty('--ik-top', `${header?.offsetHeight ?? 76}px`);
+  const siteHeader = document.querySelector<HTMLElement>('header.hd');
+  const fit = () => root.style.setProperty('--ik-top', `${siteHeader?.offsetHeight ?? 76}px`);
   fit();
   addEventListener('resize', fit);
+  /** Keep the stage in view: focusing fields inside the thread can scroll the page down to the footer. */
+  const anchor = () => { if (scrollY > 0) scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); };
 
   // Per-employee / per-client links: ?employee=&client=
   const params = new URLSearchParams(location.search);
@@ -529,33 +564,110 @@ const svg = (d: string, size = 20, sw = 2) =>
   const client = params.get('client') ?? '';
 
   // ---------- State (shared by chat and voice) ----------
-  const steps: Step[] = CORE.map((n) => qStep(n, 'core'));
+  const steps: Step[] = CORE_QUESTIONS.map((q, i) => ({
+    type: 'q', qid: q.qid, id: q.id, text: q.text, phase: 'core', stage: q.stage, hint: q.hint,
+    first: i === 0 || CORE_QUESTIONS[i - 1].stage !== q.stage,
+  }));
   steps.push({ type: 'choice' });
   let pos = 0;
   let actions: Action[] = [];
   let links: string[] = [];
   let files: File[] = [];
   let mode: Mode = 'chat';
-  const answers = new Map<number, string>();
+  const answers = new Map<number, string>(); // core, journey lists and the closing answer, by qid
+  const procs: Proc[][] = [[], [], []]; // drilled processes per journey stage
+  const items: string[][] = [[], [], []]; // what they listed per journey stage
+  const pending = new Map<string, { v: string; s?: 1 }>(); // voice answers given ahead of their turn
   let replaying = false;
   let sent = false;
   let sending = false;
 
-  function qStep(n: number, phase: 'core' | 'full'): Step {
-    const q = byN.get(n)!;
-    return { type: 'q', qid: q.qid, text: q.text, phase };
+  const answerable = (s?: Step): s is Answerable => !!s && (s.type === 'q' || s.type === 'list' || s.type === 'name' || s.type === 'drill');
+  const stepKey = (s?: Step) =>
+    !s ? '' : s.type === 'q' ? `q:${s.id}` : s.type === 'list' ? `q:${JOURNEY[s.j].id}` : s.type === 'drill' ? `d:${s.j}:${s.p}:${s.d}` : '';
+  function stepText(s?: Step): string {
+    if (!s) return '';
+    switch (s.type) {
+      case 'q': return s.text;
+      case 'list': return JOURNEY[s.j].text;
+      case 'name': return s.prompt;
+      case 'drill': return DRILL[s.d].text;
+      case 'another': return `Another one in ${JOURNEY[s.j].title}?`;
+      case 'choice': return CHOICE_TEXT;
+      default: return '';
+    }
   }
+  const listJoin = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+  const filled = (v?: string) => v !== undefined && v !== SKIPPED && v.trim() !== '';
+
+  // ---------- Journey: lists, process names, the drill loop ----------
+  const cleanItem = (l: string) => l.replace(/^\s*(?:[-*•–]|\d+[.)])\s*/, '').trim();
+  /** One per line is the ask. A single line with commas ("pick, pack and ship") is read as several. */
+  function parseItems(v: string): { list: string[]; multiLine: boolean } {
+    if (!v || v === SKIPPED) return { list: [], multiLine: false };
+    const lines = v.split(/\n+/).map(cleanItem).filter(Boolean);
+    if (lines.length >= 2) return { list: lines, multiLine: true };
+    const one = lines[0] ?? '';
+    const parts = one.split(/\s*[,;]\s*|\s+and\s+/i).map(cleanItem).filter(Boolean);
+    return { list: parts.length >= 2 ? parts : one ? [one] : [], multiLine: false };
+  }
+  const short = (name: string) => name.slice(0, 80).trim();
+  const drilledNames = (j: J) => procs[j].map((p) => p.name);
+  const undrilled = (j: J) => items[j].map(short).filter((it) => !drilledNames(j).includes(it));
+  function startProcess(j: J, p: number, name: string) {
+    procs[j][p] = { name: short(name), answers: [] };
+    for (let d = 0; d < DRILL.length; d++) steps.push({ type: 'drill', j, p, d });
+  }
+  function nextStage(j: J) {
+    if (j < 2) steps.push({ type: 'list', j: (j + 1) as J });
+    else addClosing();
+  }
+  function endProcess(j: J, p: number) {
+    if (p + 1 < MAX_PROCESSES) steps.push({ type: 'another', j, p, next: undrilled(j)[0] });
+    else nextStage(j);
+  }
+  function addClosing() {
+    steps.push({ type: 'q', qid: CLOSING.anythingElse.qid, id: 'W1', text: CLOSING.anythingElse.text, phase: 'closing' });
+    steps.push({ type: 'files' });
+  }
+  function procBlock(pr: Proc) {
+    if (pr.skipped) return SKIPPED;
+    const lines = [`Process: ${pr.name}`];
+    DRILL.forEach((d, i) => { if (pr.answers[i] !== undefined) lines.push(`${d.label}: ${pr.answers[i]}`); });
+    return lines.join('\n');
+  }
+  /** Stages with more than three named processes: the ones not drilled go into the closing answer. */
+  function moreProcesses() {
+    const parts = JOURNEY.map((J, j) => {
+      if (items[j].length <= MAX_PROCESSES) return '';
+      const rest = undrilled(j as J);
+      return rest.length ? `${J.title}: ${rest.join('; ')}` : '';
+    }).filter(Boolean);
+    return parts.length ? `More processes:\n${parts.join('\n')}` : '';
+  }
+  /** Everything for Jotform, by qid: only what was actually asked. */
+  function payloadFields(): [number, string][] {
+    const out = new Map(answers);
+    JOURNEY.forEach((J, j) => procs[j].forEach((pr, p) => { if (pr) out.set(J.slots[p], procBlock(pr)); }));
+    const more = moreProcesses();
+    if (more) { const base = out.get(CLOSING.anythingElse.qid); out.set(CLOSING.anythingElse.qid, base ? `${base}\n\n${more}` : more); }
+    return [...out];
+  }
+  function tally() {
+    const all = [...answers.values(), ...procs.flat().flatMap((p) => (p.skipped ? [SKIPPED] : p.answers.filter((v): v is string => v !== undefined)))];
+    return { answered: all.filter(filled).length, skipped: all.filter((v) => v === SKIPPED).length };
+  }
+  const hasAnything = () => answers.size > 0 || procs.some((ps) => ps.length > 0);
 
   function save() {
     if (sent) return;
-    try { localStorage.setItem(STORE, JSON.stringify({ v: 2, actions, links, mode } satisfies Saved)); } catch {}
+    try { localStorage.setItem(STORE, JSON.stringify({ v: 3, actions, links, mode } satisfies Saved)); } catch {}
   }
   function load(): Saved {
-    const empty: Saved = { v: 2, actions: [], links: [], mode: 'chat' };
+    const empty: Saved = { v: 3, actions: [], links: [], mode: 'chat' };
     try {
       const raw = JSON.parse(localStorage.getItem(STORE) || 'null');
-      if (Array.isArray(raw)) return { ...empty, actions: raw }; // first version stored just the actions
-      if (raw && raw.v === 2) return { ...empty, ...raw };
+      if (raw && raw.v === 3) return { ...empty, ...raw };
     } catch {}
     return empty;
   }
@@ -625,9 +737,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     p.append(el('span', '', text));
     return add(p);
   }
-  function section(n: number) {
-    const d = el('div', 'ik-section ik-divider');
-    d.append(el('span', '', `Part ${n} of 4`), el('strong', '', SESSIONS[n as 1 | 2 | 3 | 4]));
+  function section(eyebrow: string, title: string, proc = false) {
+    const d = el('div', `ik-section ik-divider${proc ? ' ik-section--proc' : ''}`);
+    d.append(el('span', '', eyebrow), el('strong', '', title));
     return add(d);
   }
   function note(text: string, linkText?: string, onClick?: () => void, error = false) {
@@ -686,48 +798,255 @@ const svg = (d: string, size = 20, sw = 2) =>
     skipBtn.disabled = locked;
     sendBtn.disabled = locked;
     micBtn.disabled = locked;
-    input.placeholder = locked ? (steps[pos]?.type === 'q' || !steps[pos] ? 'Harry is typing…' : 'Pick an option above') : 'Type your answer…';
-    if (steps[pos]?.type === 'files') input.placeholder = 'All questions answered';
+    const s = steps[pos];
+    input.placeholder = locked
+      ? (answerable(s) || !s ? 'Harry is typing…' : s.type === 'files' ? 'All questions answered' : 'Pick an option above')
+      : s?.type === 'list' ? 'One per line…' : s?.type === 'name' ? 'Name the process…' : 'Type your answer…';
     if (!locked && !replaying && mode === 'chat' && (actions.length || finePointer)) input.focus({ preventScroll: true });
   }
 
-  function minutesLeft(): string {
-    const rest = steps.slice(pos).filter((s): s is Extract<Step, { type: 'q' }> => s.type === 'q');
-    const secs = rest.reduce((sum, s) => sum + SECONDS[s.phase], 0);
-    if (secs < 60) return 'under a minute left';
-    return `about ${Math.round(secs / 60)} min left`;
+  /** Journey units: each stage's list question plus 8 per process (at least one process per stage). */
+  function journeyUnits() {
+    const total = JOURNEY.reduce((sum, _J, j) => {
+      const planned = procs[j].length ? procs[j].filter((p) => !p.skipped).length : 1;
+      return sum + 1 + DRILL.length * planned;
+    }, 0);
+    const done = steps.slice(0, pos).filter((x) => x.type === 'list' || x.type === 'drill').length;
+    return { total, done };
   }
+  const fmtMin = (secs: number) => (secs < 60 ? 'under a minute left' : `about ${Math.round(secs / 60)} min left`);
 
   function updateProgress() {
     const s = steps[pos];
     const coreDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'core').length;
-    const fullTotal = steps.filter((x) => x.type === 'q' && x.phase === 'full').length;
-    const fullDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'full').length;
+    const coreTotal = CORE_QUESTIONS.length;
+    const jy = journeyUnits();
+    const jLeft = fmtMin((jy.total - jy.done) * TIMING.journeySeconds + TIMING.closingSeconds);
     let label = '';
     let pct = 0;
     if (root.dataset.view === 'welcome') { label = 'Roadmap Labs intake'; pct = 0; }
     else if (sent) { label = 'All sent'; pct = 100; }
     else if (!s || s.type === 'files') { label = 'All questions done · ready to send'; pct = 100; }
-    else if (s.type === 'choice') { label = 'Core done'; pct = 34; }
-    else if (s.phase === 'core') { label = `Question ${coreDone + 1} of ${CORE.length} · ${minutesLeft()}`; pct = (coreDone / CORE.length) * 34; }
-    else if (s.phase === 'full') { label = `Deeper set · ${fullDone + 1} of ${fullTotal} · ${minutesLeft()}`; pct = 34 + (fullDone / fullTotal) * 60; }
-    else { label = 'Last question'; pct = 96; }
+    else if (s.type === 'choice') { label = 'Core done · 14 of 14'; pct = 34; }
+    else if (s.type === 'q' && s.phase === 'core') {
+      label = `Question ${coreDone + 1} of ${coreTotal} · ${CORE_STAGES[s.stage!].title} · ${fmtMin((coreTotal - coreDone) * TIMING.coreSeconds)}`;
+      pct = (coreDone / coreTotal) * 34;
+    } else if (s.type === 'q') { label = 'Last question'; pct = 96; }
+    else {
+      pct = 34 + (jy.done / jy.total) * 60;
+      const J = JOURNEY[s.j];
+      if (s.type === 'drill') label = `${J.title}: ${procs[s.j][s.p].name} · ${s.d + 1} of ${DRILL.length} · ${jLeft}`;
+      else if (s.type === 'another') label = `${J.title}: ${procs[s.j][s.p].name} done · ${jLeft}`;
+      else label = `The journey · ${J.title} · ${jLeft}`;
+    }
     const [main, ...rest] = label.split(' · ');
     progress.textContent = '';
     progress.append(el('b', '', main));
     if (rest.length) progress.append(el('i', '', ' · '), el('span', '', rest.join(' · ')));
     bar.style.width = `${Math.max(2, Math.round(pct))}%`;
-    sendNow.hidden = sent || answers.size === 0 || s?.type === 'files';
+    sendNow.hidden = sent || !hasAnything() || s?.type === 'files';
     const caption = document.getElementById('ik-voice-caption');
-    if (caption) caption.textContent = s?.type === 'q' ? s.text : s?.type === 'choice' ? "That's the core done. Keep going, or wrap up?" : 'All questions done.';
+    if (caption) caption.textContent = !s ? '' : s.type === 'choice' ? "That's the core done. Into the journey, or finish here?" : s.type === 'files' ? 'All questions done.' : stepText(s);
   }
 
-  // ---------- Flow ----------
+  // ---------- What Harry says between steps ----------
+  function stageRecap(n: 0 | 1 | 2) {
+    const qs = CORE_QUESTIONS.filter((q) => q.stage === n);
+    const got = qs.filter((q) => filled(answers.get(q.qid))).map((q) => q.topic);
+    const gaps = qs.length - got.length;
+    if (!got.length) return `That's ${STAGE_NAME[n]} done; we'll fill it in on the call.`;
+    return `That's ${STAGE_NAME[n]} done. I've got ${listJoin(got)}${gaps ? `, with ${gaps} to fill on the call` : ''}.`;
+  }
+  function journeyRecap(j: J) {
+    const names = procs[j].filter((p) => !p.skipped).map((p) => p.name);
+    const title = JOURNEY[j].title;
+    return names.length ? `That's ${title} done: ${listJoin(names)} captured.` : `That's ${title} done; we'll go through it on the call.`;
+  }
+  async function transition(i: number) {
+    const s = steps[i];
+    const prev = steps[i - 1];
+    if (!prev || !s) return;
+    if (s.type === 'q' && s.phase === 'core' && s.first && prev.type === 'q') {
+      await harrySays(`${stageRecap(prev.stage!)} ${CORE_STAGES[s.stage!].intro}`);
+    } else if (s.type === 'list') {
+      await harrySays(s.j === 0 ? JOURNEY[0].intro : `${journeyRecap((s.j - 1) as J)} ${JOURNEY[s.j].intro}`);
+    } else if (s.type === 'drill' && s.d === 0) {
+      const name = procs[s.j][s.p].name;
+      await harrySays(s.p === 0 ? `Let's start with ${name}. Eight quick questions about it.` : `Next: ${name}. Same eight questions.`);
+    } else if (s.type === 'another') {
+      const pr = procs[s.j][s.p];
+      const n = pr.answers.filter(filled).length;
+      await harrySays(`That's ${pr.name} captured: ${n} of ${DRILL.length} answered${n < DRILL.length ? ', the rest to fill on the call' : ''}.`);
+    } else if (s.type === 'q' && s.phase === 'closing') {
+      await harrySays(prev.type === 'choice' ? 'No problem. One last question before you go.' : `${journeyRecap(2)} That's the journey done. One last question.`);
+    }
+  }
+
+  // ---------- Rendering steps ----------
+  function header(s: Step) {
+    if (s.type === 'q' && s.phase === 'core' && s.first) section(`Part ${s.stage! + 1} of 4`, CORE_STAGES[s.stage!].title);
+    else if (s.type === 'list') section('Part 4 of 4 · The journey', JOURNEY[s.j].title);
+    else if (s.type === 'drill' && s.d === 0) section(`${JOURNEY[s.j].title} · process ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
+  }
+  /** Replay after a refresh: the question as it was asked, no transitions or helpers. Synchronous on purpose. */
+  function renderStatic(i: number) {
+    const s = steps[i];
+    if (!s) return;
+    if (s.type === 'choice') { milestone(false); return; }
+    if (s.type === 'files') return;
+    header(s);
+    harrySays(stepText(s), { question: true });
+  }
+  function hint(body: HTMLElement | null, text: string) {
+    if (body) body.append(el('p', 'ik-hint', text));
+  }
+  function helpers(body: HTMLElement | null) {
+    const box = el('div', 'ik-help');
+    body?.append(box);
+    return box;
+  }
+  function quick(box: HTMLElement, list: { label: string; primary?: boolean; onClick: () => void; data?: string }[]) {
+    const row = el('div', 'ik-quick');
+    for (const o of list) {
+      const b = el('button', `ik-chipbtn${o.primary ? ' ik-chipbtn--primary' : ''}`, o.label) as HTMLButtonElement;
+      b.type = 'button';
+      if (o.data) b.dataset.choice = o.data;
+      b.addEventListener('click', o.onClick);
+      row.append(b);
+    }
+    box.append(row);
+    scroll();
+    return row;
+  }
+  function prefill(text: string) {
+    input.value = input.value.trim() ? `${input.value.trim()}\n${text}` : text;
+    autosize();
+    input.focus({ preventScroll: true });
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+  /** D4: when they attach, link or record while the example question is up, note it in the answer. */
+  function noteExample(label: string) {
+    const s = steps[pos];
+    if (s?.type === 'drill' && s.d === 3 && !input.disabled) prefill(`Attached: ${label}`);
+  }
+
+  async function present(i = pos) {
+    updateProgress();
+    const s = steps[i];
+    if (!s || sent) return;
+    await transition(i);
+    if (s.type === 'choice') {
+      lock(true);
+      settleQuestions();
+      const card = milestone(true);
+      if (i !== pos) return;
+      const wrap = el('div', 'ik-choices');
+      wrap.append(
+        option('Keep going into the journey', 'About 20 min: how work comes in, gets done and gets looked after', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more'),
+        option('Finish here', 'One last question, then share anything useful', false, () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); }, 'wrap'),
+      );
+      card.append(wrap);
+      scroll();
+      if (!replaying && mode === 'chat') (wrap.firstChild as HTMLButtonElement).focus({ preventScroll: true });
+      return;
+    }
+    if (s.type === 'files') {
+      lock(true);
+      settleQuestions();
+      await harrySays('Last thing: anything you can share? Files, links and quick screen recordings all help us understand the business faster.');
+      shareCard();
+      return;
+    }
+    if (s.type === 'another') {
+      lock(true);
+      const q = await harrySays(stepText(s), { question: true });
+      if (i !== pos) return;
+      const opts: { label: string; primary?: boolean; v: string }[] = [];
+      if (s.next) opts.push({ label: `Yes: ${s.next}`, primary: true, v: `next:${s.next}` });
+      opts.push({ label: s.next ? 'Yes, a different one' : 'Yes, another one', primary: !s.next, v: 'another' });
+      opts.push({ label: `No, move on${s.j < 2 ? ` to ${JOURNEY[s.j + 1].title}` : ''}`, v: 'done' });
+      quick(helpers(q.parentElement), opts.map((o) => ({ label: o.label, primary: o.primary, data: o.v, onClick: () => act({ t: 'c', v: o.v }) })));
+      return;
+    }
+    header(s);
+    const q = await harrySays(stepText(s), { question: true });
+    const body = q.parentElement;
+    if (s.type === 'q' && s.hint) hint(body, s.hint);
+    if (s.type === 'list') hint(body, JOURNEY[s.j].hint);
+    if (i === pos) {
+      if (s.type === 'name' && s.options.length) quick(helpers(body), s.options.map((o) => ({ label: o, onClick: () => act({ t: 'a', v: o }) })));
+      if (s.type === 'drill' && s.d === 3) exampleActions(helpers(body));
+      if (s.type === 'drill' && s.d === 4) quick(helpers(body), D5_CHIPS.map((c) => ({ label: c, onClick: () => { input.value = ''; prefill(`${c}. `); input.placeholder = 'Add why, then send'; } })));
+      if (s.type === 'drill' && s.d === 7) benchmark(helpers(body));
+    }
+    scroll();
+    // A voice answer given ahead of its turn: take it rather than ask again.
+    const ahead = pending.get(stepKey(s));
+    if (i === pos && ahead) { act({ t: 'a', v: ahead.v, s: ahead.s }); return; }
+    if (i === pos) lock(false);
+  }
+
+  function exampleActions(box: HTMLElement) {
+    const list = [
+      { label: 'Attach a file', onClick: () => fileInput.click() },
+      { label: 'Paste a link', onClick: () => { openTray(true); showLinkField(); } },
+    ];
+    if (canRecord) list.push({ label: 'Record your screen', onClick: () => startRecording() });
+    quick(box, list);
+    box.append(el('p', 'ik-hint', 'Or paste the text straight into the box, like a real email or checklist.'));
+  }
+
+  /** D8: rough cost helper. Only their own figures; the maths is shown so they can correct it. */
+  function benchmark(box: HTMLElement) {
+    const card = el('div', 'ik-bench');
+    card.innerHTML = `
+      <div class="ik-bench__head"><strong>Rough cost helper</strong><small>A rough benchmark from your figures, not your actual cost. Change anything.</small></div>
+      <div class="ik-bench__grid">
+        <label>Who does it<input type="text" data-k="who" placeholder="e.g. office manager" autocomplete="off"></label>
+        <label>Hours a week<input type="number" data-k="hours" min="0" step="0.5" inputmode="decimal" placeholder="e.g. 4"></label>
+        <label>Hourly cost ($)<input type="number" data-k="rate" min="0" step="1" inputmode="decimal" placeholder="e.g. 45"></label>
+        <label>or annual pay ($)<input type="number" data-k="annual" min="0" step="1000" inputmode="decimal" placeholder="e.g. 85000"></label>
+      </div>
+      <p class="ik-bench__maths" aria-live="polite">Add hours a week and an hourly cost or annual pay to see the maths.</p>`;
+    const use = el('button', 'ik-chipbtn ik-chipbtn--primary', 'Use these figures') as HTMLButtonElement;
+    use.type = 'button';
+    use.disabled = true;
+    card.append(use);
+    box.append(card);
+    const val = (k: string) => card.querySelector<HTMLInputElement>(`[data-k="${k}"]`)!.value.trim();
+    const num = (k: string) => { const n = parseFloat(val(k).replace(/[$,\s]/g, '')); return Number.isFinite(n) && n > 0 ? n : 0; };
+    const money = (n: number, cents = false) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: cents ? 2 : 0, minimumFractionDigits: cents ? 2 : 0 }).format(n);
+    const maths = card.querySelector<HTMLElement>('.ik-bench__maths')!;
+    let summary = '';
+    const update = () => {
+      const hours = num('hours');
+      const rate = num('rate');
+      const annual = num('annual');
+      const hourly = rate || (annual ? annual / BENCHMARK.hoursPerYear : 0);
+      if (!hours || !hourly) {
+        maths.textContent = 'Add hours a week and an hourly cost or annual pay to see the maths.';
+        use.disabled = true;
+        return;
+      }
+      const weekly = hourly * hours;
+      const yearly = weekly * BENCHMARK.weeksPerYear;
+      const from = rate ? `${money(rate, true)} an hour` : `${money(annual)} ÷ ${BENCHMARK.hoursPerYear.toLocaleString('en-AU')} h ≈ ${money(hourly, true)} an hour`;
+      maths.textContent = `${from} × ${hours} h a week ≈ ${money(weekly)} a week × ${BENCHMARK.weeksPerYear} weeks ≈ ${money(yearly)} a year`;
+      const who = val('who');
+      summary = `Rough benchmark, not an actual cost: ${who ? `${who}, ` : ''}${hours} h a week at about ${money(hourly, true)} an hour${rate ? '' : ` (${money(annual)} a year ÷ ${BENCHMARK.hoursPerYear.toLocaleString('en-AU')} h)`} ≈ ${money(weekly)} a week, about ${money(yearly)} a year (${BENCHMARK.weeksPerYear} working weeks).`;
+      use.disabled = false;
+    };
+    card.addEventListener('input', update);
+    use.addEventListener('click', () => prefill(summary));
+  }
+
   function milestone(live: boolean) {
     const card = el('div', 'ik-card ik-mile');
-    card.innerHTML = `<span class="ik-mile__ring" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28"/></svg><b>${CORE.length}/${CORE.length}</b></span>`;
+    const n = CORE_QUESTIONS.length;
+    const got = CORE_QUESTIONS.filter((q) => filled(answers.get(q.qid))).length;
+    card.innerHTML = `<span class="ik-mile__ring" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28"/></svg><b>${n}/${n}</b></span>`;
     card.append(el('h3', '', "That's the core done"));
-    card.append(el('p', '', 'Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.'));
+    card.append(el('p', '', `${got} of ${n} answered${n - got ? `, ${n - got} to fill on the call` : ''}: the basics, AI today and your tool stack. Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after. Or finish here.`));
     card.setAttribute('aria-label', CHOICE_TEXT);
     if (replaying || !live) card.querySelector<SVGCircleElement>('.fg')!.style.cssText = 'animation: none; stroke-dashoffset: 0';
     add(card);
@@ -742,38 +1061,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     return b;
   }
 
-  async function present(i = pos) {
-    updateProgress();
-    const s = steps[i];
-    if (!s || sent) return;
-    if (s.type === 'q') {
-      if (s.section) section(s.section);
-      await harrySays(s.text, { question: true });
-      if (i === pos) lock(false);
-    } else if (s.type === 'choice') {
-      lock(true);
-      settleQuestions();
-      const card = milestone(true);
-      if (i !== pos) return;
-      const wrap = el('div', 'ik-choices');
-      wrap.append(
-        option('Keep going', 'Deeper brand and workflow questions · about 15 min', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more'),
-        option('Wrap up now', 'One last question, then share anything useful', false, () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); }, 'wrap'),
-      );
-      card.append(wrap);
-      scroll();
-      if (!replaying && mode === 'chat') (wrap.firstChild as HTMLButtonElement).focus({ preventScroll: true });
-    } else if (s.type === 'files') {
-      lock(true);
-      settleQuestions();
-      await harrySays('Last thing: anything you can share? Files, links and quick screen recordings all help us understand the business faster.');
-      shareCard();
-    }
-  }
-
   function shareCard() {
     const card = el('div', 'ik-card ik-share');
-    card.append(el('h3', '', 'Share anything useful'), el('p', '', 'A price list, a brand guide, a proposal you send, or a quick recording of how something works. All optional.'));
+    card.append(el('h3', '', 'Share anything useful'), el('p', '', 'A price list, a proposal you send, a report, or a quick recording of how something works. All optional.'));
     const tiles = el('div', 'ik-tiles');
     const tile = (icon: string, title: string, sub: string, onClick: () => void) => {
       const b = el('button', 'ik-tile') as HTMLButtonElement;
@@ -797,35 +1087,54 @@ const svg = (d: string, size = 20, sw = 2) =>
     add(card);
   }
 
-  function addClosing() {
-    steps.push({ type: 'q', qid: CLOSING.anythingElse.qid, text: CLOSING.anythingElse.text, phase: 'closing' });
-    steps.push({ type: 'files' });
-  }
-
   /** Apply one action to the current step: updates state now and returns the rendering to run in order,
    *  or null if the action doesn't fit (stale saved state, or a tool call for a step that has moved on). */
   function apply(a: Action): (() => void) | null {
+    if (a.t === 'p') { pending.set(a.k, { v: a.v, s: a.s }); return () => {}; }
     const s = steps[pos];
     if (!s) return null;
+    const show = (v: string, spoken?: 1) => () => { answer(v, v === SKIPPED ? 'skip' : spoken ? 'spoken' : 'you'); };
     let render: () => void;
     if (a.t === 'a' && s.type === 'q') {
       answers.set(s.qid, a.v);
-      render = () => { answer(a.v, a.v === SKIPPED ? 'skip' : a.s ? 'spoken' : 'you'); };
-    } else if (a.t === 'c' && s.type === 'choice') {
-      render = () => { answer(a.v === 'more' ? 'Keep going' : 'Wrap up now', 'you'); };
-      if (a.v === 'more') {
-        let session = 0;
-        for (const n of FULL) {
-          const q = byN.get(n)!;
-          const sec = q.session !== session ? q.session : undefined;
-          session = q.session;
-          steps.push({ type: 'q', qid: q.qid, text: q.text, phase: 'full', section: sec });
-        }
+      render = show(a.v, a.s);
+    } else if (a.t === 'a' && s.type === 'list') {
+      const J = JOURNEY[s.j];
+      answers.set(J.qid, a.v);
+      render = show(a.v, a.s);
+      const { list, multiLine } = parseItems(a.v);
+      items[s.j] = list;
+      // One process per stage is guaranteed: take the first they named, or ask.
+      if (multiLine) startProcess(s.j, 0, list[0]);
+      else if (list.length >= 2) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'Which of these matters most to start with?', options: list.slice(0, 6).map(short) });
+      else if (list.length === 1 && list[0].length <= 80) startProcess(s.j, 0, list[0]);
+      else if (list.length === 1) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'What would you call that process, in a few words?', options: [] });
+      else steps.push({ type: 'name', j: s.j, p: 0, prompt: `Which ${J.title.toLowerCase()} process should we start with? Just name one, like ${J.example}.`, options: [] });
+    } else if (a.t === 'a' && s.type === 'name') {
+      render = show(a.v, a.s);
+      if (a.v === SKIPPED) {
+        if (s.p === 0) procs[s.j][0] = { name: SKIPPED, answers: [], skipped: true };
+        nextStage(s.j);
+      } else {
+        startProcess(s.j, s.p, a.v.trim());
       }
-      addClosing();
+    } else if (a.t === 'a' && s.type === 'drill') {
+      procs[s.j][s.p].answers[s.d] = a.v;
+      render = show(a.v, a.s);
+      if (s.d === DRILL.length - 1) endProcess(s.j, s.p);
+    } else if (a.t === 'c' && s.type === 'another') {
+      render = show(a.v === 'done' ? 'No, move on' : a.v.startsWith('next:') ? `Yes: ${a.v.slice(5)}` : 'Yes, another one');
+      if (a.v === 'done') nextStage(s.j);
+      else if (a.v.startsWith('next:')) startProcess(s.j, s.p + 1, a.v.slice(5));
+      else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: `Which one? Name the next ${JOURNEY[s.j].title.toLowerCase()} process.`, options: undrilled(s.j).slice(0, 6) });
+    } else if (a.t === 'c' && s.type === 'choice') {
+      render = show(a.v === 'more' ? 'Keep going into the journey' : 'Finish here');
+      if (a.v === 'more') steps.push({ type: 'list', j: 0 });
+      else addClosing();
     } else {
       return null;
     }
+    pending.delete(stepKey(s));
     pos++;
     return render;
   }
@@ -838,17 +1147,27 @@ const svg = (d: string, size = 20, sw = 2) =>
   /** State changes synchronously, so callers (e.g. voice tools) see the new position immediately. */
   function act(a: Action): boolean {
     if (sent) return false;
+    if (a.t === 'p') { pending.set(a.k, { v: a.v, s: a.s }); actions.push(a); save(); return true; }
     const render = apply(a);
     if (!render) return false;
     actions.push(a);
+    const chain: (() => unknown)[] = [render];
+    // Voice answers given ahead of their turn: take them now, in order, so nothing is asked twice.
+    for (let ahead = pending.get(stepKey(steps[pos])); answerable(steps[pos]) && ahead; ahead = pending.get(stepKey(steps[pos]))) {
+      const i = pos;
+      const v = ahead;
+      const r = apply({ t: 'a', v: v.v, s: v.s });
+      if (!r) break;
+      actions.push({ t: 'a', v: v.v, s: v.s });
+      chain.push(async () => { await transition(i); header(steps[i]); await harrySays(stepText(steps[i]), { question: true }); r(); });
+    }
     save();
     lock(true);
     updateProgress();
+    anchor();
     const next = pos;
     enqueue(async () => {
-      render();
-      if (a.t === 'c' && a.v === 'wrap') await harrySays('No problem. One last question before you go.');
-      if (a.t === 'c' && a.v === 'more') await harrySays("Great. Same as before: answer what you can and skip what you can't.");
+      for (const c of chain) await c();
       await present(next);
     });
     return true;
@@ -883,16 +1202,16 @@ const svg = (d: string, size = 20, sw = 2) =>
     stopListening();
     const s = steps[pos];
     const text = input.value.trim();
-    if (!text || !s || s.type !== 'q') return;
+    if (!text || !answerable(s)) return;
     input.value = '';
     autosize();
     if (looksLikeQuestion(text)) {
       lock(true);
-      const reply = await askHarry(text, s.text);
+      const reply = await askHarry(text, stepText(s));
       if (reply) {
         answer(text, 'you');
         await harrySays(reply);
-        await harrySays(s.text, { question: true });
+        await harrySays(stepText(s), { question: true });
         const at = pos;
         const keep = note('Was that actually your answer?', 'Save it as my answer', () => {
           keep.remove();
@@ -907,11 +1226,12 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   skipBtn.addEventListener('click', () => {
     stopListening();
-    if (steps[pos]?.type === 'q') act({ t: 'a', v: SKIPPED });
+    if (answerable(steps[pos])) act({ t: 'a', v: SKIPPED });
   });
 
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+    // On phones, Enter adds a line on "one per line" questions; the send button sends.
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !(steps[pos]?.type === 'list' && !finePointer)) {
       e.preventDefault();
       composer.requestSubmit();
     }
@@ -1044,6 +1364,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       }
       files.push(f);
       fileMsg(`${f.name} · ${fmtSize(f.size)}`);
+      noteExample(f.name);
     }
     fileInput.value = '';
     openTray(false);
@@ -1063,6 +1384,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (!v || links.includes(v)) return false;
     links.push(v);
     fileMsg(label ?? v);
+    noteExample(v);
     save();
     renderChips();
     return true;
@@ -1194,6 +1516,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const label = `Screen recording, ${fmtDur(seconds)}`;
     links.push(`${label}: ${done.url} (stored at ${done.path})`);
     fileMsg(`${label} · ${fmtSize(blob.size)}`);
+    noteExample(label);
     save();
     renderChips();
   }
@@ -1213,13 +1536,13 @@ const svg = (d: string, size = 20, sw = 2) =>
     // A link typed into the box but never added still counts.
     if (linkInput.value.trim() && addLink(linkInput.value)) linkInput.value = '';
     if (totalBytes() > MAX_UPLOAD_BYTES) { note(TOO_BIG, undefined, undefined, true); return; }
-    if (!answers.size && !files.length && !links.length) {
+    if (!hasAnything() && !files.length && !links.length) {
       note("There's nothing to send yet. Answer a question or two first, or share a file or link.");
       return;
     }
     const data = new FormData();
     // Only questions that were offered: answered as typed, or "to fill" if skipped.
-    for (const [qid, v] of answers) data.set(String(qid), v);
+    for (const [qid, v] of payloadFields()) data.set(String(qid), v);
     if (links.length) data.set(String(CLOSING.link), links.join(' | '));
     for (const f of files) data.append(String(CLOSING.files), f, f.name);
     data.set(String(CLOSING.employee), employee);
@@ -1246,7 +1569,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       if (sendAllBtn) { sendAllBtn.disabled = false; sendAllBtn.innerHTML = label ?? 'Send everything'; }
       const msg = err instanceof Error && err.message ? err.message : "That didn't send. Please try again.";
       note(`${msg} Nothing is lost: your answers are still saved here.`, 'Try again', () => sendAll(), true);
-      if (steps[pos]?.type === 'q') lock(false);
+      if (answerable(steps[pos])) lock(false);
     } finally {
       sending = false;
     }
@@ -1256,10 +1579,9 @@ const svg = (d: string, size = 20, sw = 2) =>
   });
 
   // ---------- Finish ----------
-  const answeredCount = () => [...answers.values()].filter((v) => v !== SKIPPED).length;
   function finish() {
     stopListening();
-    const skipped = [...answers.values()].filter((v) => v === SKIPPED).length;
+    const { answered, skipped } = tally();
     const recs = links.filter((l) => l.startsWith('Screen recording')).length;
     const plainLinks = links.length - recs;
     const tick = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -1268,22 +1590,26 @@ const svg = (d: string, size = 20, sw = 2) =>
     const item = (main: string, sub?: string) => {
       const li = el('li', '');
       li.innerHTML = tick;
-      li.append(main);
-      if (sub) li.append(' ', el('small', '', sub));
+      const t = el('span', '', main);
+      if (sub) t.append(' ', el('small', '', sub));
+      li.append(t);
       list.append(li);
     };
-    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
-    item(`${plural(answeredCount(), 'answer')} received`, skipped ? `· ${skipped} skipped, we'll cover ${skipped === 1 ? 'it' : 'them'} on the call` : undefined);
-    const shared = [files.length && plural(files.length, 'file'), plainLinks && plural(plainLinks, 'link'), recs && plural(recs, 'screen recording')].filter(Boolean);
-    if (shared.length) item(`${shared.join(', ')} shared`);
+    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : /s$/.test(w) ? 'es' : 's'}`;
+    item(`${plural(answered, 'answer')} received`, skipped ? `· ${skipped} to fill, we'll cover ${skipped === 1 ? 'it' : 'them'} on the call` : undefined);
+    const mapped = procs.flat().filter((p) => p && !p.skipped);
+    if (mapped.length) item(`${plural(mapped.length, 'process')} mapped`, `· ${listJoin(mapped.map((p) => p.name))}`);
+    const shared = [files.length && plural(files.length, 'file'), plainLinks && plural(plainLinks, 'link'), recs && plural(recs, 'screen recording')].filter(Boolean) as string[];
+    if (shared.length) item(`${listJoin(shared)} shared`);
     item('Saved to Roadmap Labs', `· ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
     if (client) $<HTMLElement>('ik-finish-title').textContent = `That's everything, ${client}. Thank you.`;
     root.dataset.view = 'finish';
+    anchor();
     $<HTMLElement>('ik-finish').focus({ preventScroll: true });
   }
   $<HTMLButtonElement>('ik-download').addEventListener('click', () => {
     const lines = [`Roadmap Labs intake${client ? ` · ${client}` : ''}`, new Date().toLocaleString(), ''];
-    for (const [qid, v] of answers) lines.push(textByQid.get(qid) ?? `Question ${qid}`, v === SKIPPED ? '(skipped)' : v, '');
+    for (const [qid, v] of payloadFields()) lines.push(textByQid.get(qid) ?? `Question ${qid}`, v === SKIPPED ? '(to fill)' : v, '');
     if (links.length) lines.push('Links shared', ...links, '');
     if (files.length) lines.push('Files shared', ...files.map((f) => f.name), '');
     const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain' }));
@@ -1344,14 +1670,65 @@ const svg = (d: string, size = 20, sw = 2) =>
     document.head.append(s);
   }
 
+  // The voice agent works through the same spine via these tool replies. It may roam inside the current stage
+  // (record_answer with a question_id); the page keeps the fixed order and never asks an answered question again.
+  function openInStage(): string {
+    const s = steps[pos];
+    if (s?.type === 'q' && s.phase === 'core') {
+      const open = CORE_QUESTIONS.filter((q) => q.stage === s.stage && q.id !== s.id && !answers.has(q.qid) && !pending.has(`q:${q.id}`));
+      return open.length ? ` Still open in ${CORE_STAGES[s.stage!].title}: ${open.map((q) => `${q.id} "${q.text}"`).join('; ')}.` : '';
+    }
+    if (s?.type === 'drill') {
+      const open = DRILL.filter((d, i) => i > s.d && !pending.has(`d:${s.j}:${s.p}:${i}`));
+      return open.length ? ` Still open for this process: ${open.map((d) => `${d.id} "${d.text}"`).join('; ')}.` : '';
+    }
+    return '';
+  }
+  const ROAM = ' If they answer one of the still-open questions on the way, call record_answer with its question_id; it will not be asked again.';
   function stepPrompt(): string {
     const s = steps[pos];
     if (sent) return 'The interview has been submitted. Thank them and end the call.';
     if (!s) return 'The interview is finished.';
-    if (s.type === 'q') return `Ask this question exactly as written, then wait for the answer: "${s.text}"`;
-    if (s.type === 'choice') return `The core questions are done. Say exactly: "${CHOICE_TEXT}" Then call choose_path with path "keep_going" or "wrap_up".`;
-    return 'All the questions are done. Tell them they can add files, links or a screen recording on the screen, then press Send everything. Thank them and end the call.';
+    switch (s.type) {
+      case 'q':
+        return s.phase === 'closing'
+          ? `Closing question (W1). Ask exactly: "${s.text}" Then call record_answer.`
+          : `Stage ${s.stage}, ${CORE_STAGES[s.stage!].title}, question ${s.id}. Ask exactly: "${s.text}" Then call record_answer with their words.${openInStage()}${openInStage() ? ROAM : ''}`;
+      case 'list':
+        return `Stage 3, the journey: ${JOURNEY[s.j].title} (${JOURNEY[s.j].id}). Ask exactly: "${JOURNEY[s.j].text}" Then call record_answer with what they name, one per line.`;
+      case 'name':
+        return `${JOURNEY[s.j].title}. Ask: "${s.prompt}"${s.options.length ? ` They mentioned: ${s.options.join('; ')}.` : ''} Then call record_answer with the process name, in their words.`;
+      case 'drill': {
+        const pr = procs[s.j][s.p];
+        const extra =
+          s.d === 3 ? ' They can attach a file, paste text or a link, or record their screen on the page.'
+          : s.d === 4 ? ' Offer three answers: hand it over, split it, or keep it with a person. Ask why.'
+          : s.d === 7 ? ` Help them reach an hourly figure: who does it, hours per week, and their hourly cost or annual pay. As a rough benchmark, annual pay divided by about ${BENCHMARK.hoursPerYear} hours is an hourly cost. Use only their figures and say it is a rough benchmark. Never invent numbers.`
+          : '';
+        return `${JOURNEY[s.j].title}, process "${pr.name}", ${DRILL[s.d].id} (${s.d + 1} of ${DRILL.length}). Ask exactly: "${DRILL[s.d].text}"${extra} Then call record_answer.${openInStage()}${openInStage() ? ROAM : ''}`;
+      }
+      case 'another':
+        return `"${procs[s.j][s.p].name}" is done. Ask: "Another one in ${JOURNEY[s.j].title}?"${s.next ? ` They also mentioned "${s.next}".` : ''} If yes, call choose_path with path "another" and the process name; if no, call choose_path with path "next_stage".`;
+      case 'choice':
+        return `The core (stages 0 to 2) is done. Say: "${CHOICE_TEXT}" Then call choose_path with path "keep_going" or "wrap_up".`;
+      default:
+        return 'All the questions are done. Tell them they can add files, links or a screen recording on the screen, then press Send everything. Thank them and end the call.';
+    }
   }
+  /** Map a spine id the agent passed (A3, T5, D6...) to a still-open question in the current stage or process. */
+  function roamKey(id: string): string | null {
+    const s = steps[pos];
+    if (s?.type === 'q' && s.phase === 'core') {
+      const q = CORE_QUESTIONS.find((x) => x.id === id && x.stage === s.stage && !answers.has(x.qid));
+      return q ? `q:${q.id}` : null;
+    }
+    if (s?.type === 'drill') {
+      const i = DRILL.findIndex((d) => d.id === id);
+      return i > s.d ? `d:${s.j}:${s.p}:${i}` : null;
+    }
+    return null;
+  }
+  const currentId = (s?: Step) => (s?.type === 'q' ? s.id : s?.type === 'list' ? JOURNEY[s.j].id : s?.type === 'drill' ? DRILL[s.d].id : '');
 
   /** Rough loudness of a base64 audio chunk from the agent (16-bit PCM); any chunk still counts as speech. */
   function chunkLevel(b64: unknown) {
@@ -1371,23 +1748,39 @@ const svg = (d: string, size = 20, sw = 2) =>
     config.clientTools = {
       ...(config.clientTools || {}),
       get_current_question: () => stepPrompt(),
-      record_answer: (p: { answer?: string }) => {
-        if (steps[pos]?.type !== 'q') return `No question is waiting. ${stepPrompt()}`;
+      record_answer: (p: { answer?: string; question_id?: string }) => {
         const v = String(p?.answer ?? '').trim();
+        const id = String(p?.question_id ?? '').trim().toUpperCase();
+        if (id && id !== currentId(steps[pos])) {
+          const k = roamKey(id);
+          if (!k) return `${id} isn't open in this stage. ${stepPrompt()}`;
+          act({ t: 'p', k, v: v || SKIPPED, s: 1 });
+          return `Saved for ${id}; it won't be asked again. ${stepPrompt()}`;
+        }
+        if (!answerable(steps[pos])) return `No question is waiting. ${stepPrompt()}`;
         act({ t: 'a', v: v || SKIPPED, s: 1 });
         return `Saved. Next: ${stepPrompt()}`;
       },
       skip_question: () => {
-        if (steps[pos]?.type !== 'q') return `No question is waiting. ${stepPrompt()}`;
+        if (!answerable(steps[pos])) return `No question is waiting. ${stepPrompt()}`;
         act({ t: 'a', v: SKIPPED, s: 1 });
-        return `Skipped. Next: ${stepPrompt()}`;
+        return `Skipped (to fill). Next: ${stepPrompt()}`;
       },
-      choose_path: (p: { path?: string }) => {
-        if (steps[pos]?.type !== 'choice') return `There's no choice to make right now. ${stepPrompt()}`;
-        const more = /keep|more|full|continue/i.test(String(p?.path ?? ''));
-        root.querySelectorAll('.ik-choices').forEach((c) => c.remove());
-        act({ t: 'c', v: more ? 'more' : 'wrap' });
-        return `Done. Next: ${stepPrompt()}`;
+      choose_path: (p: { path?: string; name?: string }) => {
+        const s = steps[pos];
+        const path = String(p?.path ?? '');
+        if (s?.type === 'choice') {
+          root.querySelectorAll('.ik-choices').forEach((c) => c.remove());
+          act({ t: 'c', v: /keep|more|journey|continue/i.test(path) ? 'more' : 'wrap' });
+          return `Done. Next: ${stepPrompt()}`;
+        }
+        if (s?.type === 'another') {
+          const name = String(p?.name ?? '').trim();
+          const v = /next_stage|done|\bno\b|move|finish|stop/i.test(path) ? 'done' : name ? `next:${short(name)}` : s.next ? `next:${s.next}` : 'another';
+          act({ t: 'c', v });
+          return `Done. Next: ${stepPrompt()}`;
+        }
+        return `There's no choice to make right now. ${stepPrompt()}`;
       },
     };
     const status = document.getElementById('ik-voice-status');
@@ -1423,7 +1816,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     begun = true;
     root.dataset.view = 'chat';
     updateProgress();
-    await harrySays(`Hi${client ? ` ${client}` : ''}, I'm Harry. Answer in your own words; there are no wrong answers. We'll start with the core: ${CORE.length} questions, about 10 minutes.`);
+    await harrySays(`Hi${client ? ` ${client}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. We'll start with the core: ${CORE_QUESTIONS.length} questions, about 10 minutes.`);
     enqueue(() => present());
   }
   $<HTMLButtonElement>('ik-start-chat').addEventListener('click', () => { setMode('chat'); begin(); });
@@ -1444,15 +1837,16 @@ const svg = (d: string, size = 20, sw = 2) =>
     root.dataset.view = 'chat';
     replaying = true;
     for (const a of saved.actions) {
-      const s = steps[pos];
-      if (s?.type === 'q') { if (s.section) section(s.section); harrySays(s.text, { question: true }); }
-      else if (s?.type === 'choice') milestone(false);
+      if (a.t !== 'p') renderStatic(pos);
       const render = apply(a);
       if (!render) break;
       render();
       actions.push(a);
     }
     replaying = false;
+    // Files live in memory only; links and recordings are saved. If they'd attached files, ask them to add them again.
+    const attachedBefore = procs.flat().some((p) => p?.answers.some((v) => v?.includes('Attached:') && !links.some((l) => v.includes(linkLabel(l)) || v.includes(l))));
+    if (attachedBefore) note('Files attached before the refresh need adding again (links and recordings are kept). Use the paperclip.');
     log.scrollTop = log.scrollHeight;
     showToast('Welcome back. Picked up where you left off', 'Start over', () => {
       if (!confirm('Clear your answers and start again?')) return;
