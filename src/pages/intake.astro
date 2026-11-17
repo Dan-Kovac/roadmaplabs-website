@@ -1,0 +1,2561 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Public, so it can sit in the page. Unset means voice mode shows a "coming online" state and chat carries everything.
+const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
+
+const icons = {
+  clip: '<path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  screen: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.2" fill="currentColor" stroke="none"/>',
+  up: '<path d="M12 19V5M5 12l7-7 7 7"/>',
+  chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  wave: '<path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"/>',
+  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  skip: '<path d="M5 12h12M13 6l6 6-6 6"/>',
+  save: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+};
+const svg = (d: string, size = 20, sw = 2) =>
+  `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+---
+<Base
+  title="Client intake | Roadmap Labs"
+  description="The Roadmap Labs client intake: answer the business OS interview by chat or by voice, and share any files or links that help."
+  path="/intake"
+  noindex
+>
+<style is:global>
+  /* ======================================================================
+     /intake: one focused conversation stage. Brand tokens from rl-tokens.css.
+     ====================================================================== */
+  .ik {
+    --ik-top: 76px;
+    --lvl: 0;
+    --ease: cubic-bezier(.2,.7,.2,1);
+    --tint: rgba(10,76,255,.06);
+    --tint-2: rgba(10,76,255,.12);
+    position: relative; isolation: isolate;
+    overflow: hidden; /* fallback */
+    overflow: clip; /* clip, not a scroll container: it can't be scrolled sideways, even programmatically */
+    height: calc(100vh - var(--ik-top)); /* fallback for browsers without svh */
+    height: calc(100svh - var(--ik-top)); min-height: 440px;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, #f7f8fc 0%, var(--paper) 38%);
+    border-top: 1px solid rgba(0,7,16,.06);
+  }
+  .ik-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; overflow: clip; pointer-events: none; }
+  .ik-bg::before, .ik-bg::after { content: ""; position: absolute; z-index: -1; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: .16; }
+  .ik-bg::before { width: 560px; height: 560px; left: -180px; top: -320px; background: #0a4cff; animation: rl-drift 20s ease-in-out infinite alternate; }
+  .ik-bg::after { width: 460px; height: 460px; right: -160px; top: -260px; background: #00a3ff; animation: rl-drift 24s ease-in-out -6s infinite alternate-reverse; }
+  .ik-col { width: 100%; max-width: 760px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
+  .ik-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ik button { font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; }
+  .ik :focus-visible { outline: 2px solid var(--roadmap-blue); outline-offset: 2px; }
+
+  /* ---------- Top bar: identity, mode switch, progress ---------- */
+  .ik-top { flex: none; position: relative; z-index: 3; }
+  .ik-top__row { display: flex; align-items: center; gap: 12px; height: 64px; overflow: hidden; }
+  .ik-id { flex: 1 1 auto; display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ik-id__text { display: flex; flex-direction: column; min-width: 0; }
+  .ik-id__name { font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
+  .ik-id__meta { font: 500 12px/16px var(--font-sans); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ik-id__meta b { font-weight: 500; }
+  .ik-modes { position: relative; margin-left: auto; flex: none; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 999px; background: rgba(0,7,16,.05); }
+  .ik-modes::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--paper); box-shadow: 0 1px 2px rgba(0,7,16,.08), 0 4px 12px rgba(0,7,16,.08); transition: transform .45s var(--ease); }
+  .ik[data-mode="voice"] .ik-modes::before { transform: translateX(100%); }
+  .ik-modes button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 600 13px/18px var(--font-sans); cursor: pointer; transition: color .3s ease; white-space: nowrap; }
+  .ik-modes button[aria-pressed="true"] { color: var(--ink); }
+  .ik-progress { position: relative; height: 3px; background: rgba(0,7,16,.06); border-radius: 3px; overflow: hidden; }
+  .ik-progress i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 3px; background: var(--gradient-signal); transition: width .8s var(--ease); }
+  .ik-progress i::after { content: ""; position: absolute; right: 0; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #00a3ff; box-shadow: 0 0 0 4px rgba(0,163,255,.18); }
+  .ik[data-view="welcome"] .ik-progress { opacity: 0; }
+
+  /* ---------- Orbs ---------- */
+  .ik-orb { --size: 36px; position: relative; width: var(--size); height: var(--size); flex: none; border-radius: 50%; }
+  .ik-orb__core { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 32% 28%, #9fd8ff 0%, #2f86ff 34%, #0a4cff 62%, #04227a 100%); box-shadow: inset 0 -6px 14px rgba(0,7,16,.25), 0 6px 20px rgba(10,76,255,.28); transform: scale(calc(1 + var(--lvl) * .14)); transition: transform .12s linear; }
+  .ik-orb__core::before { content: ""; position: absolute; inset: -25%; background: conic-gradient(from 0deg, transparent 0 20%, rgba(0,163,255,.85) 30%, transparent 45% 62%, rgba(124,196,255,.7) 72%, transparent 85%); filter: blur(calc(var(--size) * .12)); animation: ik-spin 9s linear infinite; mix-blend-mode: screen; }
+  .ik-orb__core::after { content: ""; position: absolute; left: 18%; top: 12%; width: 42%; height: 30%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.75), transparent); filter: blur(2px); }
+  .ik-orb__halo { position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 calc(var(--size) * (.06 + var(--lvl) * .22)) rgba(0,163,255,.16), 0 0 calc(var(--size) * (.3 + var(--lvl) * .6)) rgba(10,76,255,.35); transition: box-shadow .14s linear; }
+  .ik-orb--sm { --size: 36px; animation: ik-breathe 4.5s ease-in-out infinite; }
+  .ik-orb--sm .ik-orb__halo { box-shadow: 0 0 0 calc(2px + var(--lvl) * 6px) rgba(0,163,255,.18); }
+  .ik-orb--hero { --size: clamp(150px, 26vh, 220px); animation: ik-breathe 5.5s ease-in-out infinite; }
+  .ik-orb--hero .ik-orb__ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(10,76,255,.28); animation: ik-ring 4.2s var(--ease) infinite; pointer-events: none; }
+  .ik-orb--hero .ik-orb__ring:nth-child(2) { animation-delay: 1.4s; }
+  .ik-orb--hero .ik-orb__ring:nth-child(3) { animation-delay: 2.8s; }
+  .ik-orb--off .ik-orb__core { background: radial-gradient(circle at 32% 28%, #ffffff 0%, #d9e4ff 30%, #9fb4e6 66%, #6c80b8 100%); box-shadow: inset 0 -6px 14px rgba(0,7,16,.12), 0 6px 20px rgba(10,76,255,.12); }
+  .ik-orb--off .ik-orb__core::before { opacity: .35; }
+  .ik-orb--off .ik-orb__halo { box-shadow: 0 0 0 10px rgba(0,7,16,.04); }
+  .ik-orb--off .ik-orb__ring { border-color: rgba(0,7,16,.1); }
+  @keyframes ik-spin { to { transform: rotate(360deg); } }
+  @keyframes ik-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+  @keyframes ik-ring { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.45); opacity: 0; } }
+
+  /* ---------- Voice hero (expands in voice mode) ---------- */
+  .ik-voice { flex: none; display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s var(--ease), opacity .4s ease; opacity: 0; }
+  .ik[data-mode="voice"]:not([data-view="welcome"]):not([data-view="finish"]) .ik-voice { grid-template-rows: 1fr; opacity: 1; }
+  .ik-voice > div { min-height: 0; overflow: hidden; }
+  .ik-voice__inner { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 22px 0 8px; text-align: center; }
+  .ik-voice__status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: rgba(0,7,16,.05); font: 600 12px/16px var(--font-sans); color: var(--text-secondary); }
+  .ik-voice__status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--steel); }
+  .ik-voice__status[data-live]::before { background: #00a3ff; box-shadow: 0 0 0 0 rgba(0,163,255,.6); animation: rl-pulse 1.8s ease-out infinite; }
+  .ik-voice__caption { margin: 0; max-width: 34ch; font: 500 clamp(17px, 2.2vw, 20px)/1.4 var(--font-sans); letter-spacing: -0.015em; color: var(--ink); min-height: 1.4em; }
+  .ik-voice__hint { margin: 0; max-width: 42ch; font: 400 14px/20px var(--font-sans); color: var(--text-secondary); }
+  .ik-voice__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* The ElevenLabs widget renders with fixed positioning; a transformed box becomes its containing block, so it sits here. */
+  .ik-widget { position: relative; width: min(100%, 420px); height: 168px; margin: -12px 0 -4px; transform: translateZ(0); }
+  .ik[data-mode="voice"] .ik-q.is-current { font-size: 17px; line-height: 1.5; color: var(--ink); }
+  .ik[data-mode="voice"] .ik-log { mask-image: linear-gradient(180deg, transparent 0, #000 56px); -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 56px); }
+
+  /* ---------- Conversation ---------- */
+  .ik-log { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; mask-image: linear-gradient(180deg, transparent 0, #000 72px); -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 72px); }
+  .ik-log__inner { display: flex; flex-direction: column; gap: 18px; padding: 72px 0 calc(28px + var(--ik-dock, 0px)); min-height: 100%; box-sizing: border-box; justify-content: flex-end; }
+  .ik-log { scroll-padding-bottom: calc(16px + var(--ik-dock, 0px)); }
+  /* While Harry offers a choice there's nothing to type: hide the composer so the options have the room. */
+  .ik[data-choosing] .ik-composer, .ik[data-choosing] .ik-chips, .ik[data-choosing] .ik-skip { display: none; }
+  .ik-turn { display: flex; gap: 14px; align-items: flex-start; animation: ik-in .5s var(--ease) both; }
+  .ik-turn .ik-orb { margin-top: 2px; }
+  .ik-turn__body { min-width: 0; flex: 1; }
+  .ik-say { margin: 0; font: 400 17px/1.55 var(--font-sans); letter-spacing: -0.01em; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .ik-q { margin: 0; font: 500 16px/1.5 var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); white-space: pre-wrap; overflow-wrap: anywhere; transition: font-size .45s var(--ease), color .45s ease, line-height .45s ease; }
+  .ik-q.is-current { font-size: clamp(22px, 3.3vw, 30px); line-height: 1.28; letter-spacing: -0.022em; color: var(--ink); }
+  .ik-turn--q:not(:has(.is-current)) .ik-orb { opacity: .35; transform: scale(.8); transition: opacity .4s ease, transform .4s ease; animation: none; }
+  .ik-turn--q:not(:has(.is-current)) .ik-orb__core::before { animation: none; }
+  .ik-a { align-self: flex-end; max-width: min(82%, 560px); margin: 0; padding: 12px 16px; border-radius: 18px 18px 6px 18px; background: var(--tint); color: var(--ink); font: 400 16px/1.55 var(--font-sans); letter-spacing: -0.01em; white-space: pre-wrap; overflow-wrap: anywhere; animation: ik-settle .45s var(--ease) both; }
+  .ik-a--spoken::before { content: "Spoken"; display: block; margin-bottom: 2px; font: 600 10px/14px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-a--skip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 4px; background: none; color: var(--text-muted); font-size: 14px; }
+  .ik-a--file { display: inline-flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid rgba(0,7,16,.1); box-shadow: 0 1px 2px rgba(0,7,16,.04); }
+  .ik-a--file svg { flex: none; color: var(--roadmap-blue); }
+  .ik-a--file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ik-note { align-self: center; margin: 0; padding: 6px 14px; border-radius: 999px; background: rgba(0,7,16,.04); font: 500 13px/18px var(--font-sans); color: var(--text-secondary); text-align: center; animation: ik-in .4s var(--ease) both; }
+  .ik-note button { padding: 0; border: 0; background: none; font: 600 13px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .ik-note--error { background: #fef3f2; color: #b42318; }
+  .ik-section { display: flex; flex-direction: column; gap: 2px; margin: 18px 0 2px; padding-top: 18px; border-top: 1px solid rgba(0,7,16,.08); animation: ik-in .5s var(--ease) both; }
+  .ik-section span { font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-section strong { font: 600 18px/26px var(--font-sans); letter-spacing: -0.015em; color: var(--ink); }
+  .ik-section--proc { margin-top: 6px; padding-top: 12px; border-top: 1px dashed rgba(0,7,16,.12); }
+  .ik-section--proc strong { font-size: 16px; line-height: 22px; }
+  .ik-hint { margin: 8px 0 0; max-width: 60ch; font: 400 14px/1.5 var(--font-sans); color: var(--text-secondary); animation: ik-in .4s .1s var(--ease) both; }
+  .ik-help { margin-top: 12px; display: grid; gap: 8px; }
+  .ik-help:empty { display: none; }
+  .ik-turn--q:not(:has(.is-current)) .ik-hint, .ik-turn--q:not(:has(.is-current)) .ik-help { display: none; }
+  .ik-quick { display: flex; flex-wrap: wrap; gap: 8px; animation: ik-in .4s .1s var(--ease) both; }
+  .ik-chipbtn { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid rgba(0,7,16,.14); border-radius: 999px; background: var(--paper); color: var(--ink); font: 500 14px/20px var(--font-sans); cursor: pointer; transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease); }
+  .ik-chipbtn:hover { border-color: var(--roadmap-blue); background: var(--tint); }
+  .ik-chipbtn--primary { background: var(--roadmap-blue); border-color: var(--roadmap-blue); color: var(--paper); }
+  .ik-chipbtn--primary:hover { background: #083fd6; color: var(--paper); }
+  .ik-chipbtn[disabled] { opacity: .45; pointer-events: none; }
+  .ik-bench { display: grid; gap: 12px; padding: 16px; border-radius: 16px; background: var(--paper); border: 1px solid rgba(0,7,16,.1); box-shadow: 0 6px 20px rgba(0,7,16,.05); animation: ik-in .45s .1s var(--ease) both; justify-items: start; }
+  .ik-bench__head { display: flex; flex-direction: column; gap: 2px; }
+  .ik-bench__head strong { font: 600 15px/20px var(--font-sans); color: var(--ink); }
+  .ik-bench__head small { font: 400 12px/17px var(--font-sans); color: var(--text-secondary); }
+  .ik-bench__grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 10px; }
+  .ik-bench__grid label { display: grid; gap: 4px; font: 500 12px/16px var(--font-sans); color: var(--text-secondary); }
+  .ik-bench__grid input { min-height: 42px; padding: 0 12px; border: 1px solid rgba(0,7,16,.14); border-radius: 10px; font: 400 15px/20px var(--font-sans); color: var(--ink); background: var(--paper); min-width: 0; }
+  .ik-bench__grid input:focus { outline: 0; border-color: var(--roadmap-blue); box-shadow: 0 0 0 3px rgba(10,76,255,.12); }
+  .ik-bench__maths { margin: 0; width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; background: #f7f8fc; font: 500 13px/19px var(--font-sans); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ik-think { display: inline-flex; gap: 5px; padding: 12px 0; }
+  .ik-think i { width: 6px; height: 6px; border-radius: 50%; background: var(--steel); animation: ik-dot 1s ease-in-out infinite; }
+  .ik-think i:nth-child(2) { animation-delay: .15s; } .ik-think i:nth-child(3) { animation-delay: .3s; }
+  @keyframes ik-dot { 0%, 100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+  @keyframes ik-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes ik-settle { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+
+  /* Cards inside the conversation (milestone, sharing) */
+  .ik-card { margin: 6px 0; padding: 24px; border-radius: 20px; background: var(--paper); border: 1px solid rgba(0,7,16,.08); box-shadow: 0 1px 2px rgba(0,7,16,.04), 0 12px 32px rgba(0,7,16,.06); animation: ik-in .55s var(--ease) both; }
+  .ik-card h3 { margin: 0; font: 600 22px/1.25 var(--font-sans); letter-spacing: -0.02em; color: var(--ink); }
+  .ik-card p { margin: 6px 0 0; font: 400 15px/1.55 var(--font-sans); color: var(--text-secondary); }
+  .ik-mile { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center; }
+  .ik-mile__ring { grid-row: span 2; position: relative; width: 64px; height: 64px; }
+  .ik-mile__ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .ik-mile__ring circle { fill: none; stroke-width: 5; }
+  .ik-mile__ring .bg { stroke: var(--tint-2); }
+  .ik-mile__ring .fg { stroke: url(#ik-grad); stroke-linecap: round; stroke-dasharray: 176; stroke-dashoffset: 176; animation: ik-draw 1.1s .15s var(--ease) forwards; }
+  .ik-mile__ring b { position: absolute; inset: 0; display: grid; place-items: center; font: 700 15px/1 var(--font-sans); color: var(--ink); }
+  .ik-mile .ik-choices { grid-column: 1 / -1; margin-top: 14px; }
+  @keyframes ik-draw { to { stroke-dashoffset: 0; } }
+  .ik-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
+  .ik-opt { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 76px; padding: 14px 16px; border: 1px solid rgba(0,7,16,.12); border-radius: 16px; background: var(--paper); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease), box-shadow .2s ease; }
+  .ik-opt:hover { border-color: var(--roadmap-blue); box-shadow: 0 6px 18px rgba(10,76,255,.12); transform: translateY(-1px); }
+  .ik-opt strong { display: flex; align-items: center; gap: 8px; font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em; }
+  .ik-opt small { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-opt--primary { background: var(--roadmap-blue); border-color: var(--roadmap-blue); color: var(--paper); }
+  .ik-opt--primary small { color: rgba(255,255,255,.82); }
+  .ik-opt--primary:hover { background: #083fd6; }
+  .ik-opt[disabled] { opacity: .5; pointer-events: none; }
+  .ik-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 10px; margin-top: 16px; }
+  .ik-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; border: 1px solid rgba(0,7,16,.1); border-radius: 16px; background: #fbfbfd; color: var(--ink); cursor: pointer; text-align: left; transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease); }
+  .ik-tile:hover { border-color: var(--roadmap-blue); background: var(--paper); transform: translateY(-1px); }
+  .ik-tile span.ik-tile__icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--tint); color: var(--roadmap-blue); }
+  .ik-tile strong { font: 600 15px/20px var(--font-sans); }
+  .ik-tile small { font: 400 12px/17px var(--font-sans); color: var(--text-secondary); }
+  .ik-share__send { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+  .ik-share__send small { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+
+  .ik-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 24px; border: 0; border-radius: 999px; background: var(--roadmap-blue); color: var(--paper); font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em; cursor: pointer; transition: background-color .2s ease, transform .2s var(--ease), box-shadow .2s ease; box-shadow: 0 8px 24px rgba(10,76,255,.28); text-decoration: none; }
+  .ik-cta:hover { background: #083fd6; transform: translateY(-1px); }
+  .ik-cta[disabled] { opacity: .6; cursor: progress; transform: none; }
+  .ik-cta--quiet { background: var(--paper); color: var(--ink); border: 1px solid rgba(0,7,16,.14); box-shadow: none; }
+  .ik-cta--quiet:hover { background: var(--paper); border-color: var(--ink); }
+  .ik-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; animation: ik-spin .8s linear infinite; }
+
+  /* ---------- Welcome ---------- */
+  .ik-welcome { display: none; flex: 1; min-height: 0; overflow-y: auto; }
+  .ik[data-view="welcome"] .ik-welcome { display: flex; }
+  .ik[data-view="welcome"] .ik-log, .ik[data-view="welcome"] .ik-dock { display: none; }
+  .ik-welcome .ik-col { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; margin: auto; padding-top: 24px; padding-bottom: 48px; }
+  .ik-welcome h1 { margin: 0; font: 500 clamp(36px, 5.4vw, 56px)/1.04 var(--font-sans); letter-spacing: -0.035em; color: var(--ink); max-width: 15ch; }
+  .ik-welcome h1 span { background: var(--gradient-signal); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .ik-welcome__lead { margin: 0; max-width: 36em; font: 400 18px/1.55 var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); }
+  .ik-points { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 10px; }
+  .ik-points li { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 999px; background: rgba(0,7,16,.04); font: 500 14px/20px var(--font-sans); color: var(--ink); }
+  .ik-points svg { color: var(--roadmap-blue); }
+  .ik-welcome__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ik-welcome__fine { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
+  .ik-welcome__fine a { color: inherit; }
+  .ik-welcome .ik-orb--hero { --size: clamp(84px, 13vh, 112px); }
+  .ik-welcome > .ik-col > * { animation: ik-in .7s var(--ease) both; }
+  .ik-welcome > .ik-col > :nth-child(2) { animation-delay: .06s; } .ik-welcome > .ik-col > :nth-child(3) { animation-delay: .12s; }
+  .ik-welcome > .ik-col > :nth-child(4) { animation-delay: .18s; } .ik-welcome > .ik-col > :nth-child(5) { animation-delay: .24s; } .ik-welcome > .ik-col > :nth-child(6) { animation-delay: .3s; }
+
+  /* ---------- Dock: one composer ---------- */
+  .ik-dock { flex: none; position: relative; z-index: 4; padding: 8px 0 14px; background: linear-gradient(180deg, rgba(255,255,255,0), var(--paper) 22px); }
+  .ik-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+  .ik-chips:empty { display: none; }
+  .ik-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 30px; padding: 0 4px 0 10px; border-radius: 999px; background: var(--paper); border: 1px solid rgba(0,7,16,.1); font: 500 12px/16px var(--font-sans); color: var(--ink); animation: ik-settle .3s var(--ease) both; }
+  .ik-chip svg { flex: none; color: var(--roadmap-blue); }
+  .ik-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+  .ik-chip button { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--text-secondary); cursor: pointer; font: 600 15px/1 var(--font-sans); }
+  .ik-chip button:hover { background: rgba(0,7,16,.06); color: var(--ink); }
+  .ik-composer { display: flex; align-items: flex-end; gap: 4px; padding: 6px; border-radius: 26px; background: var(--paper); border: 1px solid rgba(0,7,16,.12); box-shadow: 0 1px 2px rgba(0,7,16,.04), 0 10px 30px rgba(0,7,16,.08); transition: border-color .2s ease, box-shadow .2s ease; }
+  .ik-composer:focus-within { border-color: rgba(10,76,255,.55); box-shadow: 0 0 0 4px rgba(10,76,255,.1), 0 10px 30px rgba(0,7,16,.08); }
+  .ik-composer:focus-within :focus-visible { outline-offset: -2px; }
+  .ik-composer textarea:focus-visible { outline: none; }
+  .ik-composer textarea { flex: 1; min-width: 0; align-self: center; resize: none; border: 0; outline: 0; background: transparent; padding: 10px 6px; max-height: 180px; min-height: 44px; box-sizing: border-box; font: 400 16px/24px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
+  .ik-composer textarea::placeholder { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ik-ico { position: relative; width: 44px; height: 44px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--graphite); cursor: pointer; transition: background-color .2s ease, color .2s ease, transform .2s var(--ease); }
+  .ik-ico:hover { background: rgba(0,7,16,.05); color: var(--ink); }
+  .ik-ico[aria-expanded="true"] { background: var(--tint-2); color: var(--roadmap-blue); }
+  .ik-ico[aria-expanded="true"] svg { transform: rotate(-20deg); transition: transform .3s var(--ease); }
+  .ik-mic[aria-pressed="true"] { background: var(--roadmap-blue); color: var(--paper); box-shadow: 0 0 0 calc(3px + var(--lvl) * 10px) rgba(10,76,255,.18); transition: box-shadow .1s linear; }
+  .ik-send { background: var(--roadmap-blue); color: var(--paper); }
+  .ik-send:hover { background: #083fd6; color: var(--paper); transform: translateY(-1px); }
+  .ik-composer[data-locked] .ik-send { background: rgba(0,7,16,.08); color: var(--text-muted); }
+  .ik-composer[data-locked] textarea, .ik-composer[data-locked] .ik-mic { opacity: .45; pointer-events: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .ik [data-tip]:hover::after, .ik [data-tip]:focus-visible::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); padding: 6px 10px; border-radius: 8px; background: var(--abyss); color: var(--paper); font: 500 12px/16px var(--font-sans); white-space: nowrap; pointer-events: none; animation: ik-in .18s ease both; }
+  }
+  .ik-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; min-height: 36px; margin-top: 6px; padding: 0 6px; }
+  .ik-skip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; margin-left: -12px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 500 13px/18px var(--font-sans); cursor: pointer; transition: background-color .2s ease, color .2s ease; }
+  .ik-skip:hover { background: rgba(0,7,16,.05); color: var(--ink); }
+  .ik-skip small { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+  .ik-skip[disabled] { visibility: hidden; }
+  .ik-meta__right { display: flex; align-items: center; gap: 14px; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+  .ik-meta__right button { padding: 0; border: 0; background: none; font: 600 12px/16px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; }
+  .ik-saved { display: inline-flex; align-items: center; gap: 5px; }
+  .ik-saved svg { color: #12a150; }
+
+  /* Attach menu: a popover on desktop, a bottom sheet on phones */
+  .ik-menu { position: absolute; left: 0; bottom: calc(100% - 4px); width: min(360px, 100%); padding: 8px; border-radius: 20px; background: var(--paper); border: 1px solid rgba(0,7,16,.1); box-shadow: 0 18px 50px rgba(0,7,16,.18); transform-origin: bottom left; animation: ik-pop .22s var(--ease) both; }
+  .ik-menu[hidden] { display: none; }
+  @keyframes ik-pop { from { opacity: 0; transform: translateY(6px) scale(.97); } to { opacity: 1; transform: none; } }
+  .ik-menu__item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 10px; border: 0; border-radius: 14px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+  .ik-menu__item:hover, .ik-menu__item:focus-visible { background: rgba(0,7,16,.04); }
+  .ik-menu__item > span:first-child { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 12px; background: var(--tint); color: var(--roadmap-blue); }
+  .ik-menu__item strong { display: block; font: 600 14px/20px var(--font-sans); }
+  .ik-menu__item small { display: block; font: 400 12px/16px var(--font-sans); color: var(--text-secondary); }
+  .ik-menu__link { display: flex; gap: 6px; padding: 6px 4px 4px; }
+  .ik-menu__link[hidden] { display: none; }
+  .ik-menu__link input { flex: 1; min-width: 0; min-height: 44px; padding: 0 14px; border: 1px solid rgba(0,7,16,.14); border-radius: 12px; font: 400 15px/20px var(--font-sans); color: var(--ink); background: var(--paper); }
+  .ik-menu__link input:focus { outline: 0; border-color: var(--roadmap-blue); box-shadow: 0 0 0 3px rgba(10,76,255,.12); }
+  .ik-menu__link button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--roadmap-blue); color: var(--paper); font: 600 14px/20px var(--font-sans); cursor: pointer; }
+  .ik-menu__foot { margin: 4px 10px 4px; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+
+  /* Recording pill */
+  .ik-recbar { min-width: 0; max-width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 12px; margin: 0 0 8px; padding: 6px 6px 6px 16px; border-radius: 999px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; animation: ik-settle .3s var(--ease) both; }
+  .ik-recbar[hidden] { display: none; }
+  .ik-recdot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: #e5484d; box-shadow: 0 0 0 0 rgba(229,72,77,.6); animation: ik-rec 1.4s ease-out infinite; }
+  .ik-recbar[data-uploading] .ik-recdot { background: #00a3ff; animation: rl-pulse 1.4s ease-out infinite; }
+  .ik-recbar__meter { flex: 1; min-width: 40px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.16); overflow: hidden; }
+  .ik-recbar__meter i { display: block; height: 100%; width: 0; background: var(--gradient-signal); transition: width .5s ease; }
+  .ik-recbar button { min-height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--paper); color: var(--ink); font: 600 13px/18px var(--font-sans); cursor: pointer; }
+  .ik-recbar[data-uploading] button { display: none; }
+  @keyframes ik-rec { 0% { box-shadow: 0 0 0 0 rgba(229,72,77,.55); } 100% { box-shadow: 0 0 0 9px rgba(229,72,77,0); } }
+
+  /* Toast (welcome back, errors that aren't in the thread) */
+  .ik-toast { position: absolute; z-index: 5; left: 12px; right: 12px; top: 76px; width: fit-content; max-width: calc(100% - 24px); margin: 0 auto; box-sizing: border-box; display: inline-flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); box-shadow: 0 10px 30px rgba(0,7,16,.25); animation: ik-pop .3s var(--ease) both;  }
+  .ik-toast[hidden] { display: none; }
+  .ik-toast button { min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: rgba(255,255,255,.14); color: var(--paper); font: 600 12px/16px var(--font-sans); cursor: pointer; }
+
+  /* ---------- Your folder (desktop side panel, phone sheet) ---------- */
+  .ik-folderbtn { position: relative; flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 10px; border: 1px solid rgba(0,7,16,.12); border-radius: 999px; background: var(--paper); color: var(--ink); font: 600 12px/16px var(--font-sans); cursor: pointer; }
+  .ik-folderbtn svg { color: var(--roadmap-blue); }
+  .ik-folderbtn.is-grew { animation: ik-grew-btn 1.4s ease; }
+  @keyframes ik-grew-btn { 0%, 100% { box-shadow: 0 0 0 0 rgba(10,76,255,0); } 30% { box-shadow: 0 0 0 6px rgba(10,76,255,.18); } }
+  .ik[data-view="welcome"] .ik-folderbtn { display: none; }
+  .ik-panel { display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; padding: 18px; border-radius: 20px; background: rgba(255,255,255,.86); border: 1px solid rgba(0,7,16,.08); box-shadow: 0 1px 2px rgba(0,7,16,.04), 0 12px 32px rgba(0,7,16,.06); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); overflow-y: auto; overscroll-behavior: contain; }
+  .ik-panel__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .ik-panel__eyebrow { display: block; font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-panel__head strong { display: block; font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
+  .ik-panel__close { display: none; width: 36px; height: 36px; flex: none; border: 0; border-radius: 50%; background: rgba(0,7,16,.05); color: var(--ink); font: 500 20px/1 var(--font-sans); cursor: pointer; }
+  .ik-panel__note { margin: 0; font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-panel__role { display: grid; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #f7f8fc; font: 400 13px/18px var(--font-sans); color: var(--ink); }
+  .ik-panel__role[hidden] { display: none; }
+  .ik-panel__role-actions { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .ik-panel__role button { min-height: 32px; padding: 0; border: 0; background: none; font: 600 13px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .ik-panel__role small { font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
+  .ik-panel__link { align-self: flex-start; padding: 0; border: 0; background: none; font: 600 12px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .ik-panel__fine { margin: 4px 0 0; font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
+  .ik-tree { display: grid; gap: 2px; margin-top: 4px; }
+  .ik-dir { display: flex; align-items: center; gap: 8px; padding: 6px 4px; font: 600 13px/18px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); min-width: 0; }
+  .ik-dir svg { flex: none; color: var(--roadmap-blue); }
+  .ik-dir span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ik-file { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; padding: 8px 8px 8px 22px; border-radius: 10px; min-width: 0; transition: background-color .6s ease; }
+  .ik-file--wf { padding-left: 38px; }
+  .ik-file__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 13px/18px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); }
+  .ik-file__sub { grid-column: 1 / -1; min-width: 0; font: 400 12px/16px var(--font-sans); color: var(--text-secondary); }
+  .ik-file[data-depth="empty"] .ik-file__name { color: var(--text-muted); }
+  .ik-file.is-new { animation: ik-in .5s var(--ease) both; }
+  .ik-file.is-grew { background: var(--tint-2); }
+  .ik-placeholder { padding: 4px 8px 8px 38px; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+  .ik-depth { display: inline-flex; align-items: center; gap: 6px; font: 500 11px/14px var(--font-sans); color: var(--text-secondary); }
+  .ik-depth__bar { display: inline-grid; grid-template-columns: repeat(3, 10px); gap: 2px; }
+  .ik-depth__bar i { height: 6px; border-radius: 3px; background: rgba(0,7,16,.1); transition: background-color .4s ease; }
+  .ik-file[data-depth="thin"] .ik-depth__bar i:nth-child(-n+2) { background: #7cb0ff; }
+  .ik-file[data-depth="solid"] .ik-depth__bar i { background: var(--roadmap-blue); }
+  @media (min-width: 1024px) {
+    .ik:not([data-view="welcome"]):not([data-view="tour"]) { padding-right: 344px; }
+    .ik-panel { position: absolute; z-index: 3; top: 16px; right: 24px; bottom: 16px; width: 300px; }
+    .ik[data-view="welcome"] .ik-panel { display: none; }
+    .ik-folderbtn { display: none; }
+  }
+  @media (max-width: 1023px) {
+    .ik-panel { position: fixed; z-index: 25; left: 8px; right: 8px; bottom: 8px; max-height: min(78svh, 640px); border-radius: 24px; background: var(--paper); box-shadow: 0 0 0 100vmax rgba(0,7,16,.32), 0 18px 50px rgba(0,7,16,.18); transform: translateY(calc(100% + 24px)); visibility: hidden; transition: transform .35s var(--ease), visibility 0s .35s; }
+    .ik-panel[data-open] { transform: none; visibility: visible; transition: transform .35s var(--ease), visibility 0s; }
+    .ik-panel__close { display: grid; place-items: center; }
+  }
+
+  /* ---------- Opening walkthrough (fresh sessions) ---------- */
+  .ik-tour { display: none; flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+  .ik[data-view="tour"] .ik-tour { display: flex; }
+  .ik[data-view="tour"] .ik-welcome, .ik[data-view="tour"] .ik-log, .ik[data-view="tour"] .ik-dock,
+  .ik[data-view="tour"] .ik-voice, .ik[data-view="tour"] .ik-panel, .ik[data-view="tour"] .ik-folderbtn, .ik[data-view="tour"] .ik-progress { display: none; }
+  .ik-tour__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 18px; }
+  .ik-tour__hello { font: 600 13px/18px var(--font-sans); color: var(--roadmap-blue); letter-spacing: -0.005em; }
+  .ik-tour__skip { min-height: 40px; padding: 0 16px; border: 1px solid rgba(0,7,16,.12); border-radius: 999px; background: var(--paper); color: var(--ink); font: 600 13px/18px var(--font-sans); cursor: pointer; }
+  .ik-tour__stage { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 12px; padding-bottom: 12px; min-height: 0; }
+  .ik-beat { display: none; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .ik-beat.is-on { display: flex; }
+  .ik-beat.is-on > * { animation: ik-in .55s var(--ease) both; }
+  .ik-beat.is-on > :nth-child(2) { animation-delay: .05s; } .ik-beat.is-on > :nth-child(3) { animation-delay: .1s; } .ik-beat.is-on > :nth-child(4) { animation-delay: .18s; } .ik-beat.is-on > :nth-child(5) { animation-delay: .26s; }
+  .ik-beat__eyebrow { font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); }
+  .ik-beat h2 { margin: 0; font: 500 clamp(30px, 4.6vw, 46px)/1.06 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); }
+  .ik-beat > p { margin: 0; max-width: 34em; font: 400 17px/1.5 var(--font-sans); color: var(--text-secondary); }
+  .ik-beat__fine { font-size: 14px !important; }
+  .ik-tag { position: absolute; top: 12px; right: 12px; padding: 2px 8px; border-radius: 999px; background: #fff4e5; color: #8a4b00; font: 600 10px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; }
+  .ik-demo { position: relative; width: 100%; box-sizing: border-box; margin: 10px 0 0; padding: 20px; border-radius: 20px; background: var(--paper); border: 1px solid rgba(0,7,16,.08); box-shadow: 0 1px 2px rgba(0,7,16,.04), 0 14px 34px rgba(0,7,16,.07); min-width: 0; }
+  .ik-demo, .ik-demo * { min-width: 0; }
+  /* a) answer drifts into a file */
+  .ik-demo__bubble { justify-self: end; margin: 6px 0 0 auto; max-width: 80%; width: fit-content; padding: 10px 14px; border-radius: 16px 16px 6px 16px; background: var(--tint); color: var(--ink); font: 400 15px/1.45 var(--font-sans); }
+  .ik-demo__file { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: #f7f8fc; border: 1px solid rgba(0,7,16,.06); font: 400 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); overflow-wrap: anywhere; }
+  .ik-demo__filename { margin-bottom: 6px; font-weight: 600; color: var(--roadmap-blue); }
+  .ik-demo__line--h { color: var(--text-secondary); }
+  .is-on .ik-demo__bubble { animation: ik-drift 1.6s .35s var(--ease) both; }
+  .is-on .ik-demo__file { animation: ik-in .5s .9s var(--ease) both; }
+  .is-on .ik-demo__line { animation: ik-type .45s var(--ease) both; }
+  .is-on .ik-demo__line:nth-child(2) { animation-delay: 1.2s; } .is-on .ik-demo__line:nth-child(3) { animation-delay: 1.45s; } .is-on .ik-demo__line:nth-child(4) { animation-delay: 1.7s; } .is-on .ik-demo__line:nth-child(5) { animation-delay: 1.95s; }
+  @keyframes ik-drift { 0% { opacity: 0; transform: translateY(-6px); } 25% { opacity: 1; transform: none; } 70% { opacity: 1; transform: translateY(0); } 100% { opacity: .55; transform: translateY(4px) scale(.98); } }
+  @keyframes ik-type { from { opacity: 0; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+  /* b) files snap into the folder */
+  .ik-demo--folder { display: grid; gap: 4px; }
+  .ik-demo__dir { padding: 2px 0 8px; font: 600 14px/20px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); }
+  .ik-demo__row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 9px 12px; border-radius: 10px; background: #f7f8fc; }
+  .ik-demo__row b { font: 500 13px/18px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); white-space: nowrap; }
+  .ik-demo__row span { font: 400 12px/16px var(--font-sans); color: var(--text-secondary); text-align: right; }
+  .ik-demo__row--dir b { color: var(--roadmap-blue); }
+  .is-on .ik-demo__row { animation: ik-snap .45s var(--ease) both; }
+  .is-on .ik-demo__row:nth-of-type(2) { animation-delay: .3s; } .is-on .ik-demo__row:nth-of-type(3) { animation-delay: .42s; } .is-on .ik-demo__row:nth-of-type(4) { animation-delay: .54s; }
+  .is-on .ik-demo__row:nth-of-type(5) { animation-delay: .78s; } .is-on .ik-demo__row:nth-of-type(6) { animation-delay: .9s; } .is-on .ik-demo__row:nth-of-type(7) { animation-delay: 1.02s; }
+  @keyframes ik-snap { 0% { opacity: 0; transform: translateY(14px) scale(.96); } 70% { opacity: 1; transform: translateY(-2px) scale(1.01); } 100% { opacity: 1; transform: none; } }
+  /* c) the agent finishes a job */
+  .ik-demo__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
+  .ik-demo__card { padding: 14px; border-radius: 14px; border: 1px solid rgba(0,7,16,.08); background: #fbfbfd; }
+  .ik-demo__card small { display: block; margin-bottom: 6px; font: 600 11px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+  .ik-demo__card p { margin: 0; font: 400 14px/1.5 var(--font-sans); color: var(--text-secondary); }
+  .ik-demo__card--after { background: var(--paper); border-color: rgba(10,76,255,.35); box-shadow: 0 8px 22px rgba(10,76,255,.1); }
+  .ik-demo__card--after small { color: var(--roadmap-blue); }
+  .ik-demo__card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .ik-demo__card li { display: flex; gap: 8px; font: 500 14px/1.4 var(--font-sans); color: var(--ink); }
+  .ik-demo__card li::before { content: ""; flex: none; width: 16px; height: 16px; margin-top: 1px; border-radius: 50%; background: var(--roadmap-blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 11px no-repeat; }
+  .ik-demo__working { display: none; align-items: center; gap: 8px; font: 500 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-demo__working i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--tint-2); border-top-color: var(--roadmap-blue); animation: ik-spin .8s linear infinite; }
+  .is-on .ik-demo__working { display: flex; animation: ik-gone 1.4s .2s both; }
+  .is-on .ik-demo__card ul { animation: ik-in .5s 1.5s var(--ease) both; }
+  .is-on .ik-demo__card li:nth-child(2) { animation: ik-in .4s 1.7s var(--ease) both; } .is-on .ik-demo__card li:nth-child(3) { animation: ik-in .4s 1.9s var(--ease) both; }
+  @keyframes ik-gone { 0%, 85% { opacity: 1; max-height: 24px; margin-bottom: 8px; } 100% { opacity: 0; max-height: 0; margin-bottom: 0; } }
+  /* d) the four parts */
+  .ik-demo--parts { list-style: none; display: grid; gap: 8px; counter-reset: part; padding: 16px; }
+  .ik-demo--parts li { counter-increment: part; display: grid; grid-template-columns: 30px 1fr; gap: 2px 12px; padding: 10px 12px; border-radius: 12px; background: #f7f8fc; }
+  .ik-demo--parts li::before { content: counter(part); grid-row: span 3; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--tint); color: var(--roadmap-blue); font: 700 13px/1 var(--font-sans); }
+  .ik-demo--parts b { font: 600 15px/20px var(--font-sans); color: var(--ink); }
+  .ik-demo--parts span { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-demo--parts code { font: 500 12px/16px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--roadmap-blue); overflow-wrap: anywhere; }
+  .is-on .ik-demo--parts li { animation: ik-snap .45s var(--ease) both; }
+  .is-on .ik-demo--parts li:nth-child(2) { animation-delay: .15s; } .is-on .ik-demo--parts li:nth-child(3) { animation-delay: .3s; } .is-on .ik-demo--parts li:nth-child(4) { animation-delay: .45s; }
+  /* e) where to add detail */
+  .ik-demo__composer { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 22px; border: 1px solid rgba(0,7,16,.12); background: var(--paper); }
+  .ik-demo__type { flex: 1; min-width: 0; padding: 0 6px; font: 400 15px/20px var(--font-sans); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ik-demo__ico { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 50%; color: var(--graphite); }
+  .ik-demo__ico--hl { background: var(--tint-2); color: var(--roadmap-blue); }
+  .is-on .ik-demo__ico--hl { animation: ik-glow 1.6s .4s ease-in-out 2; }
+  @keyframes ik-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(10,76,255,0); } 50% { box-shadow: 0 0 0 7px rgba(10,76,255,.18); } }
+  .ik-demo__callouts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .ik-demo__callouts span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: var(--tint); color: var(--ink); font: 500 13px/18px var(--font-sans); }
+  .ik-demo__callouts svg { color: var(--roadmap-blue); flex: none; }
+  /* nav */
+  .ik-tour__nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 10px; padding-bottom: 18px; }
+  .ik-dots { display: flex; gap: 6px; }
+  .ik-dots button { width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+  .ik-dots button::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: rgba(0,7,16,.16); transition: width .3s var(--ease), background-color .3s ease; }
+  .ik-dots button[aria-current="step"]::before { width: 22px; background: var(--roadmap-blue); }
+  .ik-tour__btns { display: flex; gap: 8px; }
+  .ik-tour__btns .ik-cta { min-height: 46px; padding: 0 22px; }
+  @media (max-width: 640px) {
+    .ik-demo { padding: 16px; }
+    .ik-demo__pair { grid-template-columns: 1fr; }
+    .ik-demo__row span { display: none; }
+    .ik-beat > p { font-size: 16px; }
+    .ik-tour__btns .ik-cta { padding: 0 18px; }
+  }
+
+  /* ---------- Preview mock: sign-in (?mock=login), visual only ---------- */
+  .ik-mock { position: absolute; inset: 0; z-index: 12; display: flex; overflow-y: auto; background: linear-gradient(180deg, #f7f8fc 0%, var(--paper) 50%); }
+  .ik-mock[hidden] { display: none; }
+  .ik-mock .ik-col { margin: auto; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; padding-top: 24px; padding-bottom: 40px; max-width: 460px; }
+  .ik-mock__flag { display: inline-flex; padding: 4px 10px; border-radius: 999px; background: #fff4e5; color: #8a4b00; font: 600 11px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; }
+  .ik-mock__step { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; width: 100%; animation: ik-in .5s var(--ease) both; }
+  .ik-mock__step[hidden] { display: none; }
+  .ik-mock h1 { margin: 0; font: 500 clamp(34px, 5vw, 48px)/1.05 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); }
+  .ik-mock .ik-orb--hero { --size: 72px; }
+  .ik-mock__form { display: grid; gap: 12px; width: 100%; }
+  .ik-mock__form label { display: grid; gap: 6px; font: 500 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-mock__form input { min-height: 48px; padding: 0 14px; border: 1px solid rgba(0,7,16,.14); border-radius: 12px; font: 400 16px/22px var(--font-sans); color: var(--ink); background: var(--paper); min-width: 0; }
+  .ik-mock__form input:focus { outline: 0; border-color: var(--roadmap-blue); box-shadow: 0 0 0 3px rgba(10,76,255,.12); }
+  .ik-mock__form .ik-cta { justify-self: start; margin-top: 4px; }
+  .ik-mock__fine { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
+
+  /* ---------- Finish ---------- */
+  .ik-finish { display: none; flex: 1; min-height: 0; overflow-y: auto; }
+  .ik[data-view="finish"] .ik-finish { display: block; }
+  .ik[data-view="finish"] .ik-log, .ik[data-view="finish"] .ik-dock, .ik[data-view="finish"] .ik-modes { display: none; }
+  .ik-finish .ik-col { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; padding-top: 40px; padding-bottom: 56px; }
+  .ik-done { position: relative; width: 76px; height: 76px; border-radius: 50%; background: var(--gradient-signal); display: grid; place-items: center; box-shadow: 0 12px 34px rgba(10,76,255,.35); animation: ik-pop .5s var(--ease) both; }
+  .ik-done svg path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: ik-tick .5s .35s var(--ease) forwards; }
+  @keyframes ik-tick { to { stroke-dashoffset: 0; } }
+  .ik-finish h2 { margin: 0; font: 500 clamp(32px, 4.6vw, 48px)/1.06 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); max-width: 18ch; }
+  .ik-finish__lead { margin: 0; max-width: 36em; font: 400 18px/1.55 var(--font-sans); color: var(--text-secondary); }
+  .ik-captured { width: 100%; margin: 0; padding: 18px 20px; list-style: none; display: grid; gap: 10px; border-radius: 18px; background: #f7f8fc; border: 1px solid rgba(0,7,16,.06); }
+  .ik-captured li { display: flex; align-items: flex-start; gap: 10px; font: 500 15px/22px var(--font-sans); color: var(--ink); }
+  .ik-captured li svg { flex: none; margin-top: 2px; color: #12a150; }
+  .ik-captured li small { color: var(--text-secondary); font-weight: 400; font-size: 14px; }
+  .ik-next { width: 100%; margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px; counter-reset: ik; }
+  .ik-next li { counter-increment: ik; padding: 18px; border-radius: 16px; border: 1px solid rgba(0,7,16,.08); background: var(--paper); font: 400 14px/20px var(--font-sans); color: var(--text-secondary); }
+  .ik-next li::before { content: counter(ik); display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 10px; border-radius: 50%; background: var(--tint); color: var(--roadmap-blue); font: 700 13px/1 var(--font-sans); }
+  .ik-next strong { display: block; margin-bottom: 2px; font: 600 15px/22px var(--font-sans); color: var(--ink); }
+  .ik-finish__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+  .ik-finish__actions p { margin: 0; font: 400 13px/18px var(--font-sans); color: var(--text-muted); }
+  .ik-finish__actions a { color: inherit; }
+
+  /* ---------- Phones ---------- */
+  @media (max-width: 640px) {
+    .ik-col { padding: 0 16px; }
+    .ik-top__row { height: 58px; }
+    .ik-id .ik-orb--sm { --size: 30px; }
+    .ik:not([data-view="welcome"]) .ik-id__name { display: none; }
+    .ik[data-view="welcome"] .ik-id__meta { display: none; }
+    .ik-id__meta { display: flex; flex-direction: column; min-width: 0; }
+    .ik-id__meta b, .ik-id__meta span { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .ik-id__meta b { font: 600 14px/18px var(--font-sans); color: var(--ink); }
+    .ik-id__meta i { display: none; }
+    .ik-skip small { display: none; }
+    .ik-skip, .ik-meta__right button { white-space: nowrap; }
+    .ik-meta__right { gap: 12px; }
+    .ik-welcome .ik-orb--hero { --size: 72px; }
+    .ik-welcome .ik-col { gap: 18px; }
+    .ik-welcome__lead { font-size: 17px; }
+    .ik-menu { box-shadow: 0 0 0 100vmax rgba(0,7,16,.32), 0 18px 50px rgba(0,7,16,.18); z-index: 20; }
+    .ik-modes button { padding: 0 12px; }
+    .ik-modes__long { display: none; }
+    .ik-log__inner { padding-top: 56px; gap: 16px; }
+    .ik-turn { gap: 10px; }
+    .ik-turn .ik-orb--sm { --size: 26px; }
+    .ik-q.is-current { font-size: 22px; }
+    .ik-a { max-width: 88%; }
+    .ik-voice__inner { padding-top: 14px; gap: 10px; }
+    .ik-orb--hero { --size: clamp(96px, 16vh, 130px); }
+    .ik-widget { height: 160px; }
+    .ik-menu { position: fixed; left: 8px; right: 8px; bottom: 8px; width: auto; border-radius: 24px; padding: 10px; transform-origin: bottom center; }
+    .ik-meta__hint { display: none; }
+    .ik-card { padding: 18px; }
+    .ik-toast { top: 66px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ik-demo__working { display: none !important; }
+    .ik-orb__core, .ik-orb__halo { transition: none; }
+    .ik-log { scroll-behavior: auto; }
+  }
+</style>
+
+<section class="ik" id="ik" data-mode="chat" data-view="welcome" data-agent={agentId || undefined} aria-label="Intake interview with Harry">
+  <div class="ik-bg" aria-hidden="true"></div>
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true"><defs><linearGradient id="ik-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a4cff"/><stop offset="1" stop-color="#00a3ff"/></linearGradient></defs></svg>
+
+  <!-- Top bar -->
+  <div class="ik-top">
+    <div class="ik-col">
+      <div class="ik-top__row">
+        <div class="ik-id">
+          <span class="ik-orb ik-orb--sm" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+          <div class="ik-id__text">
+            <span class="ik-id__name">Harry</span>
+            <span class="ik-id__meta" id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
+          </div>
+        </div>
+        <button class="ik-folderbtn" type="button" id="ik-folder-btn" aria-controls="ik-panel" aria-expanded="false" aria-label="Your folder: what we've captured so far"><Fragment set:html={svg(icons.folder, 18)} /><span class="ik-folderbtn__n" id="ik-folder-n">0</span></button>
+        <div class="ik-modes" role="group" aria-label="How you'd like to answer">
+          <button type="button" data-mode="chat" aria-pressed="true"><Fragment set:html={svg(icons.chat, 16)} /><span>Chat</span></button>
+          <button type="button" data-mode="voice" aria-pressed="false"><Fragment set:html={svg(icons.wave, 16)} /><span>Voice<span class="ik-modes__long"> interview</span></span></button>
+        </div>
+      </div>
+      <div class="ik-progress" aria-hidden="true"><i id="ik-bar"></i></div>
+    </div>
+  </div>
+
+  <div class="ik-toast" id="ik-toast" role="status" hidden></div>
+
+  <!-- Your folder: what's been captured so far (provisional depth rules: src/data/intake-depth.ts) -->
+  <aside class="ik-panel" id="ik-panel" aria-labelledby="ik-panel-title">
+    <div class="ik-panel__head">
+      <div>
+        <span class="ik-panel__eyebrow">Your folder</span>
+        <strong id="ik-panel-title">What we've captured so far</strong>
+      </div>
+      <button class="ik-panel__close" type="button" id="ik-panel-close" aria-label="Close your folder">×</button>
+    </div>
+    <p class="ik-panel__note">Roadmap Labs writes the finished files after the interview.</p>
+    <div class="ik-panel__role" id="ik-role-line" hidden>
+      <span>Answering as <b id="ik-role-name"></b></span>
+      <span class="ik-panel__role-actions"><button type="button" id="ik-role-change">Change</button><button type="button" id="ik-role-add">Add a role</button></span>
+      <small>Your role only changes which questions you're asked.</small>
+    </div>
+    <div class="ik-tree" id="ik-tree" aria-live="polite"></div>
+    <p class="ik-panel__fine">Depth is a rough, early guide from your answers: empty, thin or solid. Provisional rules.</p>
+    <button class="ik-panel__link" type="button" id="ik-tour-replay">Replay the walkthrough</button>
+  </aside>
+
+  <!-- Preview mock of a sign-in screen (?mock=login). Visual only: nothing is checked, sent or stored. -->
+  <div class="ik-mock" id="ik-mock" hidden>
+    <div class="ik-col">
+      <span class="ik-mock__flag">Preview mock</span>
+      <div class="ik-mock__step" id="ik-mock-form-step">
+        <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+        <h1>Welcome</h1>
+        <form class="ik-mock__form" id="ik-mock-form" autocomplete="off">
+          <label>Your name<input id="ik-mock-name" type="text" autocomplete="off" spellcheck="false"></label>
+          <label>Password<input id="ik-mock-pass" type="password" autocomplete="off" data-lpignore="true" data-1p-ignore></label>
+          <button class="ik-cta" type="submit">Continue</button>
+        </form>
+        <p class="ik-mock__fine">Preview mock only, not a real sign-in. Nothing you type here is checked, sent or saved.</p>
+      </div>
+      <div class="ik-mock__step" id="ik-mock-hello" hidden>
+        <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+        <h1 id="ik-mock-hello-text">Welcome</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- Welcome -->
+  <div class="ik-welcome" id="ik-welcome">
+    <div class="ik-col">
+      <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+      <h1 id="ik-hello">Let's map how your business <span>really runs.</span></h1>
+      <p class="ik-welcome__lead">I'm Harry. First the basics, how you use AI today and the tools you run on. Then, if you have time, we'll walk through how work comes in, gets done and gets looked after. Type, talk, or switch to a voice interview whenever you like.</p>
+      <ul class="ik-points">
+        <li><Fragment set:html={svg(icons.clock, 18)} />Core takes about 10 minutes</li>
+        <li><Fragment set:html={svg(icons.skip, 18)} />Skip anything you're unsure of</li>
+        <li><Fragment set:html={svg(icons.save, 18)} />Saved as you go</li>
+      </ul>
+      <div class="ik-welcome__actions">
+        <button class="ik-cta" type="button" id="ik-start-chat"><Fragment set:html={svg(icons.chat, 18)} />Start in chat</button>
+        <button class="ik-cta ik-cta--quiet" type="button" id="ik-start-voice"><Fragment set:html={svg(icons.wave, 18)} />Start a voice interview</button>
+      </div>
+      <p class="ik-welcome__fine">Your answers go straight to Roadmap Labs and are only used for your project. <a href="/privacy">Privacy policy</a></p>
+    </div>
+  </div>
+
+
+  <!-- Opening walkthrough: fresh sessions only, after the welcome, before question one. Illustrations, not their files. -->
+  <div class="ik-tour" id="ik-tour" role="region" aria-roledescription="walkthrough" aria-label="How this works">
+    <div class="ik-col ik-tour__top">
+      <span class="ik-tour__hello">Welcome to this questionnaire</span>
+      <button class="ik-tour__skip" type="button" id="ik-tour-skip">Skip</button>
+    </div>
+    <div class="ik-col ik-tour__stage" id="ik-tour-stage">
+
+      <section class="ik-beat" data-beat="0" aria-label="1 of 5">
+        <span class="ik-beat__eyebrow">How Roadmap OS works</span>
+        <h2>One answer becomes context.</h2>
+        <p>Tell Harry how you work. It lands as a line in a file an agent can read.</p>
+        <div class="ik-demo ik-demo--answer" aria-hidden="true">
+          <span class="ik-tag">Example</span>
+          <div class="ik-demo__bubble">We quote jobs from a phone call and a spreadsheet.</div>
+          <div class="ik-demo__file">
+            <div class="ik-demo__filename">workflows/quoting.md</div>
+            <div class="ik-demo__line ik-demo__line--h">## How it's done</div>
+            <div class="ik-demo__line">1. Take the job details on the phone call</div>
+            <div class="ik-demo__line">2. Price it in the quoting spreadsheet</div>
+            <div class="ik-demo__line">3. Send the quote</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ik-beat" data-beat="1" aria-label="2 of 5">
+        <span class="ik-beat__eyebrow">How Roadmap OS works</span>
+        <h2>Files form your folder.</h2>
+        <p>Laid out like a handbook for a new starter, so an agent understands your business the way a person would.</p>
+        <div class="ik-demo ik-demo--folder" aria-hidden="true">
+          <span class="ik-tag">Example</span>
+          <div class="ik-demo__dir">Example Co OS/</div>
+          <div class="ik-demo__row"><b>README.md</b><span>the business overview</span></div>
+          <div class="ik-demo__row"><b>brand.md</b><span>how you look and sound</span></div>
+          <div class="ik-demo__row"><b>customer.md</b><span>who you serve</span></div>
+          <div class="ik-demo__row ik-demo__row--dir"><b>workflows/</b><span>your jobs, one file each</span></div>
+          <div class="ik-demo__row ik-demo__row--dir"><b>routines/</b><span>what kicks them off</span></div>
+          <div class="ik-demo__row ik-demo__row--dir"><b>skills/</b><span>the instructions, written down</span></div>
+        </div>
+      </section>
+
+      <section class="ik-beat" data-beat="2" aria-label="3 of 5">
+        <span class="ik-beat__eyebrow">How Roadmap OS works</span>
+        <h2>An agent gets to work.</h2>
+        <p>With your files, an agent drafts a quote the way you would.</p>
+        <div class="ik-demo ik-demo--agent" aria-hidden="true">
+          <span class="ik-tag">Illustration</span>
+          <div class="ik-demo__pair">
+            <div class="ik-demo__card ik-demo__card--before">
+              <small>Without your files</small>
+              <p>"Please find attached our quote. Let us know if you have any questions."</p>
+            </div>
+            <div class="ik-demo__card ik-demo__card--after">
+              <small>With your files</small>
+              <div class="ik-demo__working"><i></i>Drafting from quoting.md…</div>
+              <ul>
+                <li>Your line items, priced your way</li>
+                <li>Your wording and sign-off</li>
+                <li>Your follow-up step, ready to send</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ik-beat" data-beat="3" aria-label="4 of 5">
+        <span class="ik-beat__eyebrow">What's ahead</span>
+        <h2>What Harry will gather.</h2>
+        <p>Four parts that fit together into one folder.</p>
+        <ol class="ik-demo ik-demo--parts">
+          <li><b>Setup</b><span>The business and anything you can hand over</span><code>README.md</code></li>
+          <li><b>AI today and your tools</b><span>What you use and where work gets stuck</span><code>README.md · reference.md</code></li>
+          <li><b>The journey</b><span>Acquire, deliver, operate: one workflow at a time</span><code>workflows/ · routines/ · skills/</code></li>
+          <li><b>Your goals</b><span>What "worked" would look like for you</span><code>README.md</code></li>
+        </ol>
+      </section>
+
+      <section class="ik-beat" data-beat="4" aria-label="5 of 5">
+        <span class="ik-beat__eyebrow">One tip</span>
+        <h2>The more specific, the better.</h2>
+        <p>A screenshot of how you quote a job beats a paragraph describing it.</p>
+        <div class="ik-demo ik-demo--tools" aria-hidden="true">
+          <div class="ik-demo__composer">
+            <span class="ik-demo__ico ik-demo__ico--hl"><Fragment set:html={svg(icons.clip, 18)} /></span>
+            <span class="ik-demo__type">Type your answer…</span>
+            <span class="ik-demo__ico ik-demo__ico--hl"><Fragment set:html={svg(icons.screen, 18)} /></span>
+            <span class="ik-demo__ico"><Fragment set:html={svg(icons.mic, 18)} /></span>
+          </div>
+          <div class="ik-demo__callouts">
+            <span><Fragment set:html={svg(icons.clip, 14)} />Attach files, screenshots and links</span>
+            <span><Fragment set:html={svg(icons.screen, 14)} />Record your screen as you show us</span>
+          </div>
+        </div>
+        <p class="ik-beat__fine">Real examples make your files more relevant. Skip anything you don't have.</p>
+      </section>
+
+    </div>
+    <div class="ik-col ik-tour__nav">
+      <div class="ik-dots" id="ik-tour-dots" aria-label="Walkthrough progress"></div>
+      <div class="ik-tour__btns">
+        <button class="ik-cta ik-cta--quiet" type="button" id="ik-tour-skip2" hidden>Skip</button>
+        <button class="ik-cta" type="button" id="ik-tour-next">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice hero -->
+  <div class="ik-voice" id="ik-voice" aria-hidden="true">
+    <div>
+      <div class="ik-col ik-voice__inner">
+        <span class:list={['ik-orb', 'ik-orb--hero', { 'ik-orb--off': !agentId }]} id="ik-hero-orb" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+        {agentId ? (
+          <>
+            <span class="ik-voice__status" id="ik-voice-status">Ready when you are</span>
+            <p class="ik-voice__caption" id="ik-voice-caption"></p>
+            <div class="ik-widget" id="ik-widget"></div>
+          </>
+        ) : (
+          <>
+            <span class="ik-voice__status">Voice interview coming online</span>
+            <p class="ik-voice__hint">Harry's voice is nearly ready. For now you can still talk your answers: the mic in the chat turns speech into text.</p>
+            <div class="ik-voice__actions">
+              <button class="ik-cta" type="button" id="ik-voice-fallback"><Fragment set:html={svg(icons.mic, 18)} />Talk my answers in chat</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversation -->
+  <div class="ik-log" id="ik-log" role="log" aria-live="polite" aria-relevant="additions">
+    <div class="ik-col ik-log__inner" id="ik-thread">
+      <noscript><p class="ik-say">The interview needs JavaScript. Please turn it on, or email dan@roadmaplabs.com.au and we'll send the questions another way.</p></noscript>
+    </div>
+  </div>
+
+  <!-- Dock -->
+  <div class="ik-dock">
+    <div class="ik-col" style="position: relative">
+      <div class="ik-menu" id="ik-tray" role="dialog" aria-label="Share something" hidden>
+        <label class="ik-menu__item" for="ik-files">
+          <span><Fragment set:html={svg(icons.file)} /></span>
+          <span><strong>Upload files</strong><small>Price lists, brand guides, documents · about 4MB in total</small></span>
+        </label>
+        <input class="ik-sr" id="ik-files" type="file" multiple tabindex="-1">
+        <button class="ik-menu__item" type="button" id="ik-menu-link">
+          <span><Fragment set:html={svg(icons.link)} /></span>
+          <span><strong>Add a link</strong><small>Google Drive, Dropbox, Loom. Best for anything big</small></span>
+        </button>
+        <form class="ik-menu__link" id="ik-linkform" hidden>
+          <label class="ik-sr" for="ik-link">Link</label>
+          <input id="ik-link" type="text" inputmode="url" autocomplete="off" placeholder="Paste a Drive, Dropbox or Loom/screen-recording link">
+          <button type="submit">Add link</button>
+        </form>
+        <button class="ik-menu__item" type="button" id="ik-rec" hidden>
+          <span><Fragment set:html={svg(icons.screen)} /></span>
+          <span><strong>Record your screen</strong><small>Talk us through it · up to 5 minutes</small></span>
+        </button>
+        <p class="ik-menu__foot">Big files or long videos? A link works best.</p>
+      </div>
+
+      <div class="ik-recbar" id="ik-recbar" role="status" hidden>
+        <span class="ik-recdot" aria-hidden="true"></span>
+        <span id="ik-rec-label" style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Recording 0:00</span>
+        <span class="ik-recbar__meter" aria-hidden="true"><i id="ik-rec-meter"></i></span>
+        <button type="button" id="ik-rec-stop">Stop</button>
+      </div>
+      <div class="ik-chips" id="ik-chips" aria-label="Shared so far"></div>
+
+      <form class="ik-composer" id="ik-composer" data-locked>
+        <button class="ik-ico" type="button" id="ik-attach" aria-label="Share a file, link or screen recording" aria-expanded="false" aria-controls="ik-tray" data-tip="Share a file or link"><Fragment set:html={svg(icons.clip)} /></button>
+        <label class="ik-sr" for="ik-input">Your answer</label>
+        <textarea id="ik-input" rows="1" placeholder="Type your answer…" autocomplete="off" enterkeyhint="send"></textarea>
+        <button class="ik-ico" type="button" id="ik-rec-quick" aria-label="Record your screen" data-tip="Record your screen" hidden><Fragment set:html={svg(icons.screen)} /></button>
+        <button class="ik-ico ik-mic" type="button" id="ik-mic" aria-label="Speak your answer" aria-pressed="false" data-tip="Speak your answer" hidden><Fragment set:html={svg(icons.mic)} /></button>
+        <button class="ik-ico ik-send" type="submit" id="ik-send" aria-label="Send answer" data-tip="Send · Enter"><Fragment set:html={svg(icons.up, 20, 2.4)} /></button>
+      </form>
+      <div class="ik-meta">
+        <button class="ik-skip" type="button" id="ik-skip">Skip for now <small>· we'll cover it on the call</small></button>
+        <span class="ik-meta__right">
+          <span class="ik-saved"><Fragment set:html={svg(icons.check, 14, 2.6)} />Saved</span>
+          <span class="ik-meta__hint">Shift+Enter for a new line</span>
+          <button type="button" id="ik-send-now" hidden>Finish early</button>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finish -->
+  <div class="ik-finish" id="ik-finish" tabindex="-1">
+    <div class="ik-col">
+      <span class="ik-done" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <h2 id="ik-finish-title">That's everything. Thank you.</h2>
+      <p class="ik-finish__lead">Everything you shared becomes files: your README, brand, customer and reference files, plus one workflow file for each job you described. We'll follow up within 2 business days.</p>
+      <ul class="ik-captured" id="ik-captured" aria-label="What we received"></ul>
+      <ol class="ik-next" aria-label="What happens next">
+        <li><strong>We read it all</strong>Roadmap Labs reviews your answers, files and recordings.</li>
+        <li><strong>We get in touch</strong>We follow up within 2 business days to book a time.</li>
+        <li><strong>A short call to fill the gaps</strong>Around 30 minutes on anything you skipped or we need to clarify.</li>
+      </ol>
+      <div class="ik-finish__actions">
+        <button class="ik-cta ik-cta--quiet" type="button" id="ik-download"><Fragment set:html={svg(icons.save, 18)} />Download a copy of your answers</button>
+        <p>Questions in the meantime? <a href="mailto:dan@roadmaplabs.com.au">dan@roadmaplabs.com.au</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { readme, reference, workflow, fromDocuments, folderName as folderFor, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
+  import { readRole, ROLE_QUESTION, ROLE_QUESTION_LEGACY, ROLE_FOLLOW_UP, ROLE_CHIPS, ROUTE_NAME, type Route } from '../data/intake-roles';
+  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
+
+  type J = 0 | 1 | 2;
+  type Step =
+    | { type: 'q'; qid: number; id: string; text: string; phase: 'core' | 'closing'; stage?: 0 | 1 | 2; hint?: string; first?: boolean }
+    | { type: 'choice' }
+    | { type: 'list'; j: J }
+    | { type: 'name'; j: J; p: number; prompt: string; options: string[] }
+    | { type: 'drill'; j: J; p: number; d: number }
+    | { type: 'another'; j: J; p: number; next?: string }
+    | { type: 'files' }
+    // Role steps: which questions to ask. Routing only, never an access permission.
+    | { type: 'role'; mode: 'first' | 'change' | 'add' | 'legacy'; echo?: string }
+    | { type: 'role2'; mode: 'first' | 'change' | 'add'; first: string; echo?: string };
+  type Answerable = Extract<Step, { type: 'q' | 'list' | 'name' | 'drill' | 'role' | 'role2' }>;
+  /** a = answer (s: spoken in a voice interview; r/n: the role and respondent it was given under),
+   *  c = a choice (milestone, "another one?", "role:change"/"role:add"/"role:legacy"), p = a voice answer given ahead of its turn. */
+  type Action = { t: 'a'; v: string; s?: 1; r?: string; n?: string } | { t: 'c'; v: string } | { t: 'p'; k: string; v: string; s?: 1 };
+  type Mode = 'chat' | 'voice';
+  /** Same key and shape as before. `flow: 2` marks sessions that started with the role step; older ones lack it. */
+  interface Saved { v: 3; actions: Action[]; links: string[]; mode: Mode; flow?: 2 }
+  interface Proc { name: string; answers: (string | undefined)[]; skipped?: boolean }
+
+  // A new key for the new spine, so progress saved under the old 44-question script never replays into it.
+  const STORE = 'rl-intake-v3';
+  const CHOICE_TEXT = "That's the core done, about 10 minutes. Want to keep going into the journey? It's about 20 more minutes on how work comes in, gets done and gets looked after. Or you can finish here.";
+  const TOO_BIG = "That's too big to send through the page (about 4MB in total). Put it in Google Drive or Dropbox and paste the link instead.";
+
+  const textByQid = new Map<number, string>([
+    ...CORE_QUESTIONS.map((q) => [q.qid, q.text] as [number, string]),
+    ...JOURNEY.map((j) => [j.qid, j.text] as [number, string]),
+    ...JOURNEY.flatMap((J) => J.slots.map((qid, p) => [qid, `${J.title} workflow ${p + 1}`] as [number, string])),
+    [CLOSING.anythingElse.qid, CLOSING.anythingElse.text],
+  ]);
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = matchMedia('(pointer: fine)').matches;
+
+  const root = $<HTMLElement>('ik');
+  const log = $<HTMLDivElement>('ik-log');
+  const thread = $<HTMLDivElement>('ik-thread');
+  const composer = $<HTMLFormElement>('ik-composer');
+  const input = $<HTMLTextAreaElement>('ik-input');
+  const skipBtn = $<HTMLButtonElement>('ik-skip');
+  const sendBtn = $<HTMLButtonElement>('ik-send');
+  const micBtn = $<HTMLButtonElement>('ik-mic');
+  const attachBtn = $<HTMLButtonElement>('ik-attach');
+  const tray = $<HTMLDivElement>('ik-tray');
+  const fileInput = $<HTMLInputElement>('ik-files');
+  const linkForm = $<HTMLFormElement>('ik-linkform');
+  const linkInput = $<HTMLInputElement>('ik-link');
+  const chips = $<HTMLDivElement>('ik-chips');
+  const progress = $<HTMLSpanElement>('ik-progress');
+  const bar = $<HTMLElement>('ik-bar');
+  const sendNow = $<HTMLButtonElement>('ik-send-now');
+  const recBtn = $<HTMLButtonElement>('ik-rec');
+  const recQuick = $<HTMLButtonElement>('ik-rec-quick');
+  const recBar = $<HTMLDivElement>('ik-recbar');
+  const recLabel = $<HTMLSpanElement>('ik-rec-label');
+  const recMeter = $<HTMLElement>('ik-rec-meter');
+  const recStop = $<HTMLButtonElement>('ik-rec-stop');
+  const toast = $<HTMLDivElement>('ik-toast');
+  const agentId = root.dataset.agent || '';
+
+  // Fit the stage to the viewport under the site header.
+  const siteHeader = document.querySelector<HTMLElement>('header.hd');
+  const fit = () => root.style.setProperty('--ik-top', `${siteHeader?.offsetHeight ?? 76}px`);
+  fit();
+  addEventListener('resize', fit);
+  /** How much of the thread is covered (by the dock, or by an on-screen keyboard): pad the thread by exactly that. */
+  const dockEl = document.querySelector<HTMLElement>('.ik-dock')!;
+  const logEl = document.getElementById('ik-log')!;
+  function measureCover() {
+    const vv = window.visualViewport;
+    const visibleBottom = vv ? vv.offsetTop + vv.height : innerHeight;
+    const clearBottom = Math.min(dockEl.getBoundingClientRect().top, visibleBottom);
+    const cover = Math.max(0, Math.round(logEl.getBoundingClientRect().bottom - clearBottom));
+    root.style.setProperty('--ik-dock', `${cover}px`);
+  }
+  if ('ResizeObserver' in window) new ResizeObserver(measureCover).observe(dockEl);
+  window.visualViewport?.addEventListener('resize', measureCover);
+  addEventListener('resize', measureCover);
+  /** Scroll the thread so an element (choice buttons) sits fully in the clear area above the composer. */
+  function reveal(target: HTMLElement) {
+    requestAnimationFrame(() => {
+      measureCover();
+      const lr = logEl.getBoundingClientRect();
+      const vv = window.visualViewport;
+      const limit = Math.min(lr.bottom, dockEl.getBoundingClientRect().top, vv ? vv.offsetTop + vv.height : innerHeight) - 12;
+      const r = target.getBoundingClientRect();
+      if (r.bottom > limit) logEl.scrollTop += r.bottom - limit;
+      else if (r.top < lr.top + 8) logEl.scrollTop -= lr.top + 8 - r.top;
+    });
+  }
+  /** Keep the stage in view: focusing fields inside the thread can scroll the page down to the footer. */
+  const anchor = () => { if (scrollY > 0) scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); };
+
+  // Per-employee / per-client links: ?employee=&client=
+  const params = new URLSearchParams(location.search);
+  const employee = params.get('employee') ?? '';
+  const client = params.get('client') ?? '';
+
+  // ---------- State (shared by chat and voice) ----------
+  const steps: Step[] = [];
+  let pos = 0;
+  let actions: Action[] = [];
+  let links: string[] = [];
+  let files: File[] = [];
+  let mode: Mode = 'chat';
+  const answers = new Map<number, string>(); // core, journey lists and the closing answer, by qid
+  const procs: Proc[][] = [[], [], []]; // drilled processes per journey stage
+  const items: string[][] = [[], [], []]; // what they listed per journey stage
+  const pending = new Map<string, { v: string; s?: 1 }>(); // voice answers given ahead of their turn
+  let replaying = false;
+  let sent = false;
+  let sending = false;
+
+  // ---------- Routes: which questions, in which order, for this person's role ----------
+  // PROVISIONAL. A role only changes which questions are asked and in what order. It is not an access permission:
+  // there are no accounts, nothing is restricted, and every answer still goes into the same submission.
+  type Block = { k: 'q'; id: string } | { k: 'j'; j: J } | { k: 'choice' } | { k: 'closing' };
+  const Q = (...ids: string[]): Block[] => ids.map((id) => ({ k: 'q', id }));
+  const ALL_AI = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'];
+  const ROUTE_PLAN: Record<Route, Block[]> = {
+    // The whole business from the top: today's order.
+    owner: [...Q('S1', 'S2', ...ALL_AI, 'T1', 'T2', 'T3', 'T4', 'T5'), { k: 'choice' }, { k: 'j', j: 0 }, { k: 'j', j: 1 }, { k: 'j', j: 2 }, { k: 'closing' }],
+    // Same start, then how new business comes in; brand and customer come from their documents.
+    marketing: [...Q('S1', 'S2', ...ALL_AI), { k: 'j', j: 0 }, { k: 'choice' }, ...Q('T1', 'T2', 'T3', 'T4', 'T5'), { k: 'j', j: 1 }, { k: 'j', j: 2 }, { k: 'closing' }],
+    // The business name, then their own week through the drill, what blocks them and what they avoid, then tools.
+    team: [...Q('S1'), { k: 'j', j: 2 }, ...Q('T3', 'T5', 'T1', 'T2', 'T4'), { k: 'choice' }, ...Q(...ALL_AI), { k: 'closing' }],
+  };
+  const blockKey = (b: Block) => (b.k === 'q' ? `q:${b.id}` : b.k === 'j' ? `j:${b.j}` : b.k);
+  let plan: Block[] = [];
+  const usedBlocks = new Set<string>();
+  const roles: Route[] = []; // every route they've answered as, in order (a second role adds to it)
+  const answerTags = new Map<string, string>(); // which role (and person) each answer was given under
+  let marketingEmphasis = false;
+  let flow2 = false; // started with the role step
+  const route = () => roles[roles.length - 1] ?? null;
+  let legacyTag: Route | null = null; // a saved session's one-off answer: a tag only, it never changes the route
+  const roleTag = () => (roles.length ? roles.map((r) => ROUTE_NAME[r]).join(' + ') : legacyTag ? ROUTE_NAME[legacyTag] : '');
+  const respondent = () => greetName || employee;
+  function setPlan(r: Route, add: boolean) {
+    const fresh = ROUTE_PLAN[r].filter((b) => !usedBlocks.has(blockKey(b)));
+    if (!add) { plan = fresh; return; }
+    const merged = plan.filter((b) => b.k !== 'closing');
+    for (const b of fresh) if (b.k !== 'closing' && !merged.some((x) => blockKey(x) === blockKey(b))) merged.push(b);
+    plan = [...merged, { k: 'closing' }];
+  }
+  /** Take the next block of the plan that hasn't been asked yet, and add its first step. */
+  function pullNext() {
+    while (plan.length) {
+      const b = plan.shift()!;
+      const key = blockKey(b);
+      if (usedBlocks.has(key)) continue;
+      usedBlocks.add(key);
+      if (b.k === 'q') {
+        const q = CORE_QUESTIONS.find((x) => x.id === b.id)!;
+        const before = [...steps].reverse().find((x) => x.type !== 'role' && x.type !== 'role2');
+        steps.push({ type: 'q', qid: q.qid, id: q.id, text: q.text, phase: 'core', stage: q.stage, hint: q.hint, first: !(before?.type === 'q' && before.phase === 'core' && before.stage === q.stage) });
+      } else if (b.k === 'j') steps.push({ type: 'list', j: b.j });
+      else if (b.k === 'choice') steps.push({ type: 'choice' });
+      else addClosing();
+      return;
+    }
+  }
+
+  const answerable = (s?: Step): s is Answerable => !!s && (s.type === 'q' || s.type === 'list' || s.type === 'name' || s.type === 'drill' || s.type === 'role' || s.type === 'role2');
+  /** On the team route, Operate is about the person's own week. */
+  const teamWeek = (j: J) => j === 2 && route() === 'team' && !roles.includes('owner');
+  const jTitle = (j: J) => (teamWeek(j) ? 'Your week' : JOURNEY[j].title);
+  const TEAM_LIST_TEXT = 'What do you do in a normal week? Name each task, one per line.';
+  const TEAM_LIST_HINT = 'For example, an office manager: invoicing, booking jobs, answering the phones, ordering stock. A marketing coordinator: social posts, the newsletter, monthly reporting.';
+  const stepKey = (s?: Step) =>
+    !s ? '' : s.type === 'q' ? `q:${s.id}` : s.type === 'list' ? `q:${JOURNEY[s.j].id}` : s.type === 'drill' ? `d:${s.j}:${s.p}:${s.d}` : '';
+  function stepText(s?: Step): string {
+    if (!s) return '';
+    switch (s.type) {
+      case 'q': return s.text;
+      case 'list': return teamWeek(s.j) ? TEAM_LIST_TEXT : JOURNEY[s.j].text;
+      case 'role': return s.mode === 'legacy' ? ROLE_QUESTION_LEGACY : ROLE_QUESTION;
+      case 'role2': return ROLE_FOLLOW_UP;
+      case 'name': return s.prompt;
+      case 'drill': return DRILL[s.d].text;
+      case 'another': return teamWeek(s.j) ? 'Another task from your week?' : `Another one in ${JOURNEY[s.j].title}?`;
+      case 'choice': return CHOICE_TEXT;
+      default: return '';
+    }
+  }
+  const listJoin = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+  const filled = (v?: string) => v !== undefined && v !== SKIPPED && v.trim() !== '';
+
+  // ---------- Journey: lists, process names, the drill loop ----------
+  const cleanItem = (l: string) => l.replace(/^\s*(?:[-*•–]|\d+[.)])\s*/, '').trim();
+  /** One per line is the ask. A single line with commas ("pick, pack and ship") is read as several. */
+  function parseItems(v: string): { list: string[]; multiLine: boolean } {
+    if (!v || v === SKIPPED) return { list: [], multiLine: false };
+    const lines = v.split(/\n+/).map(cleanItem).filter(Boolean);
+    if (lines.length >= 2) return { list: lines, multiLine: true };
+    const one = lines[0] ?? '';
+    const parts = one.split(/\s*[,;]\s*|\s+and\s+/i).map(cleanItem).filter(Boolean);
+    return { list: parts.length >= 2 ? parts : one ? [one] : [], multiLine: false };
+  }
+  const short = (name: string) => name.slice(0, 80).trim();
+  const drilledNames = (j: J) => procs[j].map((p) => p.name);
+  const undrilled = (j: J) => items[j].map(short).filter((it) => !drilledNames(j).includes(it));
+  function startProcess(j: J, p: number, name: string) {
+    procs[j][p] = { name: short(name), answers: [] };
+    for (let d = 0; d < DRILL.length; d++) steps.push({ type: 'drill', j, p, d });
+  }
+  function nextStage(_j: J) {
+    pullNext();
+  }
+  function endProcess(j: J, p: number) {
+    if (p + 1 < MAX_PROCESSES) steps.push({ type: 'another', j, p, next: undrilled(j)[0] });
+    else nextStage(j);
+  }
+  function addClosing() {
+    steps.push({ type: 'q', qid: CLOSING.anythingElse.qid, id: 'W1', text: CLOSING.anythingElse.text, phase: 'closing' });
+    steps.push({ type: 'files' });
+  }
+  function procBlock(pr: Proc) {
+    if (pr.skipped) return SKIPPED;
+    const lines = [`Workflow: ${pr.name}`];
+    DRILL.forEach((d, i) => { if (pr.answers[i] !== undefined) lines.push(`${d.label}: ${pr.answers[i]}`); });
+    return lines.join('\n');
+  }
+  /** Stages with more than three named processes: the ones not drilled go into the closing answer. */
+  function moreProcesses() {
+    const parts = JOURNEY.map((J, j) => {
+      if (items[j].length <= MAX_PROCESSES) return '';
+      const rest = undrilled(j as J);
+      return rest.length ? `${J.title}: ${rest.join('; ')}` : '';
+    }).filter(Boolean);
+    return parts.length ? `More workflows:\n${parts.join('\n')}` : '';
+  }
+  /** Everything for Jotform, by qid: only what was actually asked. */
+  function payloadFields(): [number, string][] {
+    const out = new Map(answers);
+    JOURNEY.forEach((J, j) => procs[j].forEach((pr, p) => { if (pr) out.set(J.slots[p], procBlock(pr)); }));
+    const more = moreProcesses();
+    if (more) { const base = out.get(CLOSING.anythingElse.qid); out.set(CLOSING.anythingElse.qid, base ? `${base}\n\n${more}` : more); }
+    if (roleTag()) {
+      const by = `Answered as: ${roleTag()}${respondent() ? ` (${respondent()})` : ''}`;
+      const base = out.get(CLOSING.anythingElse.qid);
+      out.set(CLOSING.anythingElse.qid, base ? `${base}\n\n${by}` : by);
+    }
+    return [...out];
+  }
+  function tally() {
+    const all = [...answers.values(), ...procs.flat().flatMap((p) => (p.skipped ? [SKIPPED] : p.answers.filter((v): v is string => v !== undefined)))];
+    return { answered: all.filter(filled).length, skipped: all.filter((v) => v === SKIPPED).length };
+  }
+  const hasAnything = () => answers.size > 0 || procs.some((ps) => ps.length > 0);
+
+  function save() {
+    if (sent) return;
+    try { localStorage.setItem(STORE, JSON.stringify({ v: 3, actions, links, mode, ...(flow2 ? { flow: 2 as const } : {}) } satisfies Saved)); } catch {}
+  }
+  function load(): Saved {
+    const empty: Saved = { v: 3, actions: [], links: [], mode: 'chat' };
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (raw && raw.v === 3) return { ...empty, ...raw };
+    } catch {}
+    return empty;
+  }
+  function clear() {
+    try { localStorage.removeItem(STORE); } catch {}
+  }
+
+  // ---------- Orb level: Harry's voice, your mic, or text streaming ----------
+  let lvl = 0;
+  let lvlTarget = 0;
+  let lvlRaf = 0;
+  function bump(v: number) {
+    if (reduced) return;
+    lvlTarget = Math.max(lvlTarget, Math.min(1, v));
+    if (!lvlRaf) lvlRaf = requestAnimationFrame(lvlLoop);
+  }
+  function lvlLoop() {
+    lvl += (lvlTarget - lvl) * 0.28;
+    lvlTarget *= 0.9;
+    root.style.setProperty('--lvl', lvl.toFixed(3));
+    if (lvl > 0.003 || lvlTarget > 0.003) lvlRaf = requestAnimationFrame(lvlLoop);
+    else { lvlRaf = 0; root.style.setProperty('--lvl', '0'); }
+  }
+
+  // ---------- Rendering ----------
+  function scroll() {
+    if (!replaying) log.scrollTop = log.scrollHeight;
+  }
+  function add<T extends HTMLElement>(el: T): T {
+    if (replaying) el.style.animation = 'none';
+    thread.appendChild(el);
+    scroll();
+    return el;
+  }
+  const el = (tag: string, cls: string, text?: string) => {
+    const e = document.createElement(tag);
+    e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  };
+  const ORB = '<span class="ik-orb ik-orb--sm" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>';
+
+  /** One of Harry's turns: a mini orb and a line of text (a question is shown large while it's current). */
+  function harryTurn(isQuestion: boolean) {
+    const turn = el('div', `ik-turn${isQuestion ? ' ik-turn--q' : ''}`);
+    turn.innerHTML = ORB;
+    const body = el('div', 'ik-turn__body');
+    turn.append(body);
+    add(turn);
+    return body;
+  }
+  function settleQuestions() {
+    thread.querySelectorAll('.ik-q.is-current').forEach((q) => q.classList.remove('is-current'));
+  }
+  function answer(text: string, kind: 'you' | 'spoken' | 'skip') {
+    if (kind === 'skip') {
+      const p = el('p', 'ik-a ik-a--skip');
+      p.innerHTML = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h12M13 6l6 6-6 6"/></svg>';
+      p.append("Skipped. We'll cover it on the call");
+      return add(p);
+    }
+    return add(el('p', `ik-a${kind === 'spoken' ? ' ik-a--spoken' : ''}`, text));
+  }
+  function fileMsg(text: string) {
+    const p = el('p', 'ik-a ik-a--file');
+    p.innerHTML = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>';
+    p.append(el('span', '', text));
+    return add(p);
+  }
+  function section(eyebrow: string, title: string, proc = false) {
+    const d = el('div', `ik-section ik-divider${proc ? ' ik-section--proc' : ''}`);
+    d.append(el('span', '', eyebrow), el('strong', '', title));
+    return add(d);
+  }
+  function note(text: string, linkText?: string, onClick?: () => void, error = false) {
+    const p = el('p', `ik-note${error ? ' ik-note--error' : ''}`);
+    p.append(text);
+    if (linkText && onClick) {
+      const b = el('button', '', linkText) as HTMLButtonElement;
+      b.type = 'button';
+      b.addEventListener('click', onClick);
+      p.append(' ', b);
+    }
+    return add(p);
+  }
+
+  const wait = (ms: number) => (replaying || reduced ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
+
+  /** Harry "types": a short think, then the words stream in. Screen readers get the full line at once. */
+  async function harrySays(text: string, opts: { question?: boolean; error?: boolean } = {}) {
+    if (opts.error) return note(text, undefined, undefined, true);
+    if (opts.question) settleQuestions();
+    const body = harryTurn(!!opts.question);
+    const p = el('p', opts.question ? 'ik-q is-current' : 'ik-say');
+    body.append(p);
+    if (replaying || reduced) {
+      p.textContent = text;
+      return p;
+    }
+    const think = el('span', 'ik-think');
+    think.innerHTML = '<i></i><i></i><i></i>';
+    think.setAttribute('aria-hidden', 'true');
+    p.append(think);
+    scroll();
+    await wait(380);
+    p.textContent = '';
+    const sr = el('span', 'ik-sr', text);
+    const vis = el('span', '');
+    vis.setAttribute('aria-hidden', 'true');
+    p.append(sr, vis);
+    const words = text.split(/(\s+)/);
+    const per = Math.max(18, Math.min(55, 1100 / Math.max(1, words.length / 2)));
+    let out = '';
+    for (const w of words) {
+      out += w;
+      vis.textContent = out;
+      if (w.trim()) { bump(0.28 + Math.random() * 0.25); scroll(); await wait(per); }
+    }
+    p.textContent = text;
+    scroll();
+    return p;
+  }
+
+  function lock(locked: boolean) {
+    if (locked) composer.setAttribute('data-locked', '');
+    else composer.removeAttribute('data-locked');
+    input.disabled = locked;
+    skipBtn.disabled = locked;
+    sendBtn.disabled = locked;
+    micBtn.disabled = locked;
+    const s = steps[pos];
+    input.placeholder = locked
+      ? (answerable(s) || !s ? 'Harry is typing…' : s.type === 'files' ? 'All questions answered' : 'Pick an option above')
+      : s?.type === 'list' ? 'One per line…' : s?.type === 'name' ? 'Name the workflow…' : s?.type === 'role' ? 'Your role, in your own words…' : 'Type your answer…';
+    if (!locked && !replaying && mode === 'chat' && (actions.length || finePointer)) input.focus({ preventScroll: true });
+  }
+
+  /** Journey units: each stage's list question plus 8 per process (at least one process per stage). */
+  function journeyUnits() {
+    const total = JOURNEY.reduce((sum, _J, j) => {
+      const planned = procs[j].length ? procs[j].filter((p) => !p.skipped).length : 1;
+      return sum + 1 + DRILL.length * planned;
+    }, 0);
+    const done = steps.slice(0, pos).filter((x) => x.type === 'list' || x.type === 'drill').length;
+    return { total, done };
+  }
+
+  function updateProgress() {
+    const s = steps[pos];
+    const coreDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'core').length;
+    const jy = journeyUnits();
+    const folder = folderName();
+    let label = '';
+    let pct = 0;
+    if (root.dataset.view === 'welcome') { label = 'Roadmap Labs intake'; pct = 0; }
+    else if (isRoleStep(s)) { label = `Your role · ${folder}`; pct = 1; }
+    else if (sent) { label = `All sent · ${folder}`; pct = 100; }
+    else if (!s || s.type === 'files') { label = `Ready to send · ${folder}`; pct = 100; }
+    else if (s.type === 'choice') { label = `Core done · ${folder}`; pct = 34; }
+    else if (s.type === 'q' && s.phase === 'core') { label = `${CORE_STAGES[s.stage!].title} · ${folder}`; pct = (coreDone / CORE_QUESTIONS.length) * 34; }
+    else if (s.type === 'q') { label = `Last question · ${folder}`; pct = 96; }
+    else {
+      pct = 34 + (jy.done / jy.total) * 60;
+      label = s.type === 'drill' || s.type === 'another' ? `${jTitle(s.j)}: ${procs[s.j][s.p].name} · ${folder}` : `${jTitle(s.j)} · ${folder}`;
+    }
+    const [main, ...rest] = label.split(' · ');
+    progress.textContent = '';
+    progress.append(el('b', '', main));
+    if (rest.length) progress.append(el('i', '', ' · '), el('span', '', rest.join(' · ')));
+    // Progress follows this person's route (a journey stage counts as about ten questions).
+    if (roles.length && pct > 0 && pct < 100) {
+      const weight = (b: Block) => (b.k === 'q' ? 1 : b.k === 'j' ? 10 : b.k === 'closing' ? 1 : 0);
+      const keys = new Set<string>();
+      let total = 0;
+      for (const r of roles) for (const b of ROUTE_PLAN[r]) if (!keys.has(blockKey(b))) { keys.add(blockKey(b)); total += weight(b); }
+      const done = steps.slice(0, pos).filter((x) => x.type === 'q' || x.type === 'list' || x.type === 'drill').length;
+      pct = Math.min(96, Math.max(2, (done / Math.max(1, total)) * 100));
+    }
+    bar.style.width = `${Math.max(2, Math.round(pct))}%`;
+    sendNow.hidden = sent || !hasAnything() || s?.type === 'files';
+    const caption = document.getElementById('ik-voice-caption');
+    if (caption) caption.textContent = !s ? '' : s.type === 'choice' ? "That's the core done. Into the journey, or finish here?" : s.type === 'files' ? 'All questions done.' : stepText(s);
+  }
+
+  // ---------- Your folder: what's been captured so far ----------
+  // Provisional depth rules live in src/data/intake-depth.ts. This shows captured context, never finished files.
+  interface FolderFile { path: string; state: FileState; kind: 'core' | 'docs' | 'workflow' }
+  // The header subtitle and the panel use the same name: a short S1 answer, or the placeholder.
+  const folderName = () => folderFor(answers.get(CORE_QUESTIONS[0].qid));
+  function folderFiles(): FolderFile[] {
+    const a = (q: number) => answers.get(q);
+    const shared = files.length > 0 || links.length > 0;
+    const out: FolderFile[] = [
+      { path: 'README.md', state: readme(a), kind: 'core' },
+      { path: 'brand.md', state: fromDocuments(shared), kind: 'docs' },
+      { path: 'customer.md', state: fromDocuments(shared), kind: 'docs' },
+      { path: 'reference.md', state: reference(a), kind: 'core' },
+    ];
+    const used = new Set<string>();
+    for (const pr of procs.flat()) {
+      if (!pr || pr.skipped) continue;
+      let f = workflowFile(pr.name);
+      for (let n = 2; used.has(f); n++) f = f.replace(/(?:-\d+)?\.md$/, `-${n}.md`);
+      used.add(f);
+      out.push({ path: `workflows/${f}`, state: workflow(pr.answers), kind: 'workflow' });
+    }
+    return out;
+  }
+  const fileOf = (path: string) => folderFiles().find((f) => f.path === path);
+  const workflowPath = (j: J, p: number) => {
+    const target = procs[j][p];
+    const i = procs.flat().filter((x) => x && !x.skipped).indexOf(target);
+    return folderFiles().filter((f) => f.kind === 'workflow')[i]?.path ?? `workflows/${workflowFile(target.name)}`;
+  };
+  /** One line about a file, in the system's words: "reference.md has your tools, but not costs yet." */
+  function describe(path: string) {
+    const f = fileOf(path);
+    if (!f || f.state.depth === 'empty') return `${path} is still empty; we'll fill it in on the call.`;
+    if (f.state.depth === 'solid') return `${path} is solid: ${listJoin(f.state.has)}.`;
+    return f.state.has.length ? `${path} has ${listJoin(f.state.has)}, but ${f.state.gap}.` : `${path} has a start, but ${f.state.gap}.`;
+  }
+
+  const tree = $<HTMLDivElement>('ik-tree');
+  const folderBtn = $<HTMLButtonElement>('ik-folder-btn');
+  const panel = $<HTMLElement>('ik-panel');
+  const seen = new Map<string, { size: number; depth: Depth }>();
+  const DOC = '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>';
+  const DIR = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+  function renderFolder() {
+    const list = folderFiles();
+    tree.textContent = '';
+    const dir = (name: string, cls = '') => { const d = el('div', `ik-dir ${cls}`.trim()); d.innerHTML = DIR; d.append(el('span', '', name)); tree.append(d); };
+    let grew = false;
+    const row = (f: FolderFile) => {
+      const r = el('div', `ik-file${f.kind === 'workflow' ? ' ik-file--wf' : ''}`);
+      r.dataset.depth = f.state.depth;
+      r.dataset.path = f.path;
+      r.append(el('span', 'ik-file__name', f.path.replace(/^workflows\//, '')));
+      const depth = el('span', 'ik-depth');
+      depth.setAttribute('aria-label', `Depth: ${DEPTH_LABEL[f.state.depth].toLowerCase()}`);
+      depth.innerHTML = '<span class="ik-depth__bar" aria-hidden="true"><i></i><i></i><i></i></span>';
+      depth.append(el('span', '', DEPTH_LABEL[f.state.depth]));
+      r.append(depth);
+      const sub = f.kind === 'docs' && f.state.depth === 'empty' ? f.state.gap
+        : f.state.depth === 'solid' ? listJoin(f.state.has)
+        : f.state.has.length ? `${listJoin(f.state.has)} · ${f.state.gap}` : f.state.gap;
+      r.append(el('span', 'ik-file__sub', sub));
+      const before = seen.get(f.path);
+      if (!before && !replaying) r.classList.add('is-new');
+      else if (before && (f.state.size > before.size || f.state.depth !== before.depth) && !replaying) { r.classList.add('is-grew'); grew = true; setTimeout(() => r.classList.remove('is-grew'), 1600); }
+      seen.set(f.path, { size: f.state.size, depth: f.state.depth });
+      tree.append(r);
+    };
+    dir(folderName());
+    // Core files appear once their first answer lands; brand.md and customer.md come from documents, so they show from the start.
+    for (const f of list.filter((x) => x.kind !== 'workflow')) if (f.kind === 'docs' || f.state.size > 0) row(f);
+    dir('workflows/', 'ik-dir--sub');
+    const wfs = list.filter((x) => x.kind === 'workflow');
+    if (wfs.length) wfs.forEach(row);
+    else tree.append(el('p', 'ik-placeholder', 'One file for each workflow you name in the journey.'));
+    $<HTMLElement>('ik-folder-n').textContent = String(list.filter((f) => f.state.depth !== 'empty').length);
+    const roleLine = $<HTMLElement>('ik-role-line');
+    roleLine.hidden = !roleTag() || sent;
+    $<HTMLElement>('ik-role-name').textContent = `${roleTag()}${marketingEmphasis && roles[0] === 'owner' && !roles.includes('marketing') ? ' (with a marketing focus)' : ''}${respondent() ? ` · ${respondent()}` : ''}`;
+    if (grew && panel.dataset.open === undefined) { folderBtn.classList.remove('is-grew'); void folderBtn.offsetWidth; folderBtn.classList.add('is-grew'); }
+  }
+  function openPanel(open: boolean) {
+    if (open) panel.dataset.open = ''; else delete panel.dataset.open;
+    folderBtn.setAttribute('aria-expanded', String(open));
+    if (open) $<HTMLButtonElement>('ik-panel-close').focus({ preventScroll: true });
+  }
+  folderBtn.addEventListener('click', () => openPanel(panel.dataset.open === undefined));
+  // Change or add a role at any point: answers so far are kept; the next sections follow the new role.
+  $<HTMLButtonElement>('ik-role-change').addEventListener('click', () => { openPanel(false); act({ t: 'c', v: 'role:change' }); });
+  $<HTMLButtonElement>('ik-role-add').addEventListener('click', () => { openPanel(false); act({ t: 'c', v: 'role:add' }); });
+  $<HTMLButtonElement>('ik-panel-close').addEventListener('click', () => { openPanel(false); folderBtn.focus({ preventScroll: true }); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && panel.dataset.open !== undefined) { openPanel(false); folderBtn.focus(); } });
+  document.addEventListener('pointerdown', (e) => {
+    if (panel.dataset.open !== undefined && !panel.contains(e.target as Node) && !folderBtn.contains(e.target as Node)) openPanel(false);
+  });
+
+  // ---------- What Harry says between steps ----------
+  function journeyRecap(j: J) {
+    const paths = procs[j].map((pr, p) => (pr && !pr.skipped ? workflowPath(j, p) : '')).filter(Boolean);
+    const title = JOURNEY[j].title;
+    return paths.length ? `That's ${title} captured: ${listJoin(paths)}.` : `That's ${title} done; we'll go through it on the call.`;
+  }
+  const fileForStage = (n: number) => (n === 2 ? 'reference.md' : 'README.md');
+  const isRoleStep = (x?: Step) => x?.type === 'role' || x?.type === 'role2';
+  /** The step before i, skipping role questions. */
+  const before = (i: number) => { for (let k = i - 1; k >= 0; k--) if (!isRoleStep(steps[k])) return steps[k]; return undefined; };
+  function recapOf(prev?: Step) {
+    if (!prev) return '';
+    if (prev.type === 'q' && prev.phase === 'core') return describe(fileForStage(prev.stage!));
+    if (prev.type === 'list' || prev.type === 'name' || prev.type === 'drill' || prev.type === 'another') return journeyRecap(prev.j);
+    return '';
+  }
+  function journeyIntro(j: J) {
+    if (route() === 'owner' || roles.includes('owner')) return JOURNEY[j].intro;
+    if (route() === 'team' && j === 2) return "Let's start with your own week. Each task you name becomes its own workflow file.";
+    return ['Now how new business comes in. Each workflow you describe becomes its own workflow file.', 'Next, how the work you sell actually gets done.', 'Next, everything that runs around the work.'][j];
+  }
+  async function transition(i: number) {
+    const s = steps[i];
+    const prev = steps[i - 1];
+    if (!prev || !s) return;
+    if (isRoleStep(prev)) {
+      // The echo: what Harry understood, and an easy way to correct it.
+      const echo = (prev as { echo?: string }).echo;
+      if (echo) {
+        const line = await harrySays(echo);
+        if (steps[pos] === s && !(prev.type === 'role' && prev.mode === 'legacy')) {
+          quick(helpers(line.parentElement), [{ label: 'Not right? Change it', onClick: () => act({ t: 'c', v: 'role:change' }) }]);
+        }
+      }
+      return;
+    }
+    if ((s.type === 'q' && s.phase === 'core' && s.first) || s.type === 'list') {
+      const last = before(i);
+      if (!last) return; // the very first question: the welcome line covers it
+      const intro = s.type === 'q' ? CORE_STAGES[s.stage!].intro : journeyIntro(s.j);
+      await harrySays(`${recapOf(last)} ${intro}`.trim());
+    } else if (s.type === 'drill' && s.d === 0) {
+      const name = procs[s.j][s.p].name;
+      await harrySays(s.p === 0 ? `Let's start with ${name}. It gets its own file: ${workflowPath(s.j, s.p)}.` : `Next: ${name}, in ${workflowPath(s.j, s.p)}.`);
+    } else if (s.type === 'another') {
+      await harrySays(describe(workflowPath(s.j, s.p)));
+    } else if (s.type === 'q' && s.phase === 'closing') {
+      const last = before(i);
+      const fromJourney = last && last.type !== 'q' && last.type !== 'choice';
+      await harrySays(last?.type === 'choice' ? 'No problem. One last question before you go.' : `${recapOf(last)}${fromJourney ? " That's the journey done." : ''} One last question.`.trim());
+    }
+  }
+
+  // ---------- Rendering steps ----------
+  /** "Part 2 of 4": parts in the order this person's route visits them. */
+  function partLabel(group: string) {
+    const groups: string[] = [];
+    for (const r of roles.length ? roles : (['owner'] as Route[])) for (const b of ROUTE_PLAN[r]) {
+      const g = b.k === 'q' ? `c${CORE_QUESTIONS.find((q) => q.id === b.id)!.stage}` : b.k === 'j' ? 'journey' : '';
+      if (g && !groups.includes(g)) groups.push(g);
+    }
+    const n = groups.indexOf(group) + 1;
+    return n ? `Part ${n} of ${groups.length}` : 'Next';
+  }
+  function header(s: Step) {
+    if (s.type === 'q' && s.phase === 'core' && s.first) section(partLabel(`c${s.stage}`), CORE_STAGES[s.stage!].title);
+    else if (s.type === 'list') section(`${partLabel('journey')} · The journey`, jTitle(s.j));
+    else if (s.type === 'drill' && s.d === 0) section(`${JOURNEY[s.j].title} · workflow ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
+  }
+  /** Replay after a refresh: the question as it was asked, no transitions or helpers. Synchronous on purpose. */
+  function renderStatic(i: number) {
+    const s = steps[i];
+    if (!s) return;
+    if (s.type === 'choice') { milestone(false); return; }
+    if (s.type === 'files') return;
+    if (s.type === 'another') { harrySays(stepText(s), { question: true }); return; }
+    header(s);
+    harrySays(stepText(s), { question: true });
+  }
+  function hint(body: HTMLElement | null, text: string) {
+    if (body) body.append(el('p', 'ik-hint', text));
+  }
+  function helpers(body: HTMLElement | null) {
+    const box = el('div', 'ik-help');
+    body?.append(box);
+    return box;
+  }
+  function quick(box: HTMLElement, list: { label: string; primary?: boolean; onClick: () => void; data?: string }[]) {
+    const row = el('div', 'ik-quick');
+    for (const o of list) {
+      const b = el('button', `ik-chipbtn${o.primary ? ' ik-chipbtn--primary' : ''}`, o.label) as HTMLButtonElement;
+      b.type = 'button';
+      if (o.data) b.dataset.choice = o.data;
+      b.addEventListener('click', o.onClick);
+      row.append(b);
+    }
+    box.append(row);
+    scroll();
+    reveal(row);
+    return row;
+  }
+  function prefill(text: string) {
+    input.value = input.value.trim() ? `${input.value.trim()}\n${text}` : text;
+    autosize();
+    input.focus({ preventScroll: true });
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+  /** D4: when they attach, link or record while the example question is up, note it in the answer. */
+  function noteExample(label: string) {
+    const s = steps[pos];
+    if (s?.type === 'drill' && s.d === 3 && !input.disabled) prefill(`Attached: ${label}`);
+  }
+
+  async function present(i = pos) {
+    updateProgress();
+    const s = steps[i];
+    if (!s || sent) return;
+    await transition(i);
+    if (s.type === 'choice') {
+      lock(true);
+      settleQuestions();
+      root.dataset.choosing = '';
+      anchor();
+      const card = milestone(true);
+      if (steps[pos] !== s) return;
+      const wrap = el('div', 'ik-choices');
+      wrap.append(
+        route() === 'owner' || !route()
+          ? option('Keep going into the journey', 'About 20 min: how work comes in, gets done and gets looked after', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more')
+          : option('Keep going', route() === 'marketing' ? 'Your tools, then how work gets delivered and looked after' : 'How you use AI today', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more'),
+        option('Finish here', 'One last question, then share anything useful', false, () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); }, 'wrap'),
+      );
+      card.append(wrap);
+      scroll();
+      reveal(wrap);
+      if (!replaying && mode === 'chat') (wrap.firstChild as HTMLButtonElement).focus({ preventScroll: true });
+      return;
+    }
+    if (s.type === 'files') {
+      lock(true);
+      settleQuestions();
+      await harrySays('Last thing: anything you can share? Files, links and quick screen recordings all help us understand the business faster.');
+      shareCard();
+      return;
+    }
+    if (s.type === 'another') {
+      lock(true);
+      root.dataset.choosing = '';
+      anchor();
+      const q = await harrySays(stepText(s), { question: true });
+      if (steps[pos] !== s) return;
+      const opts: { label: string; primary?: boolean; v: string }[] = [];
+      if (s.next) opts.push({ label: `Yes: ${s.next}`, primary: true, v: `next:${s.next}` });
+      opts.push({ label: s.next ? 'Yes, a different one' : 'Yes, another one', primary: !s.next, v: 'another' });
+      opts.push({ label: `No, move on${s.j < 2 ? ` to ${JOURNEY[s.j + 1].title}` : ''}`, v: 'done' });
+      quick(helpers(q.parentElement), opts.map((o) => ({ label: o.label, primary: o.primary, data: o.v, onClick: () => act({ t: 'c', v: o.v }) })));
+      return;
+    }
+    header(s);
+    const q = await harrySays(stepText(s), { question: true });
+    const body = q.parentElement;
+    if (s.type === 'q' && s.hint) hint(body, s.hint);
+    if (s.type === 'list') hint(body, stepText(s) === TEAM_LIST_TEXT ? TEAM_LIST_HINT : JOURNEY[s.j].hint);
+    if (s.type === 'role') hint(body, 'This only changes which questions I ask, so they fit your part of the business.');
+    if (s.type === 'drill' && s.d === 8) hint(body, D9_HINT);
+    if (steps[pos] === s) {
+      if (s.type === 'name' && s.options.length) quick(helpers(body), s.options.map((o) => ({ label: o, onClick: () => act({ t: 'a', v: o }) })));
+      // Optional shortcuts; typing your role works just the same.
+      if (s.type === 'role') quick(helpers(body), ROLE_CHIPS.map((c) => ({ label: c, onClick: () => (c === 'Other' ? (input.focus({ preventScroll: true }), (input.placeholder = 'Tell me in a few words…')) : act({ t: 'a', v: c })) })));
+      if (s.type === 'role2') quick(helpers(body), ['Sales', 'Operations', 'Admin', 'Finance'].map((c) => ({ label: c, onClick: () => act({ t: 'a', v: c }) })));
+      if (s.type === 'drill' && s.d === 3) exampleActions(helpers(body));
+      if (s.type === 'drill' && s.d === 4) quick(helpers(body), D5_CHIPS.map((c) => ({ label: c, onClick: () => { input.value = ''; prefill(`${c}. `); input.placeholder = 'Add why, then send'; } })));
+      if (s.type === 'drill' && s.d === 7) benchmark(helpers(body));
+    }
+    scroll();
+    // A voice answer given ahead of its turn: take it rather than ask again.
+    const ahead = pending.get(stepKey(s));
+    if (steps[pos] === s && ahead) { act({ t: 'a', v: ahead.v, s: ahead.s }); return; }
+    if (steps[pos] === s) lock(false);
+  }
+
+  function exampleActions(box: HTMLElement) {
+    const list = [
+      { label: 'Attach a file', onClick: () => fileInput.click() },
+      { label: 'Paste a link', onClick: () => { openTray(true); showLinkField(); } },
+    ];
+    if (canRecord) list.push({ label: 'Record your screen', onClick: () => startRecording() });
+    quick(box, list);
+    box.append(el('p', 'ik-hint', 'Or paste the text straight into the box, like a real email or checklist.'));
+  }
+
+  /** D8: rough cost helper. Only their own figures; the maths is shown so they can correct it. */
+  function benchmark(box: HTMLElement) {
+    const card = el('div', 'ik-bench');
+    card.innerHTML = `
+      <div class="ik-bench__head"><strong>Rough cost helper</strong><small>A rough benchmark from your figures, not your actual cost. Change anything.</small></div>
+      <div class="ik-bench__grid">
+        <label>Who does it<input type="text" data-k="who" placeholder="e.g. office manager" autocomplete="off"></label>
+        <label>Hours a week<input type="number" data-k="hours" min="0" step="0.5" inputmode="decimal" placeholder="e.g. 4"></label>
+        <label>Hourly cost ($)<input type="number" data-k="rate" min="0" step="1" inputmode="decimal" placeholder="e.g. 45"></label>
+        <label>or annual pay ($)<input type="number" data-k="annual" min="0" step="1000" inputmode="decimal" placeholder="e.g. 85000"></label>
+      </div>
+      <p class="ik-bench__maths" aria-live="polite">Add hours a week and an hourly cost or annual pay to see the maths.</p>`;
+    const use = el('button', 'ik-chipbtn ik-chipbtn--primary', 'Use these figures') as HTMLButtonElement;
+    use.type = 'button';
+    use.disabled = true;
+    card.append(use);
+    box.append(card);
+    const val = (k: string) => card.querySelector<HTMLInputElement>(`[data-k="${k}"]`)!.value.trim();
+    const num = (k: string) => { const n = parseFloat(val(k).replace(/[$,\s]/g, '')); return Number.isFinite(n) && n > 0 ? n : 0; };
+    const money = (n: number, cents = false) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: cents ? 2 : 0, minimumFractionDigits: cents ? 2 : 0 }).format(n);
+    const maths = card.querySelector<HTMLElement>('.ik-bench__maths')!;
+    let summary = '';
+    const update = () => {
+      const hours = num('hours');
+      const rate = num('rate');
+      const annual = num('annual');
+      const hourly = rate || (annual ? annual / BENCHMARK.hoursPerYear : 0);
+      if (!hours || !hourly) {
+        maths.textContent = 'Add hours a week and an hourly cost or annual pay to see the maths.';
+        use.disabled = true;
+        return;
+      }
+      const weekly = hourly * hours;
+      const yearly = weekly * BENCHMARK.weeksPerYear;
+      const from = rate ? `${money(rate, true)} an hour` : `${money(annual)} ÷ ${BENCHMARK.hoursPerYear.toLocaleString('en-AU')} h ≈ ${money(hourly, true)} an hour`;
+      maths.textContent = `${from} × ${hours} h a week ≈ ${money(weekly)} a week × ${BENCHMARK.weeksPerYear} weeks ≈ ${money(yearly)} a year`;
+      const who = val('who');
+      summary = `Rough benchmark, not an actual cost: ${who ? `${who}, ` : ''}${hours} h a week at about ${money(hourly, true)} an hour${rate ? '' : ` (${money(annual)} a year ÷ ${BENCHMARK.hoursPerYear.toLocaleString('en-AU')} h)`} ≈ ${money(weekly)} a week, about ${money(yearly)} a year (${BENCHMARK.weeksPerYear} working weeks).`;
+      use.disabled = false;
+    };
+    card.addEventListener('input', update);
+    use.addEventListener('click', () => prefill(summary));
+  }
+
+  function milestone(live: boolean) {
+    const card = el('div', 'ik-card ik-mile');
+    card.innerHTML = `<span class="ik-mile__ring" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28"/></svg><b><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b></span>`;
+    card.append(el('h3', '', "That's the core done"));
+    const r = route() ?? 'owner';
+    card.append(el('p', '', r === 'owner'
+      ? `That was the core, about 10 minutes. ${describe('reference.md')} Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after; each job you describe becomes a workflow file. Or finish here.`
+      : r === 'marketing'
+        ? `That's your core done: the basics, AI today and how new business comes in. ${describe('README.md')} Keep going into your tools and the rest of the journey? Or finish here.`
+        : `That's your core done: your week and the tools you use. ${describe('reference.md')} Keep going with a few questions on how you use AI? Or finish here.`));
+    card.setAttribute('aria-label', CHOICE_TEXT);
+    if (replaying || !live) card.querySelector<SVGCircleElement>('.fg')!.style.cssText = 'animation: none; stroke-dashoffset: 0';
+    add(card);
+    return card;
+  }
+  function option(label: string, sub: string, primary: boolean, onClick: () => void, data: string) {
+    const b = el('button', `ik-opt${primary ? ' ik-opt--primary' : ''}`) as HTMLButtonElement;
+    b.type = 'button';
+    b.dataset.choice = data;
+    b.append(el('strong', '', label), el('small', '', sub));
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function shareCard() {
+    const card = el('div', 'ik-card ik-share');
+    card.append(el('h3', '', 'Share anything useful'), el('p', '', 'A price list, a proposal you send, a report, or a quick recording of how something works. All optional.'));
+    const tiles = el('div', 'ik-tiles');
+    const tile = (icon: string, title: string, sub: string, onClick: () => void) => {
+      const b = el('button', 'ik-tile') as HTMLButtonElement;
+      b.type = 'button';
+      b.innerHTML = `<span class="ik-tile__icon">${icon}</span>`;
+      b.append(el('strong', '', title), el('small', '', sub));
+      b.addEventListener('click', onClick);
+      tiles.append(b);
+    };
+    tile(document.querySelector('#ik-tray label svg')!.outerHTML, 'Upload files', 'About 4MB in total', () => fileInput.click());
+    tile(document.querySelector('#ik-menu-link svg')!.outerHTML, 'Add a link', 'Drive, Dropbox or Loom', () => { openTray(true); showLinkField(); });
+    if (canRecord) tile(document.querySelector('#ik-rec svg')!.outerHTML, 'Record your screen', 'Talk us through it · up to 5 min', () => startRecording());
+    card.append(tiles);
+    const row = el('div', 'ik-share__send ik-choices');
+    const send = el('button', 'ik-cta', 'Send everything') as HTMLButtonElement;
+    send.type = 'button';
+    send.id = 'ik-send-all';
+    send.addEventListener('click', () => sendAll());
+    row.append(send, el('small', '', 'You can send now; sharing is optional.'));
+    card.append(row);
+    add(card);
+  }
+
+  /** Apply one action to the current step: updates state now and returns the rendering to run in order,
+   *  or null if the action doesn't fit (stale saved state, or a tool call for a step that has moved on). */
+  /** A role answer has been read: set the route (or, for a session saved before roles, just tag it). */
+  function settleRole(s: Extract<Step, { type: 'role' | 'role2' }>, text: string, followUp: string | null): boolean {
+    const read = followUp === null ? readRole(text) : readRole(text, followUp, true);
+    if (s.type === 'role' && s.mode === 'legacy') {
+      // Saved before roles existed: tag answers from here on, never re-route or restart.
+      legacyTag = read.route ?? 'team';
+      s.echo = "Thanks. I'll carry on where we were. Your role only changes which questions I ask; you can change the focus from your folder panel.";
+      return true;
+    }
+    if (!read.route) return false; // ambiguous: one follow-up
+    const add = s.mode === 'add';
+    if (!add) roles.length = 0;
+    if (!roles.includes(read.route)) roles.push(read.route);
+    marketingEmphasis = marketingEmphasis || read.marketingEmphasis;
+    // An owner who also looks after marketing: the owner spine, plus the marketing route's emphasis.
+    setPlan(read.route, add);
+    if (read.marketingEmphasis) setPlan('marketing', true);
+    const midway = s.mode === 'change' || s.mode === 'add';
+    s.echo = read.echo + (midway && steps[pos + 1] && steps[pos + 1].type !== 'role' ? " I'll use that from the next section." : '');
+    if (s.mode === 'first') pullNext();
+    return true;
+  }
+
+  function apply(a: Action): (() => void) | null {
+    if (a.t === 'p') { pending.set(a.k, { v: a.v, s: a.s }); return () => {}; }
+    // Change role, add a role, or the one-off role question for a saved session: insert the role question here.
+    if (a.t === 'c' && a.v.startsWith('role:')) {
+      if (steps[pos]?.type === 'role' || steps[pos]?.type === 'role2') return null;
+      steps.splice(pos, 0, { type: 'role', mode: a.v.slice(5) as 'change' | 'add' | 'legacy' });
+      return () => {};
+    }
+    const s = steps[pos];
+    if (!s) return null;
+    const show = (v: string, spoken?: 1) => () => { answer(v, v === SKIPPED ? 'skip' : spoken ? 'spoken' : 'you'); };
+    let render: () => void;
+    if (a.t === 'a' && (s.type === 'role' || s.type === 'role2')) {
+      render = show(a.v, a.s);
+      const resolved = s.type === 'role' ? settleRole(s, a.v, null) : settleRole(s, s.first, a.v);
+      if (!resolved && s.type === 'role') steps.splice(pos + 1, 0, { type: 'role2', mode: s.mode as 'first' | 'change' | 'add', first: a.v });
+    } else if (a.t === 'a' && s.type === 'q') {
+      answers.set(s.qid, a.v);
+      render = show(a.v, a.s);
+    } else if (a.t === 'a' && s.type === 'list') {
+      const J = JOURNEY[s.j];
+      answers.set(J.qid, a.v);
+      render = show(a.v, a.s);
+      const { list, multiLine } = parseItems(a.v);
+      items[s.j] = list;
+      // One workflow per stage is guaranteed: take the first they named, or ask.
+      if (multiLine) startProcess(s.j, 0, list[0]);
+      else if (list.length >= 2) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'Which of these matters most to start with?', options: list.slice(0, 6).map(short) });
+      else if (list.length === 1 && list[0].length <= 80) startProcess(s.j, 0, list[0]);
+      else if (list.length === 1) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'What would you call that workflow, in a few words?', options: [] });
+      else steps.push({ type: 'name', j: s.j, p: 0, prompt: `Which ${J.title.toLowerCase()} workflow should we start with? Just name one, like ${J.example}.`, options: [] });
+    } else if (a.t === 'a' && s.type === 'name') {
+      render = show(a.v, a.s);
+      if (a.v === SKIPPED) {
+        if (s.p === 0) procs[s.j][0] = { name: SKIPPED, answers: [], skipped: true };
+        nextStage(s.j);
+      } else {
+        startProcess(s.j, s.p, a.v.trim());
+      }
+    } else if (a.t === 'a' && s.type === 'drill') {
+      procs[s.j][s.p].answers[s.d] = a.v;
+      render = show(a.v, a.s);
+      if (s.d === DRILL.length - 1) endProcess(s.j, s.p);
+    } else if (a.t === 'c' && s.type === 'another') {
+      render = show(a.v === 'done' ? 'No, move on' : a.v.startsWith('next:') ? `Yes: ${a.v.slice(5)}` : 'Yes, another one');
+      if (a.v === 'done') nextStage(s.j);
+      else if (a.v.startsWith('next:')) startProcess(s.j, s.p + 1, a.v.slice(5));
+      else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: `Which one? Name the next ${JOURNEY[s.j].title.toLowerCase()} workflow.`, options: undrilled(s.j).slice(0, 6) });
+    } else if (a.t === 'c' && s.type === 'choice') {
+      render = show(a.v === 'more' ? (route() === 'owner' ? 'Keep going into the journey' : 'Keep going') : 'Finish here');
+      if (a.v !== 'more') plan = plan.filter((b) => b.k === 'closing');
+      if (!plan.length && !usedBlocks.has('closing')) plan = [{ k: 'closing' }];
+      pullNext();
+    } else {
+      return null;
+    }
+    if (a.t === 'a' && a.r) answerTags.set(stepKey(s) || `${s.type}:${pos}`, `${a.r}${a.n ? ` (${a.n})` : ''}`);
+    pending.delete(stepKey(s));
+    pos++;
+    if (!steps[pos]) pullNext();
+    return render;
+  }
+
+  // Thread rendering runs through one queue so messages always appear in script order,
+  // even when voice tool calls arrive faster than Harry's typing animation.
+  let queue: Promise<unknown> = Promise.resolve();
+  const enqueue = (fn: () => unknown) => (queue = queue.then(fn).catch(() => {}));
+
+  /** State changes synchronously, so callers (e.g. voice tools) see the new position immediately. */
+  function act(a: Action): boolean {
+    if (sent) return false;
+    if (a.t === 'p') { pending.set(a.k, { v: a.v, s: a.s }); actions.push(a); save(); return true; }
+    // Every answer is added (never replaced) with the role and person it was given under.
+    if (a.t === 'a' && roleTag() && steps[pos]?.type !== 'role' && steps[pos]?.type !== 'role2') { a.r = roleTag(); if (respondent()) a.n = respondent(); }
+    const render = apply(a);
+    if (!render) return false;
+    delete root.dataset.choosing;
+    actions.push(a);
+    const chain: (() => unknown)[] = [render];
+    // Voice answers given ahead of their turn: take them now, in order, so nothing is asked twice.
+    for (let ahead = pending.get(stepKey(steps[pos])); answerable(steps[pos]) && ahead; ahead = pending.get(stepKey(steps[pos]))) {
+      const i = pos;
+      const v = ahead;
+      const r = apply({ t: 'a', v: v.v, s: v.s });
+      if (!r) break;
+      actions.push({ t: 'a', v: v.v, s: v.s });
+      chain.push(async () => { await transition(i); header(steps[i]); await harrySays(stepText(steps[i]), { question: true }); r(); });
+    }
+    save();
+    lock(true);
+    updateProgress();
+    anchor();
+    const next = pos;
+    enqueue(async () => {
+      for (const c of chain) await c();
+      renderFolder();
+      updateProgress();
+      await present(next);
+    });
+    return true;
+  }
+
+  // ---------- Optional: questions to Harry in chat ----------
+  const looksLikeQuestion = (t: string) =>
+    t.length < 240 && /\?\s*$/.test(t) && /^(what|why|how|who|whom|where|when|which|can|could|do|does|did|is|are|should|would|will|sorry|wait|hang on|um)\b/i.test(t);
+
+  async function askHarry(text: string, current: string): Promise<string | null> {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 9000);
+    try {
+      const r = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, question: current }),
+        signal: ctrl.signal,
+      });
+      if (r.status !== 200) return null;
+      const d = await r.json();
+      return typeof d.reply === 'string' && d.reply.trim() ? d.reply.trim() : null;
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  composer.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    stopListening();
+    const s = steps[pos];
+    const text = input.value.trim();
+    if (!text || !answerable(s)) return;
+    input.value = '';
+    autosize();
+    if (looksLikeQuestion(text)) {
+      lock(true);
+      const reply = await askHarry(text, stepText(s));
+      if (reply) {
+        answer(text, 'you');
+        await harrySays(reply);
+        await harrySays(stepText(s), { question: true });
+        const at = pos;
+        const keep = note('Was that actually your answer?', 'Save it as my answer', () => {
+          keep.remove();
+          if (pos === at) act({ t: 'a', v: text });
+        });
+        lock(false);
+        return;
+      }
+    }
+    act({ t: 'a', v: text });
+  });
+
+  skipBtn.addEventListener('click', () => {
+    stopListening();
+    if (answerable(steps[pos])) act({ t: 'a', v: SKIPPED });
+  });
+
+  input.addEventListener('keydown', (e) => {
+    // On phones, Enter adds a line on "one per line" questions; the send button sends.
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !(steps[pos]?.type === 'list' && !finePointer)) {
+      e.preventDefault();
+      composer.requestSubmit();
+    }
+  });
+  function autosize() {
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight, 180)}px`;
+  }
+  input.addEventListener('input', autosize);
+
+  // ---------- Speech to text in chat (browser speech recognition) ----------
+  const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  let rec: any = null;
+  if (SR) micBtn.hidden = false;
+  let meter: { stream: MediaStream; ctx: AudioContext; raf: number } | null = null;
+  async function startMeter() {
+    // Desktop only: a second mic capture can upset speech recognition on phones.
+    if (!finePointer || reduced || meter) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const ctx = new AudioContext();
+      const an = ctx.createAnalyser();
+      an.fftSize = 512;
+      ctx.createMediaStreamSource(stream).connect(an);
+      const buf = new Uint8Array(an.fftSize);
+      meter = { stream, ctx, raf: 0 };
+      const tick = () => {
+        if (!meter) return;
+        an.getByteTimeDomainData(buf);
+        let sum = 0;
+        for (const v of buf) { const d = (v - 128) / 128; sum += d * d; }
+        bump(Math.sqrt(sum / buf.length) * 5);
+        meter.raf = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {}
+  }
+  function stopMeter() {
+    if (!meter) return;
+    cancelAnimationFrame(meter.raf);
+    meter.stream.getTracks().forEach((t) => t.stop());
+    meter.ctx.close().catch(() => {});
+    meter = null;
+  }
+  function stopListening() {
+    if (rec) { try { rec.stop(); } catch {} }
+  }
+  function startListening() {
+    if (rec || !SR || input.disabled) return;
+    const base = input.value.trim() ? input.value.trimEnd() + ' ' : '';
+    rec = new SR();
+    rec.lang = 'en-AU';
+    rec.interimResults = true;
+    rec.continuous = true;
+    rec.onresult = (e: any) => {
+      let text = '';
+      for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+      input.value = base + text.trimStart();
+      autosize();
+    };
+    rec.onerror = (e: any) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') note("The browser didn't allow the microphone. You can type instead, or allow it in the address bar and try again.");
+    };
+    rec.onend = () => {
+      rec = null;
+      stopMeter();
+      micBtn.setAttribute('aria-pressed', 'false');
+      micBtn.setAttribute('aria-label', 'Speak your answer');
+      micBtn.dataset.tip = 'Speak your answer';
+      input.placeholder = 'Type your answer…';
+      input.focus({ preventScroll: true });
+    };
+    try {
+      rec.start();
+      micBtn.setAttribute('aria-pressed', 'true');
+      micBtn.setAttribute('aria-label', 'Stop listening');
+      micBtn.dataset.tip = 'Stop listening';
+      input.placeholder = 'Listening… tap the mic when you’re done';
+      startMeter();
+    } catch {
+      rec = null;
+    }
+  }
+  micBtn.addEventListener('click', () => (rec ? stopListening() : startListening()));
+
+  // ---------- Sharing: files, links, screen recordings ----------
+  function openTray(open: boolean) {
+    tray.hidden = !open;
+    attachBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) linkForm.hidden = true;
+  }
+  function showLinkField() {
+    linkForm.hidden = false;
+    linkInput.focus({ preventScroll: true });
+  }
+  attachBtn.addEventListener('click', () => openTray(tray.hidden));
+  $<HTMLButtonElement>('ik-menu-link').addEventListener('click', showLinkField);
+  document.addEventListener('pointerdown', (e) => {
+    if (!tray.hidden && !tray.contains(e.target as Node) && !attachBtn.contains(e.target as Node)) openTray(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !tray.hidden) { openTray(false); attachBtn.focus(); }
+  });
+
+  const fmtSize = (b: number) => (b < 1024 * 1024 ? `${Math.max(1, Math.round(b / 1024))} KB` : `${(b / 1024 / 1024).toFixed(1)} MB`);
+  const totalBytes = () => files.reduce((sum, f) => sum + f.size, 0);
+  const CHIP_ICON = { file: document.querySelector('#ik-tray label svg')!.outerHTML, link: document.querySelector('#ik-menu-link svg')!.outerHTML, rec: document.querySelector('#ik-rec svg')!.outerHTML };
+
+  function renderChips() {
+    chips.textContent = '';
+    const chip = (icon: string, label: string, onRemove: () => void) => {
+      const c = el('span', 'ik-chip');
+      c.innerHTML = icon.replace(/width="\d+" height="\d+"/, 'width="14" height="14"');
+      const x = el('button', '', '×') as HTMLButtonElement;
+      x.type = 'button';
+      x.setAttribute('aria-label', `Remove ${label}`);
+      x.addEventListener('click', onRemove);
+      c.append(el('span', '', label), x);
+      chips.append(c);
+    };
+    files.forEach((f, i) => chip(CHIP_ICON.file, `${f.name} · ${fmtSize(f.size)}`, () => { files.splice(i, 1); renderChips(); }));
+    links.forEach((l, i) => chip(l.startsWith('Screen recording') ? CHIP_ICON.rec : CHIP_ICON.link, linkLabel(l), () => { links.splice(i, 1); save(); renderChips(); }));
+    renderFolder();
+  }
+
+  fileInput.addEventListener('change', () => {
+    for (const f of Array.from(fileInput.files || [])) {
+      if (totalBytes() + f.size > MAX_UPLOAD_BYTES) {
+        note(`${f.name}: ${TOO_BIG}`, undefined, undefined, true);
+        continue;
+      }
+      files.push(f);
+      fileMsg(`${f.name} · ${fmtSize(f.size)}`);
+      noteExample(f.name);
+    }
+    fileInput.value = '';
+    openTray(false);
+    renderChips();
+  });
+
+  /** "loom.com/share/x" -> "https://loom.com/share/x", so the Jotform link field gets a real URL. */
+  function normaliseLink(v: string) {
+    const t = v.trim();
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) return t;
+    if (/^[\w-]+(\.[\w-]+)+([/?#:]\S*)?$/.test(t)) return `https://${t}`;
+    return t;
+  }
+  const linkLabel = (l: string) => (l.startsWith('Screen recording') ? l.split(': ')[0] : l.replace(/^https?:\/\//, ''));
+  function addLink(raw: string, label?: string) {
+    const v = normaliseLink(raw);
+    if (!v || links.includes(v)) return false;
+    links.push(v);
+    fileMsg(label ?? v);
+    noteExample(v);
+    save();
+    renderChips();
+    return true;
+  }
+  linkForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (addLink(linkInput.value)) { linkInput.value = ''; openTray(false); }
+  });
+
+  // ---------- Screen recording (getDisplayMedia -> MediaRecorder -> private Supabase bucket) ----------
+  const canRecord = !!navigator.mediaDevices?.getDisplayMedia && typeof MediaRecorder !== 'undefined';
+  if (canRecord) { recBtn.hidden = false; recQuick.hidden = false; }
+  let recBusy = false;
+  let stopRecording: ((why?: 'time' | 'size') => void) | null = null;
+  const fmtDur = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const MAX_LABEL = fmtDur(RECORDING.maxSeconds);
+
+  function showRecBar(label: string, pct: number, uploading = false) {
+    recBar.hidden = false;
+    recBar.toggleAttribute('data-uploading', uploading);
+    recLabel.textContent = label;
+    recMeter.style.width = `${Math.min(100, Math.round(pct * 100))}%`;
+  }
+
+  async function startRecording() {
+    if (recBusy) return;
+    openTray(false);
+    let display: MediaStream;
+    try {
+      display = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15, max: 24 } }, audio: true });
+    } catch {
+      note("Screen sharing didn't start. You can try again, or paste a Loom link instead.");
+      return;
+    }
+    recBusy = true;
+    // Narration from the mic if allowed; system/tab audio if the browser shared it. Mix both when there are two.
+    let mic: MediaStream | null = null;
+    try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); } catch {}
+    const tracks: MediaStreamTrack[] = [...display.getVideoTracks()];
+    const audioIn = [display, mic].filter((s): s is MediaStream => !!s && s.getAudioTracks().length > 0);
+    let ctx: AudioContext | null = null;
+    if (audioIn.length === 1) tracks.push(audioIn[0].getAudioTracks()[0]);
+    else if (audioIn.length > 1) {
+      ctx = new AudioContext();
+      const dest = ctx.createMediaStreamDestination();
+      for (const s of audioIn) ctx.createMediaStreamSource(s).connect(dest);
+      tracks.push(dest.stream.getAudioTracks()[0]);
+    }
+    const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) || '';
+    let mr: MediaRecorder;
+    try {
+      mr = new MediaRecorder(new MediaStream(tracks), { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: RECORDING.videoBitsPerSecond, audioBitsPerSecond: 64_000 });
+    } catch {
+      [display, mic].forEach((s) => s?.getTracks().forEach((t) => t.stop()));
+      recBusy = false;
+      note("This browser can't record the screen. Please paste a Loom link instead.");
+      return;
+    }
+    const chunks: Blob[] = [];
+    let bytes = 0;
+    let stoppedBy: 'time' | 'size' | undefined;
+    const started = Date.now();
+    const elapsed = () => (Date.now() - started) / 1000;
+    stopRecording = (why) => {
+      stoppedBy ??= why;
+      if (mr.state !== 'inactive') mr.stop();
+    };
+    mr.ondataavailable = (e) => {
+      if (!e.data.size) return;
+      chunks.push(e.data);
+      bytes += e.data.size;
+      if (bytes >= RECORDING.stopAtBytes) stopRecording?.('size');
+    };
+    const tick = window.setInterval(() => {
+      const s = elapsed();
+      showRecBar(`Recording ${fmtDur(s)} / ${MAX_LABEL}`, Math.max(s / RECORDING.maxSeconds, bytes / RECORDING.stopAtBytes));
+      if (s >= RECORDING.maxSeconds) stopRecording?.('time');
+    }, 500);
+    display.getVideoTracks()[0]?.addEventListener('ended', () => stopRecording?.());
+    mr.onstop = async () => {
+      clearInterval(tick);
+      stopRecording = null;
+      [display, mic].forEach((s) => s?.getTracks().forEach((t) => t.stop()));
+      ctx?.close().catch(() => {});
+      const seconds = elapsed();
+      const blob = new Blob(chunks, { type: (mr.mimeType || mime || 'video/webm').split(';')[0] });
+      if (stoppedBy === 'time') note(`That's ${MAX_LABEL}, so the recording stopped there. Shorter is better; for anything longer, paste a Loom link.`);
+      if (stoppedBy === 'size') note('The recording reached the size limit, so it stopped there. For anything longer, paste a Loom link.');
+      try {
+        await uploadRecording(blob, seconds);
+      } catch (err) {
+        note(err instanceof Error && err.message ? err.message : "The recording couldn't be saved. Please try again, or paste a Loom link instead.", undefined, undefined, true);
+      } finally {
+        recBar.hidden = true;
+        recBusy = false;
+      }
+    };
+    mr.start(1000);
+    showRecBar(`Recording 0:00 / ${MAX_LABEL}`, 0);
+    recStop.focus({ preventScroll: true });
+  }
+
+  async function postRecording(body: object) {
+    const r = await fetch('/api/intake-recording', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => null);
+    if (!r.ok || !d?.ok) throw new Error(d?.error || "The recording couldn't be saved. Please try again, or paste a Loom link instead.");
+    return d;
+  }
+
+  function putFile(url: string, blob: Blob, onProgress: (p: number) => void) {
+    return new Promise<void>((resolve, reject) => {
+      const x = new XMLHttpRequest();
+      x.open('PUT', url);
+      x.setRequestHeader('content-type', blob.type);
+      x.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+      x.onload = () => (x.status >= 200 && x.status < 300 ? resolve() : reject(new Error("The recording didn't upload. Please try again, or paste a Loom link instead.")));
+      x.onerror = () => reject(new Error("The recording didn't upload. Check your connection and try again, or paste a Loom link instead."));
+      x.send(blob);
+    });
+  }
+
+  async function uploadRecording(blob: Blob, seconds: number) {
+    if (!blob.size) throw new Error('That recording came out empty. Please try again, or paste a Loom link instead.');
+    if (blob.size > RECORDING.maxBytes) throw new Error(`That recording is ${fmtSize(blob.size)}, over the 50MB limit. Please record a shorter one, or paste a Loom link instead.`);
+    showRecBar('Uploading recording… 0%', 0, true);
+    const started = await postRecording({ action: 'start', contentType: blob.type, size: blob.size, client });
+    await putFile(started.uploadUrl, blob, (p) => showRecBar(`Uploading recording… ${Math.round(p * 100)}%`, p, true));
+    const done = await postRecording({ action: 'finish', path: started.path });
+    const label = `Screen recording, ${fmtDur(seconds)}`;
+    links.push(`${label}: ${done.url} (stored at ${done.path})`);
+    fileMsg(`${label} · ${fmtSize(blob.size)}`);
+    noteExample(label);
+    save();
+    renderChips();
+  }
+
+  recBtn.addEventListener('click', () => startRecording());
+  recQuick.addEventListener('click', () => startRecording());
+  recStop.addEventListener('click', () => stopRecording?.());
+
+  // ---------- Submit ----------
+  async function sendAll() {
+    if (sending || sent) return;
+    stopListening();
+    if (recBusy) {
+      note('Hang on, your screen recording is still going. Stop it (or wait for the upload to finish), then send again.');
+      return;
+    }
+    // A link typed into the box but never added still counts.
+    if (linkInput.value.trim() && addLink(linkInput.value)) linkInput.value = '';
+    if (totalBytes() > MAX_UPLOAD_BYTES) { note(TOO_BIG, undefined, undefined, true); return; }
+    if (!hasAnything() && !files.length && !links.length) {
+      note("There's nothing to send yet. Answer a question or two first, or share a file or link.");
+      return;
+    }
+    const data = new FormData();
+    // Only questions that were offered: answered as typed, or "to fill" if skipped.
+    for (const [qid, v] of payloadFields()) data.set(String(qid), v);
+    if (links.length) data.set(String(CLOSING.link), links.join(' | '));
+    for (const f of files) data.append(String(CLOSING.files), f, f.name);
+    data.set(String(CLOSING.employee), employee);
+    data.set(String(CLOSING.client), client);
+
+    sending = true;
+    lock(true);
+    const sendAllBtn = document.getElementById('ik-send-all') as HTMLButtonElement | null;
+    const label = sendAllBtn?.innerHTML;
+    if (sendAllBtn) { sendAllBtn.disabled = true; sendAllBtn.innerHTML = '<span class="ik-spin" aria-hidden="true"></span>Sending…'; }
+    const sendingNote = sendAllBtn ? null : note('Sending your answers…');
+    try {
+      const r = await fetch('/api/intake-submit', { method: 'POST', body: data });
+      const d = await r.json().catch(() => null);
+      if (r.status === 413) throw new Error(TOO_BIG);
+      if (!r.ok || !d?.ok) throw new Error(d?.error || "That didn't send. Please try again.");
+      sent = true;
+      clear();
+      openTray(false);
+      updateProgress();
+      finish();
+    } catch (err) {
+      sendingNote?.remove();
+      if (sendAllBtn) { sendAllBtn.disabled = false; sendAllBtn.innerHTML = label ?? 'Send everything'; }
+      const msg = err instanceof Error && err.message ? err.message : "That didn't send. Please try again.";
+      note(`${msg} Nothing is lost: your answers are still saved here.`, 'Try again', () => sendAll(), true);
+      if (answerable(steps[pos])) lock(false);
+    } finally {
+      sending = false;
+    }
+  }
+  sendNow.addEventListener('click', () => {
+    if (confirm("Send your answers so far? Anything you haven't reached yet will be left out.")) sendAll();
+  });
+
+  // ---------- Finish ----------
+  function finish() {
+    stopListening();
+    const { answered, skipped } = tally();
+    const recs = links.filter((l) => l.startsWith('Screen recording')).length;
+    const plainLinks = links.length - recs;
+    const tick = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    const list = $<HTMLUListElement>('ik-captured');
+    list.textContent = '';
+    const item = (main: string, sub?: string) => {
+      const li = el('li', '');
+      li.innerHTML = tick;
+      const t = el('span', '', main);
+      if (sub) t.append(' ', el('small', '', sub));
+      li.append(t);
+      list.append(li);
+    };
+    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : /s$/.test(w) ? 'es' : 's'}`;
+    item(`${plural(answered, 'answer')} received`, skipped ? `· ${skipped} to fill, we'll cover ${skipped === 1 ? 'it' : 'them'} on the call` : undefined);
+    const mapped = procs.flat().filter((p) => p && !p.skipped);
+    if (mapped.length) item(`${plural(mapped.length, 'workflow')} mapped`, `· ${listJoin(mapped.map((p) => p.name))}`);
+    const shared = [files.length && plural(files.length, 'file'), plainLinks && plural(plainLinks, 'link'), recs && plural(recs, 'screen recording')].filter(Boolean) as string[];
+    if (shared.length) item(`${listJoin(shared)} shared`);
+    item('Saved to Roadmap Labs', `· ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
+    if (client) $<HTMLElement>('ik-finish-title').textContent = `That's everything, ${client}. Thank you.`;
+    root.dataset.view = 'finish';
+    anchor();
+    $<HTMLElement>('ik-finish').focus({ preventScroll: true });
+  }
+  $<HTMLButtonElement>('ik-download').addEventListener('click', () => {
+    const lines = [`Roadmap Labs intake${client ? ` · ${client}` : ''}`, new Date().toLocaleString(), ...(roleTag() ? [`Answered as: ${roleTag()}${respondent() ? ` (${respondent()})` : ''}`] : []), ''];
+    for (const [qid, v] of payloadFields()) lines.push(textByQid.get(qid) ?? `Question ${qid}`, v === SKIPPED ? '(to fill)' : v, '');
+    if (links.length) lines.push('Links shared', ...links, '');
+    if (files.length) lines.push('Files shared', ...files.map((f) => f.name), '');
+    const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/plain' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'roadmap-labs-intake-answers.txt' });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  // ---------- Modes ----------
+  let widgetLoaded = false;
+  function setMode(m: Mode, persist = true) {
+    mode = m;
+    root.dataset.mode = m;
+    $<HTMLElement>('ik-voice').setAttribute('aria-hidden', String(m !== 'voice'));
+    root.querySelectorAll<HTMLButtonElement>('.ik-modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    if (m === 'voice') {
+      stopListening();
+      loadWidget();
+    }
+    if (persist) save();
+    setTimeout(scroll, 560);
+  }
+  root.querySelectorAll<HTMLButtonElement>('.ik-modes button').forEach((b) =>
+    b.addEventListener('click', () => {
+      if (root.dataset.view === 'welcome') startFlow(b.dataset.mode as Mode);
+      else setMode(b.dataset.mode as Mode);
+    }),
+  );
+  document.getElementById('ik-voice-fallback')?.addEventListener('click', () => {
+    setMode('chat');
+    setTimeout(startListening, 400);
+  });
+
+  // ---------- Voice interview (ElevenLabs ConvAI widget) ----------
+  // The agent runs the same script through client tools, so voice and chat share one thread and one state.
+  // Agent setup (prompt + tool definitions) is in docs/intake-voice-agent.md.
+  function loadWidget() {
+    if (widgetLoaded || !agentId) return;
+    widgetLoaded = true;
+    const host = $<HTMLDivElement>('ik-widget');
+    const w = document.createElement('elevenlabs-convai');
+    w.setAttribute('agent-id', agentId);
+    w.setAttribute('placement', 'bottom');
+    w.setAttribute('transcript', 'false');
+    w.setAttribute('text-input', 'false');
+    w.setAttribute('show-avatar-when-collapsed', 'false');
+    w.setAttribute('avatar-orb-color-1', '#0a4cff');
+    w.setAttribute('avatar-orb-color-2', '#00a3ff');
+    w.setAttribute('text-contents', JSON.stringify({ main_label: 'Talk it through with Harry', start_call: 'Start voice interview', end_call: 'End interview' }));
+    host.append(w);
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+    s.async = true;
+    s.onerror = () => {
+      const st = document.getElementById('ik-voice-status');
+      if (st) st.textContent = "Voice couldn't load. Chat works the same";
+    };
+    document.head.append(s);
+  }
+
+  // The voice agent works through the same spine via these tool replies. It may roam inside the current stage
+  // (record_answer with a question_id); the page keeps the fixed order and never asks an answered question again.
+  function openInStage(): string {
+    const s = steps[pos];
+    if (s?.type === 'q' && s.phase === 'core') {
+      const open = CORE_QUESTIONS.filter((q) => q.stage === s.stage && q.id !== s.id && !answers.has(q.qid) && !pending.has(`q:${q.id}`));
+      return open.length ? ` Still open in ${CORE_STAGES[s.stage!].title}: ${open.map((q) => `${q.id} "${q.text}"`).join('; ')}.` : '';
+    }
+    if (s?.type === 'drill') {
+      const open = DRILL.filter((d, i) => i > s.d && !pending.has(`d:${s.j}:${s.p}:${i}`));
+      return open.length ? ` Still open for this workflow: ${open.map((d) => `${d.id} "${d.text}"`).join('; ')}.` : '';
+    }
+    return '';
+  }
+  const ROAM = ' If they answer one of the still-open questions on the way, call record_answer with its question_id; it will not be asked again.';
+  function stepPrompt(): string {
+    const s = steps[pos];
+    if (sent) return 'The interview has been submitted. Thank them and end the call.';
+    if (!s) return 'The interview is finished.';
+    switch (s.type) {
+      case 'role':
+      case 'role2':
+        return `Before the questions: ask exactly "${stepText(s)}" Then call record_answer with their words. Their role only changes which questions are asked.`;
+      case 'q':
+        return s.phase === 'closing'
+          ? `Closing question (W1). Ask exactly: "${s.text}" Then call record_answer.`
+          : `Stage ${s.stage}, ${CORE_STAGES[s.stage!].title}, question ${s.id}. Ask exactly: "${s.text}" Then call record_answer with their words.${openInStage()}${openInStage() ? ROAM : ''}`;
+      case 'list':
+        return `Stage 3, the journey: ${JOURNEY[s.j].title} (${JOURNEY[s.j].id}). Ask exactly: "${JOURNEY[s.j].text}" Then call record_answer with what they name, one per line.`;
+      case 'name':
+        return `${JOURNEY[s.j].title}. Ask: "${s.prompt}"${s.options.length ? ` They mentioned: ${s.options.join('; ')}.` : ''} Then call record_answer with the workflow name, in their words.`;
+      case 'drill': {
+        const pr = procs[s.j][s.p];
+        const extra =
+          s.d === 3 ? ' They can attach a file, paste text or a link, or record their screen on the page.'
+          : s.d === 4 ? ' Offer three answers: hand it over, split it, or keep it with a person. Ask why.'
+          : s.d === 8 ? ' Keep it light: one short answer is enough. This becomes the routine that starts the workflow.'
+          : s.d === 0 ? ' This becomes the skill: the written instructions. Reflect their tool and step names back.'
+          : s.d === 7 ? ` Help them reach an hourly figure: who does it, hours per week, and their hourly cost or annual pay. As a rough benchmark, annual pay divided by about ${BENCHMARK.hoursPerYear} hours is an hourly cost. Use only their figures and say it is a rough benchmark. Never invent numbers.`
+          : '';
+        return `${JOURNEY[s.j].title}, workflow "${pr.name}", ${DRILL[s.d].id} (${s.d + 1} of ${DRILL.length}). Ask exactly: "${DRILL[s.d].text}"${extra} Then call record_answer.${openInStage()}${openInStage() ? ROAM : ''}`;
+      }
+      case 'another':
+        return `"${procs[s.j][s.p].name}" is done. Ask: "Another one in ${JOURNEY[s.j].title}?"${s.next ? ` They also mentioned "${s.next}".` : ''} If yes, call choose_path with path "another" and the workflow name; if no, call choose_path with path "next_stage".`;
+      case 'choice':
+        return `The core (stages 0 to 2) is done. Say: "${CHOICE_TEXT}" Then call choose_path with path "keep_going" or "wrap_up".`;
+      default:
+        return 'All the questions are done. Tell them they can add files, links or a screen recording on the screen, then press Send everything. Thank them and end the call.';
+    }
+  }
+  /** Map a spine id the agent passed (A3, T5, D6...) to a still-open question in the current stage or process. */
+  function roamKey(id: string): string | null {
+    const s = steps[pos];
+    if (s?.type === 'q' && s.phase === 'core') {
+      const q = CORE_QUESTIONS.find((x) => x.id === id && x.stage === s.stage && !answers.has(x.qid));
+      return q ? `q:${q.id}` : null;
+    }
+    if (s?.type === 'drill') {
+      const i = DRILL.findIndex((d) => d.id === id);
+      return i > s.d ? `d:${s.j}:${s.p}:${i}` : null;
+    }
+    return null;
+  }
+  const currentId = (s?: Step) => (s?.type === 'q' ? s.id : s?.type === 'list' ? JOURNEY[s.j].id : s?.type === 'drill' ? DRILL[s.d].id : '');
+
+  /** Rough loudness of a base64 audio chunk from the agent (16-bit PCM); any chunk still counts as speech. */
+  function chunkLevel(b64: unknown) {
+    if (typeof b64 !== 'string') return 0.5;
+    try {
+      const bin = atob(b64.length > 6000 ? b64.slice(0, 6000) : b64);
+      const n = bin.length >> 1;
+      let sum = 0;
+      for (let i = 0; i < n; i++) { let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); if (v > 32767) v -= 65536; sum += v * v; }
+      return Math.max(0.25, Math.min(1, Math.sqrt(sum / Math.max(1, n)) / 6000));
+    } catch { return 0.5; }
+  }
+
+  document.addEventListener('elevenlabs-convai:call', (event: any) => {
+    const config = event?.detail?.config;
+    if (!config) return;
+    config.clientTools = {
+      ...(config.clientTools || {}),
+      get_current_question: () => stepPrompt(),
+      record_answer: (p: { answer?: string; question_id?: string }) => {
+        const v = String(p?.answer ?? '').trim();
+        const id = String(p?.question_id ?? '').trim().toUpperCase();
+        if (id && id !== currentId(steps[pos])) {
+          const k = roamKey(id);
+          if (!k) return `${id} isn't open in this stage. ${stepPrompt()}`;
+          act({ t: 'p', k, v: v || SKIPPED, s: 1 });
+          return `Saved for ${id}; it won't be asked again. ${stepPrompt()}`;
+        }
+        if (!answerable(steps[pos])) return `No question is waiting. ${stepPrompt()}`;
+        act({ t: 'a', v: v || SKIPPED, s: 1 });
+        return `Saved. Next: ${stepPrompt()}`;
+      },
+      skip_question: () => {
+        if (!answerable(steps[pos])) return `No question is waiting. ${stepPrompt()}`;
+        act({ t: 'a', v: SKIPPED, s: 1 });
+        return `Skipped (to fill). Next: ${stepPrompt()}`;
+      },
+      choose_path: (p: { path?: string; name?: string }) => {
+        const s = steps[pos];
+        const path = String(p?.path ?? '');
+        if (s?.type === 'choice') {
+          root.querySelectorAll('.ik-choices').forEach((c) => c.remove());
+          act({ t: 'c', v: /keep|more|journey|continue/i.test(path) ? 'more' : 'wrap' });
+          return `Done. Next: ${stepPrompt()}`;
+        }
+        if (s?.type === 'another') {
+          const name = String(p?.name ?? '').trim();
+          const v = /next_stage|done|\bno\b|move|finish|stop/i.test(path) ? 'done' : name ? `next:${short(name)}` : s.next ? `next:${s.next}` : 'another';
+          act({ t: 'c', v });
+          return `Done. Next: ${stepPrompt()}`;
+        }
+        return `There's no choice to make right now. ${stepPrompt()}`;
+      },
+    };
+    const status = document.getElementById('ik-voice-status');
+    if (status) status.textContent = 'Connecting…';
+    const onConnect = config.onConnect;
+    config.onConnect = (...args: unknown[]) => {
+      if (status) { status.textContent = 'Live with Harry'; status.setAttribute('data-live', ''); }
+      onConnect?.(...args);
+    };
+    const onAudio = config.onAudio;
+    config.onAudio = (...args: unknown[]) => {
+      bump(chunkLevel(args[0]));
+      onAudio?.(...args);
+    };
+  });
+
+  // ---------- Start ----------
+  function showToast(text: string, action?: string, onClick?: () => void) {
+    toast.textContent = text;
+    if (action && onClick) {
+      const b = el('button', '', action) as HTMLButtonElement;
+      b.type = 'button';
+      b.addEventListener('click', onClick);
+      toast.append(b);
+    }
+    toast.hidden = false;
+    setTimeout(() => { toast.hidden = true; }, 9000);
+  }
+
+  let begun = false;
+  async function begin() {
+    if (begun) return;
+    begun = true;
+    root.dataset.view = 'chat';
+    if (!actions.length && !steps.length) { flow2 = true; steps.push({ type: 'role', mode: 'first' }); }
+    updateProgress();
+    const hiName = greetName || client;
+    await harrySays(`Hi${hiName ? ` ${hiName}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. First, a quick one about your role, so the questions fit.`);
+    await harrySays('Everything we build for you ends up as files in one folder: workflows (your jobs), routines (what kicks them off) and skills (the instructions, written down). I\'m collecting what goes in them.');
+    enqueue(() => present());
+  }
+  // ---------- Opening walkthrough: fresh sessions only, after the welcome and before question one ----------
+  // A session with saved answers never sees it on load (it resumes as before); anyone can replay it from the folder panel.
+  const tour = $<HTMLElement>('ik-tour');
+  const beats = [...tour.querySelectorAll<HTMLElement>('.ik-beat')];
+  const dots = $<HTMLElement>('ik-tour-dots');
+  const nextBtn = $<HTMLButtonElement>('ik-tour-next');
+  const skip2 = $<HTMLButtonElement>('ik-tour-skip2');
+  let beat = 0;
+  let tourDone: (() => void) | null = null;
+  let viewBeforeTour = 'chat';
+  beats.forEach((_, i) => {
+    const d = el('button', '') as HTMLButtonElement;
+    d.type = 'button';
+    d.setAttribute('aria-label', `Step ${i + 1} of ${beats.length}`);
+    d.addEventListener('click', () => showBeat(i));
+    dots.append(d);
+  });
+  function showBeat(i: number) {
+    beat = Math.max(0, Math.min(beats.length - 1, i));
+    beats.forEach((b, k) => b.classList.toggle('is-on', k === beat));
+    [...dots.children].forEach((d, k) => (k === beat ? d.setAttribute('aria-current', 'step') : d.removeAttribute('aria-current')));
+    const last = beat === beats.length - 1;
+    nextBtn.textContent = last ? 'Start' : 'Next';
+    skip2.hidden = !last;
+    tour.scrollTop = 0;
+  }
+  function openTour(after: () => void) {
+    viewBeforeTour = root.dataset.view || 'chat';
+    tourDone = after;
+    root.dataset.view = 'tour';
+    showBeat(0);
+    nextBtn.focus({ preventScroll: true });
+  }
+  function closeTour() {
+    if (root.dataset.view !== 'tour') return;
+    root.dataset.view = viewBeforeTour === 'welcome' ? 'chat' : viewBeforeTour;
+    const done = tourDone;
+    tourDone = null;
+    done?.();
+  }
+  nextBtn.addEventListener('click', () => (beat < beats.length - 1 ? showBeat(beat + 1) : closeTour()));
+  $<HTMLButtonElement>('ik-tour-skip').addEventListener('click', closeTour);
+  skip2.addEventListener('click', closeTour);
+  document.addEventListener('keydown', (e) => {
+    if (root.dataset.view !== 'tour') return;
+    if (e.key === 'ArrowRight') showBeat(beat + 1);
+    else if (e.key === 'ArrowLeft') showBeat(beat - 1);
+    else if (e.key === 'Escape') closeTour();
+  });
+  $<HTMLButtonElement>('ik-tour-replay').addEventListener('click', () => {
+    openPanel(false);
+    openTour(() => { updateProgress(); scroll(); });
+  });
+  /** Start from the welcome: the walkthrough first for a fresh session, then the interview. */
+  function startFlow(m: Mode) {
+    setMode(m);
+    if (begun) return;
+    if (actions.length) { begin(); return; }
+    openTour(() => begin());
+  }
+  $<HTMLButtonElement>('ik-start-chat').addEventListener('click', () => startFlow('chat'));
+  $<HTMLButtonElement>('ik-start-voice').addEventListener('click', () => startFlow('voice'));
+
+  // ---------- Preview mock: sign-in screen (?mock=login) ----------
+  // Visual only, for Dan to react to. It never gates the real page, checks nothing and stores nothing:
+  // the password field is cleared on submit and its value is never read. Real authentication isn't decided yet.
+  let greetName = '';
+  function showMockLogin() {
+    const mock = $<HTMLDivElement>('ik-mock');
+    const form = $<HTMLFormElement>('ik-mock-form');
+    const nameEl = $<HTMLInputElement>('ik-mock-name');
+    const pass = $<HTMLInputElement>('ik-mock-pass');
+    mock.hidden = false;
+    setTimeout(() => nameEl.focus({ preventScroll: true }), 300);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      pass.value = '';
+      const name = nameEl.value.trim().slice(0, 40);
+      nameEl.value = '';
+      greetName = name;
+      $<HTMLElement>('ik-mock-form-step').hidden = true;
+      $<HTMLElement>('ik-mock-hello-text').textContent = name ? `Welcome, ${name}` : 'Welcome';
+      $<HTMLElement>('ik-mock-hello').hidden = false;
+      setTimeout(() => {
+        mock.hidden = true;
+        if (root.dataset.view === 'welcome') startFlow('chat');
+      }, reduced ? 300 : 1600);
+    });
+  }
+
+  function start() {
+    lock(true);
+    if (client) $<HTMLElement>('ik-hello').innerHTML = `Hi ${client.replace(/[<>&"]/g, '')}. Let's map how your business <span>really runs.</span>`;
+    const saved = load();
+    links = Array.isArray(saved.links) ? saved.links.filter((l) => typeof l === 'string') : [];
+    renderChips();
+    setMode(saved.mode === 'voice' ? 'voice' : 'chat', false);
+    if (params.get('mock') === 'login') showMockLogin();
+    if (!saved.actions.length) {
+      renderFolder();
+      updateProgress();
+      return; // welcome screen until they pick chat or voice
+    }
+    begun = true;
+    root.dataset.view = 'chat';
+    if (saved.flow === 2) { flow2 = true; steps.push({ type: 'role', mode: 'first' }); }
+    else { setPlan('owner', false); pullNext(); } // saved before roles: exactly the order it was started in
+    replaying = true;
+    for (const a of saved.actions) {
+      if (a.t !== 'p') renderStatic(pos);
+      const render = apply(a);
+      if (!render) break;
+      render();
+      actions.push(a);
+    }
+    // Saved before roles: ask once, as a tag (no restart, no re-routing).
+    if (!flow2 && !roleTag() && !sent && steps[pos] && !isRoleStep(steps[pos])) {
+      const a: Action = { t: 'c', v: 'role:legacy' };
+      if (apply(a)) { actions.push(a); save(); }
+    }
+    renderFolder();
+    replaying = false;
+    // Files live in memory only; links and recordings are saved. If they'd attached files, ask them to add them again.
+    const attachedBefore = procs.flat().some((p) => p?.answers.some((v) => v?.includes('Attached:') && !links.some((l) => v.includes(linkLabel(l)) || v.includes(l))));
+    if (attachedBefore) note('Files attached before the refresh need adding again (links and recordings are kept). Use the paperclip.');
+    log.scrollTop = log.scrollHeight;
+    showToast('Welcome back. Picked up where you left off', 'Start over', () => {
+      if (!confirm('Clear your answers and start again?')) return;
+      clear();
+      location.reload();
+    });
+    enqueue(() => present());
+  }
+
+  start();
+</script>
+
+</Base>
