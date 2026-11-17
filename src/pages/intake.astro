@@ -17,6 +17,7 @@ const icons = {
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   skip: '<path d="M5 12h12M13 6l6 6-6 6"/>',
   save: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
 };
 const svg = (d: string, size = 20, sw = 2) =>
   `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -289,6 +290,64 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-toast[hidden] { display: none; }
   .ik-toast button { min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: rgba(255,255,255,.14); color: var(--paper); font: 600 12px/16px var(--font-sans); cursor: pointer; }
 
+  /* ---------- Your folder (desktop side panel, phone sheet) ---------- */
+  .ik-folderbtn { position: relative; flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 10px; border: 1px solid rgba(0,7,16,.12); border-radius: 999px; background: var(--paper); color: var(--ink); font: 600 12px/16px var(--font-sans); cursor: pointer; }
+  .ik-folderbtn svg { color: var(--roadmap-blue); }
+  .ik-folderbtn.is-grew { animation: ik-grew-btn 1.4s ease; }
+  @keyframes ik-grew-btn { 0%, 100% { box-shadow: 0 0 0 0 rgba(10,76,255,0); } 30% { box-shadow: 0 0 0 6px rgba(10,76,255,.18); } }
+  .ik[data-view="welcome"] .ik-folderbtn { display: none; }
+  .ik-panel { display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; padding: 18px; border-radius: 20px; background: rgba(255,255,255,.86); border: 1px solid rgba(0,7,16,.08); box-shadow: 0 1px 2px rgba(0,7,16,.04), 0 12px 32px rgba(0,7,16,.06); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); overflow-y: auto; overscroll-behavior: contain; }
+  .ik-panel__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .ik-panel__eyebrow { display: block; font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-panel__head strong { display: block; font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
+  .ik-panel__close { display: none; width: 36px; height: 36px; flex: none; border: 0; border-radius: 50%; background: rgba(0,7,16,.05); color: var(--ink); font: 500 20px/1 var(--font-sans); cursor: pointer; }
+  .ik-panel__note { margin: 0; font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-panel__fine { margin: 4px 0 0; font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
+  .ik-tree { display: grid; gap: 2px; margin-top: 4px; }
+  .ik-dir { display: flex; align-items: center; gap: 8px; padding: 6px 4px; font: 600 13px/18px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); min-width: 0; }
+  .ik-dir svg { flex: none; color: var(--roadmap-blue); }
+  .ik-dir span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ik-file { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; padding: 8px 8px 8px 22px; border-radius: 10px; min-width: 0; transition: background-color .6s ease; }
+  .ik-file--wf { padding-left: 38px; }
+  .ik-file__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 13px/18px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); }
+  .ik-file__sub { grid-column: 1 / -1; min-width: 0; font: 400 12px/16px var(--font-sans); color: var(--text-secondary); }
+  .ik-file[data-depth="empty"] .ik-file__name { color: var(--text-muted); }
+  .ik-file.is-new { animation: ik-in .5s var(--ease) both; }
+  .ik-file.is-grew { background: var(--tint-2); }
+  .ik-placeholder { padding: 4px 8px 8px 38px; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+  .ik-depth { display: inline-flex; align-items: center; gap: 6px; font: 500 11px/14px var(--font-sans); color: var(--text-secondary); }
+  .ik-depth__bar { display: inline-grid; grid-template-columns: repeat(3, 10px); gap: 2px; }
+  .ik-depth__bar i { height: 6px; border-radius: 3px; background: rgba(0,7,16,.1); transition: background-color .4s ease; }
+  .ik-file[data-depth="thin"] .ik-depth__bar i:nth-child(-n+2) { background: #7cb0ff; }
+  .ik-file[data-depth="solid"] .ik-depth__bar i { background: var(--roadmap-blue); }
+  @media (min-width: 1024px) {
+    .ik:not([data-view="welcome"]) { padding-right: 344px; }
+    .ik-panel { position: absolute; z-index: 3; top: 16px; right: 24px; bottom: 16px; width: 300px; }
+    .ik[data-view="welcome"] .ik-panel { display: none; }
+    .ik-folderbtn { display: none; }
+  }
+  @media (max-width: 1023px) {
+    .ik-panel { position: fixed; z-index: 25; left: 8px; right: 8px; bottom: 8px; max-height: min(78svh, 640px); border-radius: 24px; background: var(--paper); box-shadow: 0 0 0 100vmax rgba(0,7,16,.32), 0 18px 50px rgba(0,7,16,.18); transform: translateY(calc(100% + 24px)); visibility: hidden; transition: transform .35s var(--ease), visibility 0s .35s; }
+    .ik-panel[data-open] { transform: none; visibility: visible; transition: transform .35s var(--ease), visibility 0s; }
+    .ik-panel__close { display: grid; place-items: center; }
+  }
+
+  /* ---------- Preview mock: sign-in (?mock=login), visual only ---------- */
+  .ik-mock { position: absolute; inset: 0; z-index: 12; display: flex; overflow-y: auto; background: linear-gradient(180deg, #f7f8fc 0%, var(--paper) 50%); }
+  .ik-mock[hidden] { display: none; }
+  .ik-mock .ik-col { margin: auto; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; padding-top: 24px; padding-bottom: 40px; max-width: 460px; }
+  .ik-mock__flag { display: inline-flex; padding: 4px 10px; border-radius: 999px; background: #fff4e5; color: #8a4b00; font: 600 11px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; }
+  .ik-mock__step { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; width: 100%; animation: ik-in .5s var(--ease) both; }
+  .ik-mock__step[hidden] { display: none; }
+  .ik-mock h1 { margin: 0; font: 500 clamp(34px, 5vw, 48px)/1.05 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); }
+  .ik-mock .ik-orb--hero { --size: 72px; }
+  .ik-mock__form { display: grid; gap: 12px; width: 100%; }
+  .ik-mock__form label { display: grid; gap: 6px; font: 500 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-mock__form input { min-height: 48px; padding: 0 14px; border: 1px solid rgba(0,7,16,.14); border-radius: 12px; font: 400 16px/22px var(--font-sans); color: var(--ink); background: var(--paper); min-width: 0; }
+  .ik-mock__form input:focus { outline: 0; border-color: var(--roadmap-blue); box-shadow: 0 0 0 3px rgba(10,76,255,.12); }
+  .ik-mock__form .ik-cta { justify-self: start; margin-top: 4px; }
+  .ik-mock__fine { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
+
   /* ---------- Finish ---------- */
   .ik-finish { display: none; flex: 1; min-height: 0; overflow-y: auto; }
   .ik[data-view="finish"] .ik-finish { display: block; }
@@ -365,6 +424,7 @@ const svg = (d: string, size = 20, sw = 2) =>
             <span class="ik-id__meta" id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
           </div>
         </div>
+        <button class="ik-folderbtn" type="button" id="ik-folder-btn" aria-controls="ik-panel" aria-expanded="false" aria-label="Your folder: what we've captured so far"><Fragment set:html={svg(icons.folder, 18)} /><span class="ik-folderbtn__n" id="ik-folder-n">0</span></button>
         <div class="ik-modes" role="group" aria-label="How you'd like to answer">
           <button type="button" data-mode="chat" aria-pressed="true"><Fragment set:html={svg(icons.chat, 16)} /><span>Chat</span></button>
           <button type="button" data-mode="voice" aria-pressed="false"><Fragment set:html={svg(icons.wave, 16)} /><span>Voice<span class="ik-modes__long"> interview</span></span></button>
@@ -375,6 +435,41 @@ const svg = (d: string, size = 20, sw = 2) =>
   </div>
 
   <div class="ik-toast" id="ik-toast" role="status" hidden></div>
+
+  <!-- Your folder: what's been captured so far (provisional depth rules: src/data/intake-depth.ts) -->
+  <aside class="ik-panel" id="ik-panel" aria-labelledby="ik-panel-title">
+    <div class="ik-panel__head">
+      <div>
+        <span class="ik-panel__eyebrow">Your folder</span>
+        <strong id="ik-panel-title">What we've captured so far</strong>
+      </div>
+      <button class="ik-panel__close" type="button" id="ik-panel-close" aria-label="Close your folder">×</button>
+    </div>
+    <p class="ik-panel__note">Roadmap Labs writes the finished files after the interview.</p>
+    <div class="ik-tree" id="ik-tree" aria-live="polite"></div>
+    <p class="ik-panel__fine">Depth is a rough, early guide from your answers: empty, thin or solid. Provisional rules.</p>
+  </aside>
+
+  <!-- Preview mock of a sign-in screen (?mock=login). Visual only: nothing is checked, sent or stored. -->
+  <div class="ik-mock" id="ik-mock" hidden>
+    <div class="ik-col">
+      <span class="ik-mock__flag">Preview mock</span>
+      <div class="ik-mock__step" id="ik-mock-form-step">
+        <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+        <h1>Welcome</h1>
+        <form class="ik-mock__form" id="ik-mock-form" autocomplete="off">
+          <label>Your name<input id="ik-mock-name" type="text" autocomplete="off" spellcheck="false"></label>
+          <label>Password<input id="ik-mock-pass" type="password" autocomplete="off" data-lpignore="true" data-1p-ignore></label>
+          <button class="ik-cta" type="submit">Continue</button>
+        </form>
+        <p class="ik-mock__fine">Preview mock only, not a real sign-in. Nothing you type here is checked, sent or saved.</p>
+      </div>
+      <div class="ik-mock__step" id="ik-mock-hello" hidden>
+        <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+        <h1 id="ik-mock-hello-text">Welcome</h1>
+      </div>
+    </div>
+  </div>
 
   <!-- Welcome -->
   <div class="ik-welcome" id="ik-welcome">
@@ -499,7 +594,8 @@ const svg = (d: string, size = 20, sw = 2) =>
 </section>
 
 <script>
-  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, TIMING, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
+  import { readme, reference, workflow, fromDocuments, folderSlug, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
+  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
 
   type J = 0 | 1 | 2;
   type Step =
@@ -847,30 +943,24 @@ const svg = (d: string, size = 20, sw = 2) =>
     const done = steps.slice(0, pos).filter((x) => x.type === 'list' || x.type === 'drill').length;
     return { total, done };
   }
-  const fmtMin = (secs: number) => (secs < 60 ? 'under a minute left' : `about ${Math.round(secs / 60)} min left`);
 
   function updateProgress() {
     const s = steps[pos];
     const coreDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'core').length;
-    const coreTotal = CORE_QUESTIONS.length;
     const jy = journeyUnits();
-    const jLeft = fmtMin((jy.total - jy.done) * TIMING.journeySeconds + TIMING.closingSeconds);
+    const folder = folderName();
     let label = '';
     let pct = 0;
     if (root.dataset.view === 'welcome') { label = 'Roadmap Labs intake'; pct = 0; }
-    else if (sent) { label = 'All sent'; pct = 100; }
-    else if (!s || s.type === 'files') { label = 'All questions done · ready to send'; pct = 100; }
-    else if (s.type === 'choice') { label = 'Core done · 14 of 14'; pct = 34; }
-    else if (s.type === 'q' && s.phase === 'core') {
-      label = `Question ${coreDone + 1} of ${coreTotal} · ${CORE_STAGES[s.stage!].title} · ${fmtMin((coreTotal - coreDone) * TIMING.coreSeconds)}`;
-      pct = (coreDone / coreTotal) * 34;
-    } else if (s.type === 'q') { label = 'Last question'; pct = 96; }
+    else if (sent) { label = `All sent · ${folder}`; pct = 100; }
+    else if (!s || s.type === 'files') { label = `Ready to send · ${folder}`; pct = 100; }
+    else if (s.type === 'choice') { label = `Core done · ${folder}`; pct = 34; }
+    else if (s.type === 'q' && s.phase === 'core') { label = `${CORE_STAGES[s.stage!].title} · ${folder}`; pct = (coreDone / CORE_QUESTIONS.length) * 34; }
+    else if (s.type === 'q') { label = `Last question · ${folder}`; pct = 96; }
     else {
       pct = 34 + (jy.done / jy.total) * 60;
       const J = JOURNEY[s.j];
-      if (s.type === 'drill') label = `${J.title}: ${procs[s.j][s.p].name} · ${s.d + 1} of ${DRILL.length} · ${jLeft}`;
-      else if (s.type === 'another') label = `${J.title}: ${procs[s.j][s.p].name} done · ${jLeft}`;
-      else label = `The journey · ${J.title} · ${jLeft}`;
+      label = s.type === 'drill' || s.type === 'another' ? `${J.title}: ${procs[s.j][s.p].name} · ${folder}` : `${J.title} · ${folder}`;
     }
     const [main, ...rest] = label.split(' · ');
     progress.textContent = '';
@@ -882,37 +972,115 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (caption) caption.textContent = !s ? '' : s.type === 'choice' ? "That's the core done. Into the journey, or finish here?" : s.type === 'files' ? 'All questions done.' : stepText(s);
   }
 
-  // ---------- What Harry says between steps ----------
-  function stageRecap(n: 0 | 1 | 2) {
-    const qs = CORE_QUESTIONS.filter((q) => q.stage === n);
-    const got = qs.filter((q) => filled(answers.get(q.qid))).map((q) => q.topic);
-    const gaps = qs.length - got.length;
-    const name = CORE_STAGES[n].recap;
-    if (!got.length) return `That's ${name} done; we'll fill it in on the call.`;
-    return `That's ${name} captured: ${listJoin(got)}${gaps ? `, with ${gaps} to fill on the call` : ''}.`;
+  // ---------- Your folder: what's been captured so far ----------
+  // Provisional depth rules live in src/data/intake-depth.ts. This shows captured context, never finished files.
+  interface FolderFile { path: string; state: FileState; kind: 'core' | 'docs' | 'workflow' }
+  const folderName = () => `${folderSlug(answers.get(CORE_QUESTIONS[0].qid), client)}-os/`;
+  function folderFiles(): FolderFile[] {
+    const a = (q: number) => answers.get(q);
+    const shared = files.length > 0 || links.length > 0;
+    const out: FolderFile[] = [
+      { path: 'README.md', state: readme(a), kind: 'core' },
+      { path: 'brand.md', state: fromDocuments(shared), kind: 'docs' },
+      { path: 'customer.md', state: fromDocuments(shared), kind: 'docs' },
+      { path: 'reference.md', state: reference(a), kind: 'core' },
+    ];
+    const used = new Set<string>();
+    for (const pr of procs.flat()) {
+      if (!pr || pr.skipped) continue;
+      let f = workflowFile(pr.name);
+      for (let n = 2; used.has(f); n++) f = f.replace(/(?:-\d+)?\.md$/, `-${n}.md`);
+      used.add(f);
+      out.push({ path: `workflows/${f}`, state: workflow(pr.answers), kind: 'workflow' });
+    }
+    return out;
   }
+  const fileOf = (path: string) => folderFiles().find((f) => f.path === path);
+  const workflowPath = (j: J, p: number) => {
+    const target = procs[j][p];
+    const i = procs.flat().filter((x) => x && !x.skipped).indexOf(target);
+    return folderFiles().filter((f) => f.kind === 'workflow')[i]?.path ?? `workflows/${workflowFile(target.name)}`;
+  };
+  /** One line about a file, in the system's words: "reference.md has your tools, but not costs yet." */
+  function describe(path: string) {
+    const f = fileOf(path);
+    if (!f || f.state.depth === 'empty') return `${path} is still empty; we'll fill it in on the call.`;
+    if (f.state.depth === 'solid') return `${path} is solid: ${listJoin(f.state.has)}.`;
+    return f.state.has.length ? `${path} has ${listJoin(f.state.has)}, but ${f.state.gap}.` : `${path} has a start, but ${f.state.gap}.`;
+  }
+
+  const tree = $<HTMLDivElement>('ik-tree');
+  const folderBtn = $<HTMLButtonElement>('ik-folder-btn');
+  const panel = $<HTMLElement>('ik-panel');
+  const seen = new Map<string, { size: number; depth: Depth }>();
+  const DOC = '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>';
+  const DIR = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+  function renderFolder() {
+    const list = folderFiles();
+    tree.textContent = '';
+    const dir = (name: string, cls = '') => { const d = el('div', `ik-dir ${cls}`.trim()); d.innerHTML = DIR; d.append(el('span', '', name)); tree.append(d); };
+    let grew = false;
+    const row = (f: FolderFile) => {
+      const r = el('div', `ik-file${f.kind === 'workflow' ? ' ik-file--wf' : ''}`);
+      r.dataset.depth = f.state.depth;
+      r.dataset.path = f.path;
+      r.append(el('span', 'ik-file__name', f.path.replace(/^workflows\//, '')));
+      const depth = el('span', 'ik-depth');
+      depth.setAttribute('aria-label', `Depth: ${DEPTH_LABEL[f.state.depth].toLowerCase()}`);
+      depth.innerHTML = '<span class="ik-depth__bar" aria-hidden="true"><i></i><i></i><i></i></span>';
+      depth.append(el('span', '', DEPTH_LABEL[f.state.depth]));
+      r.append(depth);
+      const sub = f.kind === 'docs' && f.state.depth === 'empty' ? f.state.gap
+        : f.state.depth === 'solid' ? listJoin(f.state.has)
+        : f.state.has.length ? `${listJoin(f.state.has)} · ${f.state.gap}` : f.state.gap;
+      r.append(el('span', 'ik-file__sub', sub));
+      const before = seen.get(f.path);
+      if (!before && !replaying) r.classList.add('is-new');
+      else if (before && (f.state.size > before.size || f.state.depth !== before.depth) && !replaying) { r.classList.add('is-grew'); grew = true; setTimeout(() => r.classList.remove('is-grew'), 1600); }
+      seen.set(f.path, { size: f.state.size, depth: f.state.depth });
+      tree.append(r);
+    };
+    dir(folderName());
+    // Core files appear once their first answer lands; brand.md and customer.md come from documents, so they show from the start.
+    for (const f of list.filter((x) => x.kind !== 'workflow')) if (f.kind === 'docs' || f.state.size > 0) row(f);
+    dir('workflows/', 'ik-dir--sub');
+    const wfs = list.filter((x) => x.kind === 'workflow');
+    if (wfs.length) wfs.forEach(row);
+    else tree.append(el('p', 'ik-placeholder', 'One file for each workflow you name in the journey.'));
+    $<HTMLElement>('ik-folder-n').textContent = String(list.filter((f) => f.state.depth !== 'empty').length);
+    if (grew && panel.dataset.open === undefined) { folderBtn.classList.remove('is-grew'); void folderBtn.offsetWidth; folderBtn.classList.add('is-grew'); }
+  }
+  function openPanel(open: boolean) {
+    if (open) panel.dataset.open = ''; else delete panel.dataset.open;
+    folderBtn.setAttribute('aria-expanded', String(open));
+    if (open) $<HTMLButtonElement>('ik-panel-close').focus({ preventScroll: true });
+  }
+  folderBtn.addEventListener('click', () => openPanel(panel.dataset.open === undefined));
+  $<HTMLButtonElement>('ik-panel-close').addEventListener('click', () => { openPanel(false); folderBtn.focus({ preventScroll: true }); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && panel.dataset.open !== undefined) { openPanel(false); folderBtn.focus(); } });
+  document.addEventListener('pointerdown', (e) => {
+    if (panel.dataset.open !== undefined && !panel.contains(e.target as Node) && !folderBtn.contains(e.target as Node)) openPanel(false);
+  });
+
+  // ---------- What Harry says between steps ----------
   function journeyRecap(j: J) {
-    const names = procs[j].filter((p) => !p.skipped).map((p) => p.name);
+    const paths = procs[j].map((pr, p) => (pr && !pr.skipped ? workflowPath(j, p) : '')).filter(Boolean);
     const title = JOURNEY[j].title;
-    return names.length
-      ? `That's ${title} captured: ${listJoin(names)}, each now a workflow file.`
-      : `That's ${title} done; we'll go through it on the call.`;
+    return paths.length ? `That's ${title} captured: ${listJoin(paths)}.` : `That's ${title} done; we'll go through it on the call.`;
   }
   async function transition(i: number) {
     const s = steps[i];
     const prev = steps[i - 1];
     if (!prev || !s) return;
     if (s.type === 'q' && s.phase === 'core' && s.first && prev.type === 'q') {
-      await harrySays(`${stageRecap(prev.stage!)} ${CORE_STAGES[s.stage!].intro}`);
+      await harrySays(`${describe('README.md')} ${CORE_STAGES[s.stage!].intro}`);
     } else if (s.type === 'list') {
       await harrySays(s.j === 0 ? JOURNEY[0].intro : `${journeyRecap((s.j - 1) as J)} ${JOURNEY[s.j].intro}`);
     } else if (s.type === 'drill' && s.d === 0) {
       const name = procs[s.j][s.p].name;
-      await harrySays(s.p === 0 ? `Let's start with ${name}. Nine quick questions; together they make its workflow file.` : `Next: ${name}. Same nine questions, its own workflow file.`);
+      await harrySays(s.p === 0 ? `Let's start with ${name}. It gets its own file: ${workflowPath(s.j, s.p)}.` : `Next: ${name}, in ${workflowPath(s.j, s.p)}.`);
     } else if (s.type === 'another') {
-      const pr = procs[s.j][s.p];
-      const n = pr.answers.filter(filled).length;
-      await harrySays(`That's ${pr.name} captured: ${n} of ${DRILL.length} answered${n < DRILL.length ? ', the rest to fill on the call' : ''}.`);
+      await harrySays(describe(workflowPath(s.j, s.p)));
     } else if (s.type === 'q' && s.phase === 'closing') {
       await harrySays(prev.type === 'choice' ? 'No problem. One last question before you go.' : `${journeyRecap(2)} That's the journey done. One last question.`);
     }
@@ -1085,11 +1253,9 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   function milestone(live: boolean) {
     const card = el('div', 'ik-card ik-mile');
-    const n = CORE_QUESTIONS.length;
-    const got = CORE_QUESTIONS.filter((q) => filled(answers.get(q.qid))).length;
-    card.innerHTML = `<span class="ik-mile__ring" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28"/></svg><b>${n}/${n}</b></span>`;
+    card.innerHTML = `<span class="ik-mile__ring" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28"/></svg><b><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b></span>`;
     card.append(el('h3', '', "That's the core done"));
-    card.append(el('p', '', `${got} of ${n} answered${n - got ? `, ${n - got} to fill on the call` : ''}: the basics, AI today and your tool stack. Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after; each job you describe becomes a workflow file. Or finish here.`));
+    card.append(el('p', '', `That was the core, about 10 minutes. ${describe('reference.md')} Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after; each job you describe becomes a workflow file. Or finish here.`));
     card.setAttribute('aria-label', CHOICE_TEXT);
     if (replaying || !live) card.querySelector<SVGCircleElement>('.fg')!.style.cssText = 'animation: none; stroke-dashoffset: 0';
     add(card);
@@ -1212,6 +1378,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     const next = pos;
     enqueue(async () => {
       for (const c of chain) await c();
+      renderFolder();
+      updateProgress();
       await present(next);
     });
     return true;
@@ -1398,6 +1566,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     };
     files.forEach((f, i) => chip(CHIP_ICON.file, `${f.name} · ${fmtSize(f.size)}`, () => { files.splice(i, 1); renderChips(); }));
     links.forEach((l, i) => chip(l.startsWith('Screen recording') ? CHIP_ICON.rec : CHIP_ICON.link, linkLabel(l), () => { links.splice(i, 1); save(); renderChips(); }));
+    renderFolder();
   }
 
   fileInput.addEventListener('change', () => {
@@ -1862,12 +2031,40 @@ const svg = (d: string, size = 20, sw = 2) =>
     begun = true;
     root.dataset.view = 'chat';
     updateProgress();
-    await harrySays(`Hi${client ? ` ${client}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. We'll start with the core: ${CORE_QUESTIONS.length} questions, about 10 minutes.`);
+    const hiName = greetName || client;
+    await harrySays(`Hi${hiName ? ` ${hiName}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. We'll start with the core: the basics, AI today and your tool stack.`);
     await harrySays('Everything we build for you ends up as files in one folder: workflows (your jobs), routines (what kicks them off) and skills (the instructions, written down). I\'m collecting what goes in them.');
     enqueue(() => present());
   }
   $<HTMLButtonElement>('ik-start-chat').addEventListener('click', () => { setMode('chat'); begin(); });
   $<HTMLButtonElement>('ik-start-voice').addEventListener('click', () => { setMode('voice'); begin(); });
+
+  // ---------- Preview mock: sign-in screen (?mock=login) ----------
+  // Visual only, for Dan to react to. It never gates the real page, checks nothing and stores nothing:
+  // the password field is cleared on submit and its value is never read. Real authentication isn't decided yet.
+  let greetName = '';
+  function showMockLogin() {
+    const mock = $<HTMLDivElement>('ik-mock');
+    const form = $<HTMLFormElement>('ik-mock-form');
+    const nameEl = $<HTMLInputElement>('ik-mock-name');
+    const pass = $<HTMLInputElement>('ik-mock-pass');
+    mock.hidden = false;
+    setTimeout(() => nameEl.focus({ preventScroll: true }), 300);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      pass.value = '';
+      const name = nameEl.value.trim().slice(0, 40);
+      nameEl.value = '';
+      greetName = name;
+      $<HTMLElement>('ik-mock-form-step').hidden = true;
+      $<HTMLElement>('ik-mock-hello-text').textContent = name ? `Welcome, ${name}` : 'Welcome';
+      $<HTMLElement>('ik-mock-hello').hidden = false;
+      setTimeout(() => {
+        mock.hidden = true;
+        if (root.dataset.view === 'welcome') { setMode('chat'); begin(); }
+      }, reduced ? 300 : 1600);
+    });
+  }
 
   function start() {
     lock(true);
@@ -1876,7 +2073,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     links = Array.isArray(saved.links) ? saved.links.filter((l) => typeof l === 'string') : [];
     renderChips();
     setMode(saved.mode === 'voice' ? 'voice' : 'chat', false);
+    if (params.get('mock') === 'login') showMockLogin();
     if (!saved.actions.length) {
+      renderFolder();
       updateProgress();
       return; // welcome screen until they pick chat or voice
     }
@@ -1890,6 +2089,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       render();
       actions.push(a);
     }
+    renderFolder();
     replaying = false;
     // Files live in memory only; links and recordings are saved. If they'd attached files, ask them to add them again.
     const attachedBefore = procs.flat().some((p) => p?.answers.some((v) => v?.includes('Attached:') && !links.some((l) => v.includes(linkLabel(l)) || v.includes(l))));
