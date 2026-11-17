@@ -302,6 +302,11 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-panel__head strong { display: block; font: 600 16px/22px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
   .ik-panel__close { display: none; width: 36px; height: 36px; flex: none; border: 0; border-radius: 50%; background: rgba(0,7,16,.05); color: var(--ink); font: 500 20px/1 var(--font-sans); cursor: pointer; }
   .ik-panel__note { margin: 0; font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-panel__role { display: grid; gap: 4px; padding: 10px 12px; border-radius: 12px; background: #f7f8fc; font: 400 13px/18px var(--font-sans); color: var(--ink); }
+  .ik-panel__role[hidden] { display: none; }
+  .ik-panel__role-actions { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .ik-panel__role button { min-height: 32px; padding: 0; border: 0; background: none; font: 600 13px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .ik-panel__role small { font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
   .ik-panel__link { align-self: flex-start; padding: 0; border: 0; background: none; font: 600 12px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   .ik-panel__fine { margin: 4px 0 0; font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
   .ik-tree { display: grid; gap: 2px; margin-top: 4px; }
@@ -541,6 +546,11 @@ const svg = (d: string, size = 20, sw = 2) =>
       <button class="ik-panel__close" type="button" id="ik-panel-close" aria-label="Close your folder">×</button>
     </div>
     <p class="ik-panel__note">Roadmap Labs writes the finished files after the interview.</p>
+    <div class="ik-panel__role" id="ik-role-line" hidden>
+      <span>Answering as <b id="ik-role-name"></b></span>
+      <span class="ik-panel__role-actions"><button type="button" id="ik-role-change">Change</button><button type="button" id="ik-role-add">Add a role</button></span>
+      <small>Your role only changes which questions you're asked.</small>
+    </div>
     <div class="ik-tree" id="ik-tree" aria-live="polite"></div>
     <p class="ik-panel__fine">Depth is a rough, early guide from your answers: empty, thin or solid. Provisional rules.</p>
     <button class="ik-panel__link" type="button" id="ik-tour-replay">Replay the walkthrough</button>
@@ -798,6 +808,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 
 <script>
   import { readme, reference, workflow, fromDocuments, folderName as folderFor, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
+  import { readRole, ROLE_QUESTION, ROLE_QUESTION_LEGACY, ROLE_FOLLOW_UP, ROLE_CHIPS, ROUTE_NAME, type Route } from '../data/intake-roles';
   import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
 
   type J = 0 | 1 | 2;
@@ -808,12 +819,17 @@ const svg = (d: string, size = 20, sw = 2) =>
     | { type: 'name'; j: J; p: number; prompt: string; options: string[] }
     | { type: 'drill'; j: J; p: number; d: number }
     | { type: 'another'; j: J; p: number; next?: string }
-    | { type: 'files' };
-  type Answerable = Extract<Step, { type: 'q' | 'list' | 'name' | 'drill' }>;
-  /** a = answer (s: spoken in a voice interview), c = a choice (milestone, "another one?"), p = a voice answer given ahead of its turn. */
-  type Action = { t: 'a'; v: string; s?: 1 } | { t: 'c'; v: string } | { t: 'p'; k: string; v: string; s?: 1 };
+    | { type: 'files' }
+    // Role steps: which questions to ask. Routing only, never an access permission.
+    | { type: 'role'; mode: 'first' | 'change' | 'add' | 'legacy'; echo?: string }
+    | { type: 'role2'; mode: 'first' | 'change' | 'add'; first: string; echo?: string };
+  type Answerable = Extract<Step, { type: 'q' | 'list' | 'name' | 'drill' | 'role' | 'role2' }>;
+  /** a = answer (s: spoken in a voice interview; r/n: the role and respondent it was given under),
+   *  c = a choice (milestone, "another one?", "role:change"/"role:add"/"role:legacy"), p = a voice answer given ahead of its turn. */
+  type Action = { t: 'a'; v: string; s?: 1; r?: string; n?: string } | { t: 'c'; v: string } | { t: 'p'; k: string; v: string; s?: 1 };
   type Mode = 'chat' | 'voice';
-  interface Saved { v: 3; actions: Action[]; links: string[]; mode: Mode }
+  /** Same key and shape as before. `flow: 2` marks sessions that started with the role step; older ones lack it. */
+  interface Saved { v: 3; actions: Action[]; links: string[]; mode: Mode; flow?: 2 }
   interface Proc { name: string; answers: (string | undefined)[]; skipped?: boolean }
 
   // A new key for the new spine, so progress saved under the old 44-question script never replays into it.
@@ -896,11 +912,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   const client = params.get('client') ?? '';
 
   // ---------- State (shared by chat and voice) ----------
-  const steps: Step[] = CORE_QUESTIONS.map((q, i) => ({
-    type: 'q', qid: q.qid, id: q.id, text: q.text, phase: 'core', stage: q.stage, hint: q.hint,
-    first: i === 0 || CORE_QUESTIONS[i - 1].stage !== q.stage,
-  }));
-  steps.push({ type: 'choice' });
+  const steps: Step[] = [];
   let pos = 0;
   let actions: Action[] = [];
   let links: string[] = [];
@@ -914,17 +926,74 @@ const svg = (d: string, size = 20, sw = 2) =>
   let sent = false;
   let sending = false;
 
-  const answerable = (s?: Step): s is Answerable => !!s && (s.type === 'q' || s.type === 'list' || s.type === 'name' || s.type === 'drill');
+  // ---------- Routes: which questions, in which order, for this person's role ----------
+  // PROVISIONAL. A role only changes which questions are asked and in what order. It is not an access permission:
+  // there are no accounts, nothing is restricted, and every answer still goes into the same submission.
+  type Block = { k: 'q'; id: string } | { k: 'j'; j: J } | { k: 'choice' } | { k: 'closing' };
+  const Q = (...ids: string[]): Block[] => ids.map((id) => ({ k: 'q', id }));
+  const ALL_AI = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'];
+  const ROUTE_PLAN: Record<Route, Block[]> = {
+    // The whole business from the top: today's order.
+    owner: [...Q('S1', 'S2', ...ALL_AI, 'T1', 'T2', 'T3', 'T4', 'T5'), { k: 'choice' }, { k: 'j', j: 0 }, { k: 'j', j: 1 }, { k: 'j', j: 2 }, { k: 'closing' }],
+    // Same start, then how new business comes in; brand and customer come from their documents.
+    marketing: [...Q('S1', 'S2', ...ALL_AI), { k: 'j', j: 0 }, { k: 'choice' }, ...Q('T1', 'T2', 'T3', 'T4', 'T5'), { k: 'j', j: 1 }, { k: 'j', j: 2 }, { k: 'closing' }],
+    // The business name, then their own week through the drill, what blocks them and what they avoid, then tools.
+    team: [...Q('S1'), { k: 'j', j: 2 }, ...Q('T3', 'T5', 'T1', 'T2', 'T4'), { k: 'choice' }, ...Q(...ALL_AI), { k: 'closing' }],
+  };
+  const blockKey = (b: Block) => (b.k === 'q' ? `q:${b.id}` : b.k === 'j' ? `j:${b.j}` : b.k);
+  let plan: Block[] = [];
+  const usedBlocks = new Set<string>();
+  const roles: Route[] = []; // every route they've answered as, in order (a second role adds to it)
+  const answerTags = new Map<string, string>(); // which role (and person) each answer was given under
+  let marketingEmphasis = false;
+  let flow2 = false; // started with the role step
+  const route = () => roles[roles.length - 1] ?? null;
+  let legacyTag: Route | null = null; // a saved session's one-off answer: a tag only, it never changes the route
+  const roleTag = () => (roles.length ? roles.map((r) => ROUTE_NAME[r]).join(' + ') : legacyTag ? ROUTE_NAME[legacyTag] : '');
+  const respondent = () => greetName || employee;
+  function setPlan(r: Route, add: boolean) {
+    const fresh = ROUTE_PLAN[r].filter((b) => !usedBlocks.has(blockKey(b)));
+    if (!add) { plan = fresh; return; }
+    const merged = plan.filter((b) => b.k !== 'closing');
+    for (const b of fresh) if (b.k !== 'closing' && !merged.some((x) => blockKey(x) === blockKey(b))) merged.push(b);
+    plan = [...merged, { k: 'closing' }];
+  }
+  /** Take the next block of the plan that hasn't been asked yet, and add its first step. */
+  function pullNext() {
+    while (plan.length) {
+      const b = plan.shift()!;
+      const key = blockKey(b);
+      if (usedBlocks.has(key)) continue;
+      usedBlocks.add(key);
+      if (b.k === 'q') {
+        const q = CORE_QUESTIONS.find((x) => x.id === b.id)!;
+        const before = [...steps].reverse().find((x) => x.type !== 'role' && x.type !== 'role2');
+        steps.push({ type: 'q', qid: q.qid, id: q.id, text: q.text, phase: 'core', stage: q.stage, hint: q.hint, first: !(before?.type === 'q' && before.phase === 'core' && before.stage === q.stage) });
+      } else if (b.k === 'j') steps.push({ type: 'list', j: b.j });
+      else if (b.k === 'choice') steps.push({ type: 'choice' });
+      else addClosing();
+      return;
+    }
+  }
+
+  const answerable = (s?: Step): s is Answerable => !!s && (s.type === 'q' || s.type === 'list' || s.type === 'name' || s.type === 'drill' || s.type === 'role' || s.type === 'role2');
+  /** On the team route, Operate is about the person's own week. */
+  const teamWeek = (j: J) => j === 2 && route() === 'team' && !roles.includes('owner');
+  const jTitle = (j: J) => (teamWeek(j) ? 'Your week' : JOURNEY[j].title);
+  const TEAM_LIST_TEXT = 'What do you do in a normal week? Name each task, one per line.';
+  const TEAM_LIST_HINT = 'For example, an office manager: invoicing, booking jobs, answering the phones, ordering stock. A marketing coordinator: social posts, the newsletter, monthly reporting.';
   const stepKey = (s?: Step) =>
     !s ? '' : s.type === 'q' ? `q:${s.id}` : s.type === 'list' ? `q:${JOURNEY[s.j].id}` : s.type === 'drill' ? `d:${s.j}:${s.p}:${s.d}` : '';
   function stepText(s?: Step): string {
     if (!s) return '';
     switch (s.type) {
       case 'q': return s.text;
-      case 'list': return JOURNEY[s.j].text;
+      case 'list': return teamWeek(s.j) ? TEAM_LIST_TEXT : JOURNEY[s.j].text;
+      case 'role': return s.mode === 'legacy' ? ROLE_QUESTION_LEGACY : ROLE_QUESTION;
+      case 'role2': return ROLE_FOLLOW_UP;
       case 'name': return s.prompt;
       case 'drill': return DRILL[s.d].text;
-      case 'another': return `Another one in ${JOURNEY[s.j].title}?`;
+      case 'another': return teamWeek(s.j) ? 'Another task from your week?' : `Another one in ${JOURNEY[s.j].title}?`;
       case 'choice': return CHOICE_TEXT;
       default: return '';
     }
@@ -950,9 +1019,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     procs[j][p] = { name: short(name), answers: [] };
     for (let d = 0; d < DRILL.length; d++) steps.push({ type: 'drill', j, p, d });
   }
-  function nextStage(j: J) {
-    if (j < 2) steps.push({ type: 'list', j: (j + 1) as J });
-    else addClosing();
+  function nextStage(_j: J) {
+    pullNext();
   }
   function endProcess(j: J, p: number) {
     if (p + 1 < MAX_PROCESSES) steps.push({ type: 'another', j, p, next: undrilled(j)[0] });
@@ -983,6 +1051,11 @@ const svg = (d: string, size = 20, sw = 2) =>
     JOURNEY.forEach((J, j) => procs[j].forEach((pr, p) => { if (pr) out.set(J.slots[p], procBlock(pr)); }));
     const more = moreProcesses();
     if (more) { const base = out.get(CLOSING.anythingElse.qid); out.set(CLOSING.anythingElse.qid, base ? `${base}\n\n${more}` : more); }
+    if (roleTag()) {
+      const by = `Answered as: ${roleTag()}${respondent() ? ` (${respondent()})` : ''}`;
+      const base = out.get(CLOSING.anythingElse.qid);
+      out.set(CLOSING.anythingElse.qid, base ? `${base}\n\n${by}` : by);
+    }
     return [...out];
   }
   function tally() {
@@ -993,7 +1066,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   function save() {
     if (sent) return;
-    try { localStorage.setItem(STORE, JSON.stringify({ v: 3, actions, links, mode } satisfies Saved)); } catch {}
+    try { localStorage.setItem(STORE, JSON.stringify({ v: 3, actions, links, mode, ...(flow2 ? { flow: 2 as const } : {}) } satisfies Saved)); } catch {}
   }
   function load(): Saved {
     const empty: Saved = { v: 3, actions: [], links: [], mode: 'chat' };
@@ -1133,7 +1206,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const s = steps[pos];
     input.placeholder = locked
       ? (answerable(s) || !s ? 'Harry is typing…' : s.type === 'files' ? 'All questions answered' : 'Pick an option above')
-      : s?.type === 'list' ? 'One per line…' : s?.type === 'name' ? 'Name the workflow…' : 'Type your answer…';
+      : s?.type === 'list' ? 'One per line…' : s?.type === 'name' ? 'Name the workflow…' : s?.type === 'role' ? 'Your role, in your own words…' : 'Type your answer…';
     if (!locked && !replaying && mode === 'chat' && (actions.length || finePointer)) input.focus({ preventScroll: true });
   }
 
@@ -1155,6 +1228,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     let label = '';
     let pct = 0;
     if (root.dataset.view === 'welcome') { label = 'Roadmap Labs intake'; pct = 0; }
+    else if (isRoleStep(s)) { label = `Your role · ${folder}`; pct = 1; }
     else if (sent) { label = `All sent · ${folder}`; pct = 100; }
     else if (!s || s.type === 'files') { label = `Ready to send · ${folder}`; pct = 100; }
     else if (s.type === 'choice') { label = `Core done · ${folder}`; pct = 34; }
@@ -1162,13 +1236,21 @@ const svg = (d: string, size = 20, sw = 2) =>
     else if (s.type === 'q') { label = `Last question · ${folder}`; pct = 96; }
     else {
       pct = 34 + (jy.done / jy.total) * 60;
-      const J = JOURNEY[s.j];
-      label = s.type === 'drill' || s.type === 'another' ? `${J.title}: ${procs[s.j][s.p].name} · ${folder}` : `${J.title} · ${folder}`;
+      label = s.type === 'drill' || s.type === 'another' ? `${jTitle(s.j)}: ${procs[s.j][s.p].name} · ${folder}` : `${jTitle(s.j)} · ${folder}`;
     }
     const [main, ...rest] = label.split(' · ');
     progress.textContent = '';
     progress.append(el('b', '', main));
     if (rest.length) progress.append(el('i', '', ' · '), el('span', '', rest.join(' · ')));
+    // Progress follows this person's route (a journey stage counts as about ten questions).
+    if (roles.length && pct > 0 && pct < 100) {
+      const weight = (b: Block) => (b.k === 'q' ? 1 : b.k === 'j' ? 10 : b.k === 'closing' ? 1 : 0);
+      const keys = new Set<string>();
+      let total = 0;
+      for (const r of roles) for (const b of ROUTE_PLAN[r]) if (!keys.has(blockKey(b))) { keys.add(blockKey(b)); total += weight(b); }
+      const done = steps.slice(0, pos).filter((x) => x.type === 'q' || x.type === 'list' || x.type === 'drill').length;
+      pct = Math.min(96, Math.max(2, (done / Math.max(1, total)) * 100));
+    }
     bar.style.width = `${Math.max(2, Math.round(pct))}%`;
     sendNow.hidden = sent || !hasAnything() || s?.type === 'files';
     const caption = document.getElementById('ik-voice-caption');
@@ -1252,6 +1334,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (wfs.length) wfs.forEach(row);
     else tree.append(el('p', 'ik-placeholder', 'One file for each workflow you name in the journey.'));
     $<HTMLElement>('ik-folder-n').textContent = String(list.filter((f) => f.state.depth !== 'empty').length);
+    const roleLine = $<HTMLElement>('ik-role-line');
+    roleLine.hidden = !roleTag() || sent;
+    $<HTMLElement>('ik-role-name').textContent = `${roleTag()}${marketingEmphasis && roles[0] === 'owner' && !roles.includes('marketing') ? ' (with a marketing focus)' : ''}${respondent() ? ` · ${respondent()}` : ''}`;
     if (grew && panel.dataset.open === undefined) { folderBtn.classList.remove('is-grew'); void folderBtn.offsetWidth; folderBtn.classList.add('is-grew'); }
   }
   function openPanel(open: boolean) {
@@ -1260,6 +1345,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (open) $<HTMLButtonElement>('ik-panel-close').focus({ preventScroll: true });
   }
   folderBtn.addEventListener('click', () => openPanel(panel.dataset.open === undefined));
+  // Change or add a role at any point: answers so far are kept; the next sections follow the new role.
+  $<HTMLButtonElement>('ik-role-change').addEventListener('click', () => { openPanel(false); act({ t: 'c', v: 'role:change' }); });
+  $<HTMLButtonElement>('ik-role-add').addEventListener('click', () => { openPanel(false); act({ t: 'c', v: 'role:add' }); });
   $<HTMLButtonElement>('ik-panel-close').addEventListener('click', () => { openPanel(false); folderBtn.focus({ preventScroll: true }); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && panel.dataset.open !== undefined) { openPanel(false); folderBtn.focus(); } });
   document.addEventListener('pointerdown', (e) => {
@@ -1272,28 +1360,67 @@ const svg = (d: string, size = 20, sw = 2) =>
     const title = JOURNEY[j].title;
     return paths.length ? `That's ${title} captured: ${listJoin(paths)}.` : `That's ${title} done; we'll go through it on the call.`;
   }
+  const fileForStage = (n: number) => (n === 2 ? 'reference.md' : 'README.md');
+  const isRoleStep = (x?: Step) => x?.type === 'role' || x?.type === 'role2';
+  /** The step before i, skipping role questions. */
+  const before = (i: number) => { for (let k = i - 1; k >= 0; k--) if (!isRoleStep(steps[k])) return steps[k]; return undefined; };
+  function recapOf(prev?: Step) {
+    if (!prev) return '';
+    if (prev.type === 'q' && prev.phase === 'core') return describe(fileForStage(prev.stage!));
+    if (prev.type === 'list' || prev.type === 'name' || prev.type === 'drill' || prev.type === 'another') return journeyRecap(prev.j);
+    return '';
+  }
+  function journeyIntro(j: J) {
+    if (route() === 'owner' || roles.includes('owner')) return JOURNEY[j].intro;
+    if (route() === 'team' && j === 2) return "Let's start with your own week. Each task you name becomes its own workflow file.";
+    return ['Now how new business comes in. Each workflow you describe becomes its own workflow file.', 'Next, how the work you sell actually gets done.', 'Next, everything that runs around the work.'][j];
+  }
   async function transition(i: number) {
     const s = steps[i];
     const prev = steps[i - 1];
     if (!prev || !s) return;
-    if (s.type === 'q' && s.phase === 'core' && s.first && prev.type === 'q') {
-      await harrySays(`${describe('README.md')} ${CORE_STAGES[s.stage!].intro}`);
-    } else if (s.type === 'list') {
-      await harrySays(s.j === 0 ? JOURNEY[0].intro : `${journeyRecap((s.j - 1) as J)} ${JOURNEY[s.j].intro}`);
+    if (isRoleStep(prev)) {
+      // The echo: what Harry understood, and an easy way to correct it.
+      const echo = (prev as { echo?: string }).echo;
+      if (echo) {
+        const line = await harrySays(echo);
+        if (steps[pos] === s && !(prev.type === 'role' && prev.mode === 'legacy')) {
+          quick(helpers(line.parentElement), [{ label: 'Not right? Change it', onClick: () => act({ t: 'c', v: 'role:change' }) }]);
+        }
+      }
+      return;
+    }
+    if ((s.type === 'q' && s.phase === 'core' && s.first) || s.type === 'list') {
+      const last = before(i);
+      if (!last) return; // the very first question: the welcome line covers it
+      const intro = s.type === 'q' ? CORE_STAGES[s.stage!].intro : journeyIntro(s.j);
+      await harrySays(`${recapOf(last)} ${intro}`.trim());
     } else if (s.type === 'drill' && s.d === 0) {
       const name = procs[s.j][s.p].name;
       await harrySays(s.p === 0 ? `Let's start with ${name}. It gets its own file: ${workflowPath(s.j, s.p)}.` : `Next: ${name}, in ${workflowPath(s.j, s.p)}.`);
     } else if (s.type === 'another') {
       await harrySays(describe(workflowPath(s.j, s.p)));
     } else if (s.type === 'q' && s.phase === 'closing') {
-      await harrySays(prev.type === 'choice' ? 'No problem. One last question before you go.' : `${journeyRecap(2)} That's the journey done. One last question.`);
+      const last = before(i);
+      const fromJourney = last && last.type !== 'q' && last.type !== 'choice';
+      await harrySays(last?.type === 'choice' ? 'No problem. One last question before you go.' : `${recapOf(last)}${fromJourney ? " That's the journey done." : ''} One last question.`.trim());
     }
   }
 
   // ---------- Rendering steps ----------
+  /** "Part 2 of 4": parts in the order this person's route visits them. */
+  function partLabel(group: string) {
+    const groups: string[] = [];
+    for (const r of roles.length ? roles : (['owner'] as Route[])) for (const b of ROUTE_PLAN[r]) {
+      const g = b.k === 'q' ? `c${CORE_QUESTIONS.find((q) => q.id === b.id)!.stage}` : b.k === 'j' ? 'journey' : '';
+      if (g && !groups.includes(g)) groups.push(g);
+    }
+    const n = groups.indexOf(group) + 1;
+    return n ? `Part ${n} of ${groups.length}` : 'Next';
+  }
   function header(s: Step) {
-    if (s.type === 'q' && s.phase === 'core' && s.first) section(`Part ${s.stage! + 1} of 4`, CORE_STAGES[s.stage!].title);
-    else if (s.type === 'list') section('Part 4 of 4 · The journey', JOURNEY[s.j].title);
+    if (s.type === 'q' && s.phase === 'core' && s.first) section(partLabel(`c${s.stage}`), CORE_STAGES[s.stage!].title);
+    else if (s.type === 'list') section(`${partLabel('journey')} · The journey`, jTitle(s.j));
     else if (s.type === 'drill' && s.d === 0) section(`${JOURNEY[s.j].title} · workflow ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
   }
   /** Replay after a refresh: the question as it was asked, no transitions or helpers. Synchronous on purpose. */
@@ -1302,6 +1429,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (!s) return;
     if (s.type === 'choice') { milestone(false); return; }
     if (s.type === 'files') return;
+    if (s.type === 'another') { harrySays(stepText(s), { question: true }); return; }
     header(s);
     harrySays(stepText(s), { question: true });
   }
@@ -1350,10 +1478,12 @@ const svg = (d: string, size = 20, sw = 2) =>
       root.dataset.choosing = '';
       anchor();
       const card = milestone(true);
-      if (i !== pos) return;
+      if (steps[pos] !== s) return;
       const wrap = el('div', 'ik-choices');
       wrap.append(
-        option('Keep going into the journey', 'About 20 min: how work comes in, gets done and gets looked after', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more'),
+        route() === 'owner' || !route()
+          ? option('Keep going into the journey', 'About 20 min: how work comes in, gets done and gets looked after', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more')
+          : option('Keep going', route() === 'marketing' ? 'Your tools, then how work gets delivered and looked after' : 'How you use AI today', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more'),
         option('Finish here', 'One last question, then share anything useful', false, () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); }, 'wrap'),
       );
       card.append(wrap);
@@ -1374,7 +1504,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       root.dataset.choosing = '';
       anchor();
       const q = await harrySays(stepText(s), { question: true });
-      if (i !== pos) return;
+      if (steps[pos] !== s) return;
       const opts: { label: string; primary?: boolean; v: string }[] = [];
       if (s.next) opts.push({ label: `Yes: ${s.next}`, primary: true, v: `next:${s.next}` });
       opts.push({ label: s.next ? 'Yes, a different one' : 'Yes, another one', primary: !s.next, v: 'another' });
@@ -1386,10 +1516,14 @@ const svg = (d: string, size = 20, sw = 2) =>
     const q = await harrySays(stepText(s), { question: true });
     const body = q.parentElement;
     if (s.type === 'q' && s.hint) hint(body, s.hint);
-    if (s.type === 'list') hint(body, JOURNEY[s.j].hint);
+    if (s.type === 'list') hint(body, stepText(s) === TEAM_LIST_TEXT ? TEAM_LIST_HINT : JOURNEY[s.j].hint);
+    if (s.type === 'role') hint(body, 'This only changes which questions I ask, so they fit your part of the business.');
     if (s.type === 'drill' && s.d === 8) hint(body, D9_HINT);
-    if (i === pos) {
+    if (steps[pos] === s) {
       if (s.type === 'name' && s.options.length) quick(helpers(body), s.options.map((o) => ({ label: o, onClick: () => act({ t: 'a', v: o }) })));
+      // Optional shortcuts; typing your role works just the same.
+      if (s.type === 'role') quick(helpers(body), ROLE_CHIPS.map((c) => ({ label: c, onClick: () => (c === 'Other' ? (input.focus({ preventScroll: true }), (input.placeholder = 'Tell me in a few words…')) : act({ t: 'a', v: c })) })));
+      if (s.type === 'role2') quick(helpers(body), ['Sales', 'Operations', 'Admin', 'Finance'].map((c) => ({ label: c, onClick: () => act({ t: 'a', v: c }) })));
       if (s.type === 'drill' && s.d === 3) exampleActions(helpers(body));
       if (s.type === 'drill' && s.d === 4) quick(helpers(body), D5_CHIPS.map((c) => ({ label: c, onClick: () => { input.value = ''; prefill(`${c}. `); input.placeholder = 'Add why, then send'; } })));
       if (s.type === 'drill' && s.d === 7) benchmark(helpers(body));
@@ -1397,8 +1531,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     scroll();
     // A voice answer given ahead of its turn: take it rather than ask again.
     const ahead = pending.get(stepKey(s));
-    if (i === pos && ahead) { act({ t: 'a', v: ahead.v, s: ahead.s }); return; }
-    if (i === pos) lock(false);
+    if (steps[pos] === s && ahead) { act({ t: 'a', v: ahead.v, s: ahead.s }); return; }
+    if (steps[pos] === s) lock(false);
   }
 
   function exampleActions(box: HTMLElement) {
@@ -1459,7 +1593,12 @@ const svg = (d: string, size = 20, sw = 2) =>
     const card = el('div', 'ik-card ik-mile');
     card.innerHTML = `<span class="ik-mile__ring" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28"/></svg><b><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b></span>`;
     card.append(el('h3', '', "That's the core done"));
-    card.append(el('p', '', `That was the core, about 10 minutes. ${describe('reference.md')} Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after; each job you describe becomes a workflow file. Or finish here.`));
+    const r = route() ?? 'owner';
+    card.append(el('p', '', r === 'owner'
+      ? `That was the core, about 10 minutes. ${describe('reference.md')} Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after; each job you describe becomes a workflow file. Or finish here.`
+      : r === 'marketing'
+        ? `That's your core done: the basics, AI today and how new business comes in. ${describe('README.md')} Keep going into your tools and the rest of the journey? Or finish here.`
+        : `That's your core done: your week and the tools you use. ${describe('reference.md')} Keep going with a few questions on how you use AI? Or finish here.`));
     card.setAttribute('aria-label', CHOICE_TEXT);
     if (replaying || !live) card.querySelector<SVGCircleElement>('.fg')!.style.cssText = 'animation: none; stroke-dashoffset: 0';
     add(card);
@@ -1502,13 +1641,46 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   /** Apply one action to the current step: updates state now and returns the rendering to run in order,
    *  or null if the action doesn't fit (stale saved state, or a tool call for a step that has moved on). */
+  /** A role answer has been read: set the route (or, for a session saved before roles, just tag it). */
+  function settleRole(s: Extract<Step, { type: 'role' | 'role2' }>, text: string, followUp: string | null): boolean {
+    const read = followUp === null ? readRole(text) : readRole(text, followUp, true);
+    if (s.type === 'role' && s.mode === 'legacy') {
+      // Saved before roles existed: tag answers from here on, never re-route or restart.
+      legacyTag = read.route ?? 'team';
+      s.echo = "Thanks. I'll carry on where we were. Your role only changes which questions I ask; you can change the focus from your folder panel.";
+      return true;
+    }
+    if (!read.route) return false; // ambiguous: one follow-up
+    const add = s.mode === 'add';
+    if (!add) roles.length = 0;
+    if (!roles.includes(read.route)) roles.push(read.route);
+    marketingEmphasis = marketingEmphasis || read.marketingEmphasis;
+    // An owner who also looks after marketing: the owner spine, plus the marketing route's emphasis.
+    setPlan(read.route, add);
+    if (read.marketingEmphasis) setPlan('marketing', true);
+    const midway = s.mode === 'change' || s.mode === 'add';
+    s.echo = read.echo + (midway && steps[pos + 1] && steps[pos + 1].type !== 'role' ? " I'll use that from the next section." : '');
+    if (s.mode === 'first') pullNext();
+    return true;
+  }
+
   function apply(a: Action): (() => void) | null {
     if (a.t === 'p') { pending.set(a.k, { v: a.v, s: a.s }); return () => {}; }
+    // Change role, add a role, or the one-off role question for a saved session: insert the role question here.
+    if (a.t === 'c' && a.v.startsWith('role:')) {
+      if (steps[pos]?.type === 'role' || steps[pos]?.type === 'role2') return null;
+      steps.splice(pos, 0, { type: 'role', mode: a.v.slice(5) as 'change' | 'add' | 'legacy' });
+      return () => {};
+    }
     const s = steps[pos];
     if (!s) return null;
     const show = (v: string, spoken?: 1) => () => { answer(v, v === SKIPPED ? 'skip' : spoken ? 'spoken' : 'you'); };
     let render: () => void;
-    if (a.t === 'a' && s.type === 'q') {
+    if (a.t === 'a' && (s.type === 'role' || s.type === 'role2')) {
+      render = show(a.v, a.s);
+      const resolved = s.type === 'role' ? settleRole(s, a.v, null) : settleRole(s, s.first, a.v);
+      if (!resolved && s.type === 'role') steps.splice(pos + 1, 0, { type: 'role2', mode: s.mode as 'first' | 'change' | 'add', first: a.v });
+    } else if (a.t === 'a' && s.type === 'q') {
       answers.set(s.qid, a.v);
       render = show(a.v, a.s);
     } else if (a.t === 'a' && s.type === 'list') {
@@ -1541,14 +1713,17 @@ const svg = (d: string, size = 20, sw = 2) =>
       else if (a.v.startsWith('next:')) startProcess(s.j, s.p + 1, a.v.slice(5));
       else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: `Which one? Name the next ${JOURNEY[s.j].title.toLowerCase()} workflow.`, options: undrilled(s.j).slice(0, 6) });
     } else if (a.t === 'c' && s.type === 'choice') {
-      render = show(a.v === 'more' ? 'Keep going into the journey' : 'Finish here');
-      if (a.v === 'more') steps.push({ type: 'list', j: 0 });
-      else addClosing();
+      render = show(a.v === 'more' ? (route() === 'owner' ? 'Keep going into the journey' : 'Keep going') : 'Finish here');
+      if (a.v !== 'more') plan = plan.filter((b) => b.k === 'closing');
+      if (!plan.length && !usedBlocks.has('closing')) plan = [{ k: 'closing' }];
+      pullNext();
     } else {
       return null;
     }
+    if (a.t === 'a' && a.r) answerTags.set(stepKey(s) || `${s.type}:${pos}`, `${a.r}${a.n ? ` (${a.n})` : ''}`);
     pending.delete(stepKey(s));
     pos++;
+    if (!steps[pos]) pullNext();
     return render;
   }
 
@@ -1561,6 +1736,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   function act(a: Action): boolean {
     if (sent) return false;
     if (a.t === 'p') { pending.set(a.k, { v: a.v, s: a.s }); actions.push(a); save(); return true; }
+    // Every answer is added (never replaced) with the role and person it was given under.
+    if (a.t === 'a' && roleTag() && steps[pos]?.type !== 'role' && steps[pos]?.type !== 'role2') { a.r = roleTag(); if (respondent()) a.n = respondent(); }
     const render = apply(a);
     if (!render) return false;
     delete root.dataset.choosing;
@@ -2025,7 +2202,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     $<HTMLElement>('ik-finish').focus({ preventScroll: true });
   }
   $<HTMLButtonElement>('ik-download').addEventListener('click', () => {
-    const lines = [`Roadmap Labs intake${client ? ` · ${client}` : ''}`, new Date().toLocaleString(), ''];
+    const lines = [`Roadmap Labs intake${client ? ` · ${client}` : ''}`, new Date().toLocaleString(), ...(roleTag() ? [`Answered as: ${roleTag()}${respondent() ? ` (${respondent()})` : ''}`] : []), ''];
     for (const [qid, v] of payloadFields()) lines.push(textByQid.get(qid) ?? `Question ${qid}`, v === SKIPPED ? '(to fill)' : v, '');
     if (links.length) lines.push('Links shared', ...links, '');
     if (files.length) lines.push('Files shared', ...files.map((f) => f.name), '');
@@ -2107,6 +2284,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (sent) return 'The interview has been submitted. Thank them and end the call.';
     if (!s) return 'The interview is finished.';
     switch (s.type) {
+      case 'role':
+      case 'role2':
+        return `Before the questions: ask exactly "${stepText(s)}" Then call record_answer with their words. Their role only changes which questions are asked.`;
       case 'q':
         return s.phase === 'closing'
           ? `Closing question (W1). Ask exactly: "${s.text}" Then call record_answer.`
@@ -2234,9 +2414,10 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (begun) return;
     begun = true;
     root.dataset.view = 'chat';
+    if (!actions.length && !steps.length) { flow2 = true; steps.push({ type: 'role', mode: 'first' }); }
     updateProgress();
     const hiName = greetName || client;
-    await harrySays(`Hi${hiName ? ` ${hiName}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. We'll start with the core: the basics, AI today and your tool stack.`);
+    await harrySays(`Hi${hiName ? ` ${hiName}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. First, a quick one about your role, so the questions fit.`);
     await harrySays('Everything we build for you ends up as files in one folder: workflows (your jobs), routines (what kicks them off) and skills (the instructions, written down). I\'m collecting what goes in them.');
     enqueue(() => present());
   }
@@ -2345,6 +2526,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     begun = true;
     root.dataset.view = 'chat';
+    if (saved.flow === 2) { flow2 = true; steps.push({ type: 'role', mode: 'first' }); }
+    else { setPlan('owner', false); pullNext(); } // saved before roles: exactly the order it was started in
     replaying = true;
     for (const a of saved.actions) {
       if (a.t !== 'p') renderStatic(pos);
@@ -2352,6 +2535,11 @@ const svg = (d: string, size = 20, sw = 2) =>
       if (!render) break;
       render();
       actions.push(a);
+    }
+    // Saved before roles: ask once, as a tag (no restart, no re-routing).
+    if (!flow2 && !roleTag() && !sent && steps[pos] && !isRoleStep(steps[pos])) {
+      const a: Action = { t: 'c', v: 'role:legacy' };
+      if (apply(a)) { actions.push(a); save(); }
     }
     renderFolder();
     replaying = false;

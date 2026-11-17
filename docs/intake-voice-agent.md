@@ -24,6 +24,7 @@ The source of truth is `src/data/intake.ts`, which follows intake/QUESTIONS.md.
 
 | Stage | What | Questions |
 |---|---|---|
+| Role | "What's your role in the business? Are you the owner, or do you work in a team, and which one?" The page reads the answer and picks which questions follow (owner, marketing, or team). Routing only, not a permission | |
 | 0 Setup | Business name (the folder is named after it automatically); anything to hand over | S1, S2 |
 | 1 AI today | Use, tools, best result, spend, challenges, what didn't stick, three jobs for AI | A1 to A7 |
 | 2 Tool stack | Software and costs, CRM, where work gets stuck, what the team likes and avoids | T1 to T5 |
