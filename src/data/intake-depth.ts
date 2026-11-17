@@ -102,16 +102,33 @@ export function fromDocuments(shared: boolean): FileState {
   return { depth: shared ? 'thin' : 'empty', has: shared ? ['what you shared'] : [], gap: 'from your documents and a later call', size: shared ? 1 : 0 };
 }
 
-/** The folder's short name: "acme-os". From S1 ("..., folder acme"), else the business name, else the client link. */
-export function folderSlug(s1: string | undefined, client: string): string {
-  const slug = (x: string) => x.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24).replace(/-+$/, '');
-  if (answered(s1)) {
-    const named = s1!.match(/(?:folder|short name)\s*(?:is|:|-|could be|would be)?\s*["'“]?([\w&.-]+(?:\s[\w&.-]+)?)/i);
-    if (named) return slug(named[1]);
-    const first = s1!.split(/[,;\n]| - | – /)[0];
-    if (first.trim()) return slug(first.split(/\s+/).slice(0, 3).join(' '));
-  }
-  return slug(client) || 'your-business';
+/** Shown until a short, clear business name is given. */
+export const FOLDER_PLACEHOLDER = 'your-business/';
+/** Longest S1 answer that can name the folder. Anything longer stays on the placeholder. */
+export const FOLDER_MAX_CHARS = 40;
+
+/** Is the S1 answer a clear, short name ("Acme Plumbing", "Acme Plumbing, folder acme")?
+ *  Up to about 40 characters, one line, no sentence punctuation. A few sentences never name the folder. */
+export function shortName(s1: string | undefined): boolean {
+  if (!answered(s1)) return false;
+  const t = s1!.trim();
+  return t.length <= FOLDER_MAX_CHARS && !/[\n;!?]|\.(?:\s|$)/.test(t);
+}
+
+/** The folder: "acme-os/" from a short S1 answer ("..., folder acme" wins), otherwise "your-business/". */
+export function folderName(s1: string | undefined): string {
+  if (!shortName(s1)) return FOLDER_PLACEHOLDER;
+  // Lowercase with hyphens, cut at a whole word if it runs past 28 characters.
+  const slug = (x: string) => {
+    const full = x.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (full.length <= 28) return full;
+    const cut = full.slice(0, 29);
+    return cut.includes('-') ? cut.slice(0, cut.lastIndexOf('-')) : cut.slice(0, 28);
+  };
+  const t = s1!.trim();
+  const named = t.match(/(?:folder|short name)\s*(?:is|:|-|could be|would be)?\s*["'“]?([\w&.-]+(?:\s[\w&.-]+)?)/i);
+  const base = slug(named ? named[1] : t.split(/,| - | – /)[0]);
+  return base ? `${base}-os/` : FOLDER_PLACEHOLDER;
 }
 
 /** A workflow name as a file name: "Builder referrals" -> "builder-referrals.md". */

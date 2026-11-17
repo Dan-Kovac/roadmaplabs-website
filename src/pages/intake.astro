@@ -594,7 +594,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 </section>
 
 <script>
-  import { readme, reference, workflow, fromDocuments, folderSlug, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
+  import { readme, reference, workflow, fromDocuments, folderName as folderFor, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
   import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
 
   type J = 0 | 1 | 2;
@@ -975,7 +975,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   // ---------- Your folder: what's been captured so far ----------
   // Provisional depth rules live in src/data/intake-depth.ts. This shows captured context, never finished files.
   interface FolderFile { path: string; state: FileState; kind: 'core' | 'docs' | 'workflow' }
-  const folderName = () => `${folderSlug(answers.get(CORE_QUESTIONS[0].qid), client)}-os/`;
+  // The header subtitle and the panel use the same name: a short S1 answer, or the placeholder.
+  const folderName = () => folderFor(answers.get(CORE_QUESTIONS[0].qid));
   function folderFiles(): FolderFile[] {
     const a = (q: number) => answers.get(q);
     const shared = files.length > 0 || links.length > 0;
