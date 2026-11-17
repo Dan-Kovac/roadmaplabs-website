@@ -6,7 +6,7 @@ export const prerender = false;
 // With no OPENROUTER_API_KEY it returns 204 and the page treats the input as an answer.
 
 const SYSTEM =
-  'You are Riley, the Roadmap Labs intake interviewer. Answer briefly from general knowledge of Roadmap Labs (AI consulting for Australian businesses: roadmaplabs.com.au) and steer back to the interview.';
+  'You are Harry, the Roadmap Labs intake interviewer. Answer briefly from general knowledge of Roadmap Labs (AI consulting for Australian businesses: roadmaplabs.com.au) and steer back to the interview.';
 
 export const POST: APIRoute = async ({ request }) => {
   const key = import.meta.env.OPENROUTER_API_KEY ?? process.env.OPENROUTER_API_KEY;

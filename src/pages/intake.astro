@@ -321,7 +321,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
 </style>
 
-<section class="ik" id="ik" data-mode="chat" data-view="welcome" data-agent={agentId || undefined} aria-label="Intake interview with Riley">
+<section class="ik" id="ik" data-mode="chat" data-view="welcome" data-agent={agentId || undefined} aria-label="Intake interview with Harry">
   <svg width="0" height="0" style="position: absolute" aria-hidden="true"><defs><linearGradient id="ik-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a4cff"/><stop offset="1" stop-color="#00a3ff"/></linearGradient></defs></svg>
 
   <!-- Top bar -->
@@ -331,7 +331,7 @@ const svg = (d: string, size = 20, sw = 2) =>
         <div class="ik-id">
           <span class="ik-orb ik-orb--sm" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
           <div class="ik-id__text">
-            <span class="ik-id__name">Riley</span>
+            <span class="ik-id__name">Harry</span>
             <span class="ik-id__meta" id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
           </div>
         </div>
@@ -351,7 +351,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     <div class="ik-col">
       <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
       <h1 id="ik-hello">Let's map how your business <span>really runs.</span></h1>
-      <p class="ik-welcome__lead">I'm Riley. I'll ask about what you sell, who buys it and the work behind the scenes, one question at a time. Type, talk, or switch to a voice interview whenever you like.</p>
+      <p class="ik-welcome__lead">I'm Harry. I'll ask about what you sell, who buys it and the work behind the scenes, one question at a time. Type, talk, or switch to a voice interview whenever you like.</p>
       <ul class="ik-points">
         <li><Fragment set:html={svg(icons.clock, 18)} />Core takes about 10 minutes</li>
         <li><Fragment set:html={svg(icons.skip, 18)} />Skip anything you're unsure of</li>
@@ -379,7 +379,7 @@ const svg = (d: string, size = 20, sw = 2) =>
         ) : (
           <>
             <span class="ik-voice__status">Voice interview coming online</span>
-            <p class="ik-voice__hint">Riley's voice is nearly ready. For now you can still talk your answers: the mic in the chat turns speech into text.</p>
+            <p class="ik-voice__hint">Harry's voice is nearly ready. For now you can still talk your answers: the mic in the chat turns speech into text.</p>
             <div class="ik-voice__actions">
               <button class="ik-cta" type="button" id="ik-voice-fallback"><Fragment set:html={svg(icons.mic, 18)} />Talk my answers in chat</button>
             </div>
@@ -563,7 +563,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     try { localStorage.removeItem(STORE); } catch {}
   }
 
-  // ---------- Orb level: Riley's voice, your mic, or text streaming ----------
+  // ---------- Orb level: Harry's voice, your mic, or text streaming ----------
   let lvl = 0;
   let lvlTarget = 0;
   let lvlRaf = 0;
@@ -598,8 +598,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   };
   const ORB = '<span class="ik-orb ik-orb--sm" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>';
 
-  /** One of Riley's turns: a mini orb and a line of text (a question is shown large while it's current). */
-  function rileyTurn(isQuestion: boolean) {
+  /** One of Harry's turns: a mini orb and a line of text (a question is shown large while it's current). */
+  function harryTurn(isQuestion: boolean) {
     const turn = el('div', `ik-turn${isQuestion ? ' ik-turn--q' : ''}`);
     turn.innerHTML = ORB;
     const body = el('div', 'ik-turn__body');
@@ -644,11 +644,11 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   const wait = (ms: number) => (replaying || reduced ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
 
-  /** Riley "types": a short think, then the words stream in. Screen readers get the full line at once. */
-  async function rileySays(text: string, opts: { question?: boolean; error?: boolean } = {}) {
+  /** Harry "types": a short think, then the words stream in. Screen readers get the full line at once. */
+  async function harrySays(text: string, opts: { question?: boolean; error?: boolean } = {}) {
     if (opts.error) return note(text, undefined, undefined, true);
     if (opts.question) settleQuestions();
-    const body = rileyTurn(!!opts.question);
+    const body = harryTurn(!!opts.question);
     const p = el('p', opts.question ? 'ik-q is-current' : 'ik-say');
     body.append(p);
     if (replaying || reduced) {
@@ -686,7 +686,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     skipBtn.disabled = locked;
     sendBtn.disabled = locked;
     micBtn.disabled = locked;
-    input.placeholder = locked ? (steps[pos]?.type === 'q' || !steps[pos] ? 'Riley is typing…' : 'Pick an option above') : 'Type your answer…';
+    input.placeholder = locked ? (steps[pos]?.type === 'q' || !steps[pos] ? 'Harry is typing…' : 'Pick an option above') : 'Type your answer…';
     if (steps[pos]?.type === 'files') input.placeholder = 'All questions answered';
     if (!locked && !replaying && mode === 'chat' && (actions.length || finePointer)) input.focus({ preventScroll: true });
   }
@@ -748,7 +748,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (!s || sent) return;
     if (s.type === 'q') {
       if (s.section) section(s.section);
-      await rileySays(s.text, { question: true });
+      await harrySays(s.text, { question: true });
       if (i === pos) lock(false);
     } else if (s.type === 'choice') {
       lock(true);
@@ -766,7 +766,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     } else if (s.type === 'files') {
       lock(true);
       settleQuestions();
-      await rileySays('Last thing: anything you can share? Files, links and quick screen recordings all help us understand the business faster.');
+      await harrySays('Last thing: anything you can share? Files, links and quick screen recordings all help us understand the business faster.');
       shareCard();
     }
   }
@@ -831,7 +831,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
 
   // Thread rendering runs through one queue so messages always appear in script order,
-  // even when voice tool calls arrive faster than Riley's typing animation.
+  // even when voice tool calls arrive faster than Harry's typing animation.
   let queue: Promise<unknown> = Promise.resolve();
   const enqueue = (fn: () => unknown) => (queue = queue.then(fn).catch(() => {}));
 
@@ -847,18 +847,18 @@ const svg = (d: string, size = 20, sw = 2) =>
     const next = pos;
     enqueue(async () => {
       render();
-      if (a.t === 'c' && a.v === 'wrap') await rileySays('No problem. One last question before you go.');
-      if (a.t === 'c' && a.v === 'more') await rileySays("Great. Same as before: answer what you can and skip what you can't.");
+      if (a.t === 'c' && a.v === 'wrap') await harrySays('No problem. One last question before you go.');
+      if (a.t === 'c' && a.v === 'more') await harrySays("Great. Same as before: answer what you can and skip what you can't.");
       await present(next);
     });
     return true;
   }
 
-  // ---------- Optional: questions to Riley in chat ----------
+  // ---------- Optional: questions to Harry in chat ----------
   const looksLikeQuestion = (t: string) =>
     t.length < 240 && /\?\s*$/.test(t) && /^(what|why|how|who|whom|where|when|which|can|could|do|does|did|is|are|should|would|will|sorry|wait|hang on|um)\b/i.test(t);
 
-  async function askRiley(text: string, current: string): Promise<string | null> {
+  async function askHarry(text: string, current: string): Promise<string | null> {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 9000);
     try {
@@ -888,11 +888,11 @@ const svg = (d: string, size = 20, sw = 2) =>
     autosize();
     if (looksLikeQuestion(text)) {
       lock(true);
-      const reply = await askRiley(text, s.text);
+      const reply = await askHarry(text, s.text);
       if (reply) {
         answer(text, 'you');
-        await rileySays(reply);
-        await rileySays(s.text, { question: true });
+        await harrySays(reply);
+        await harrySays(s.text, { question: true });
         const at = pos;
         const keep = note('Was that actually your answer?', 'Save it as my answer', () => {
           keep.remove();
@@ -1332,7 +1332,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     w.setAttribute('show-avatar-when-collapsed', 'false');
     w.setAttribute('avatar-orb-color-1', '#0a4cff');
     w.setAttribute('avatar-orb-color-2', '#00a3ff');
-    w.setAttribute('text-contents', JSON.stringify({ main_label: 'Talk it through with Riley', start_call: 'Start voice interview', end_call: 'End interview' }));
+    w.setAttribute('text-contents', JSON.stringify({ main_label: 'Talk it through with Harry', start_call: 'Start voice interview', end_call: 'End interview' }));
     host.append(w);
     const s = document.createElement('script');
     s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
@@ -1394,7 +1394,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (status) status.textContent = 'Connecting…';
     const onConnect = config.onConnect;
     config.onConnect = (...args: unknown[]) => {
-      if (status) { status.textContent = 'Live with Riley'; status.setAttribute('data-live', ''); }
+      if (status) { status.textContent = 'Live with Harry'; status.setAttribute('data-live', ''); }
       onConnect?.(...args);
     };
     const onAudio = config.onAudio;
@@ -1423,7 +1423,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     begun = true;
     root.dataset.view = 'chat';
     updateProgress();
-    await rileySays(`Hi${client ? ` ${client}` : ''}, I'm Riley. Answer in your own words; there are no wrong answers. We'll start with the core: ${CORE.length} questions, about 10 minutes.`);
+    await harrySays(`Hi${client ? ` ${client}` : ''}, I'm Harry. Answer in your own words; there are no wrong answers. We'll start with the core: ${CORE.length} questions, about 10 minutes.`);
     enqueue(() => present());
   }
   $<HTMLButtonElement>('ik-start-chat').addEventListener('click', () => { setMode('chat'); begin(); });
@@ -1445,7 +1445,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     replaying = true;
     for (const a of saved.actions) {
       const s = steps[pos];
-      if (s?.type === 'q') { if (s.section) section(s.section); rileySays(s.text, { question: true }); }
+      if (s?.type === 'q') { if (s.section) section(s.section); harrySays(s.text, { question: true }); }
       else if (s?.type === 'choice') milestone(false);
       const render = apply(a);
       if (!render) break;
