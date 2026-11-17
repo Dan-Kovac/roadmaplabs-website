@@ -102,33 +102,39 @@ export function fromDocuments(shared: boolean): FileState {
   return { depth: shared ? 'thin' : 'empty', has: shared ? ['what you shared'] : [], gap: 'from your documents and a later call', size: shared ? 1 : 0 };
 }
 
-/** Shown until a short, clear business name is given. */
-export const FOLDER_PLACEHOLDER = 'your-business/';
-/** Longest S1 answer that can name the folder. Anything longer stays on the placeholder. */
+/** Shown until a business name is given. */
+export const FOLDER_PLACEHOLDER = 'Your business OS/';
+/** Longest name the folder takes; longer answers are cut at a whole word. */
 export const FOLDER_MAX_CHARS = 40;
 
-/** Is the S1 answer a clear, short name ("Acme Plumbing", "Acme Plumbing, folder acme")?
- *  Up to about 40 characters, one line, no sentence punctuation. A few sentences never name the folder. */
-export function shortName(s1: string | undefined): boolean {
-  if (!answered(s1)) return false;
-  const t = s1!.trim();
-  return t.length <= FOLDER_MAX_CHARS && !/[\n;!?]|\.(?:\s|$)/.test(t);
+/** Lead-ins people type before the name: "We're", "It's called", "The business is"... */
+const LEAD_IN = /^(?:hi|hello|hey)?[,!\s]*(?:(?:we(?:'re|’re| are)|it(?:'s|’s| is)|this is|our (?:business|company) is|the (?:business|company) is|business(?: name)?(?: is)?|company(?: name)?(?: is)?|i (?:run|own))\s+)?(?:called\s+)?/i;
+
+/** The business name from S1 ("What's the business called?"): the first clear name-like part, never a paragraph.
+ *  Short answers are used as typed. Long ones or sentences: the first clause, minus lead-ins; if that's still long,
+ *  the first run of Capitalised Words; otherwise cut at a whole word near 40 characters. */
+export function businessName(s1: string | undefined): string {
+  if (!answered(s1)) return '';
+  const first = s1!.trim().split(/\n|[.!?;](?:\s|$)|,|\s[-–—]\s|\(/)[0] ?? '';
+  let name = first.replace(LEAD_IN, '').replace(/^["'“‘]|["'”’]$/g, '').replace(/\s+/g, ' ').trim();
+  if (name.length > FOLDER_MAX_CHARS) {
+    // A long clause: only a run of Capitalised Words counts as a name ("Acme Plumbing"), not "We" or "The".
+    const runs = name.match(/\b[A-Z][\w&'’.-]*(?:\s+(?:&|and|of|the|[A-Z][\w&'’.-]*))*/g) ?? [];
+    const run = runs.find((r) => !/^(?:we|i|our|my|the|a|an|it|this|they|us)$/i.test(r));
+    if (!run) return ''; // no clear name: keep the placeholder until one is given
+    name = run.length <= FOLDER_MAX_CHARS ? run : run.slice(0, FOLDER_MAX_CHARS + 1).replace(/\s+\S*$/, '');
+  }
+  name = name.replace(/\s+(?:&|and|of|the)$/i, '').replace(/[\s,;:.-]+$/, '').trim();
+  // All lowercase ("acme plumbing") reads better as a name: capitalise each word. Otherwise keep their case.
+  if (name && name === name.toLowerCase()) name = name.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+  return name;
 }
 
-/** The folder: "acme-os/" from a short S1 answer ("..., folder acme" wins), otherwise "your-business/". */
+/** The folder: "Acme Plumbing OS/". Until a business name is given: "Your business OS/". */
 export function folderName(s1: string | undefined): string {
-  if (!shortName(s1)) return FOLDER_PLACEHOLDER;
-  // Lowercase with hyphens, cut at a whole word if it runs past 28 characters.
-  const slug = (x: string) => {
-    const full = x.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    if (full.length <= 28) return full;
-    const cut = full.slice(0, 29);
-    return cut.includes('-') ? cut.slice(0, cut.lastIndexOf('-')) : cut.slice(0, 28);
-  };
-  const t = s1!.trim();
-  const named = t.match(/(?:folder|short name)\s*(?:is|:|-|could be|would be)?\s*["'“]?([\w&.-]+(?:\s[\w&.-]+)?)/i);
-  const base = slug(named ? named[1] : t.split(/,| - | – /)[0]);
-  return base ? `${base}-os/` : FOLDER_PLACEHOLDER;
+  const name = businessName(s1);
+  if (!name) return FOLDER_PLACEHOLDER;
+  return /\bOS$/i.test(name) ? `${name}/` : `${name} OS/`;
 }
 
 /** A workflow name as a file name: "Builder referrals" -> "builder-referrals.md". */

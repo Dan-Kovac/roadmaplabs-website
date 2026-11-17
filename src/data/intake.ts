@@ -24,7 +24,7 @@ export const CORE_STAGES = [
 
 export const CORE_QUESTIONS: CoreQuestion[] = [
   // Stage 0: Setup
-  { id: 'S1', qid: 145, stage: 0, text: "What's the business called, and what's a short name for the folder?", topic: 'the business name' },
+  { id: 'S1', qid: 145, stage: 0, text: "What's the business called?", topic: 'the business name' },
   { id: 'S2', qid: 146, stage: 0, text: 'Is there anything you can hand over now: a website, a price list, a proposal, a report? Attach it or paste a link.', topic: 'what you can hand over', hint: 'Use the paperclip to attach a file, paste a link, or record your screen.' },
   // Stage 1: AI today
   { id: 'A1', qid: 147, stage: 1, text: 'How are you using AI in the business today? Name the jobs it does, even small ones.', topic: 'how you use AI', hint: 'For example: drafting quotes, summarising calls, writing social posts, answering enquiries. "Not at all yet" is a fine answer.' },

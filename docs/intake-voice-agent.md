@@ -24,7 +24,7 @@ The source of truth is `src/data/intake.ts`, which follows intake/QUESTIONS.md.
 
 | Stage | What | Questions |
 |---|---|---|
-| 0 Setup | Business name and folder; anything to hand over | S1, S2 |
+| 0 Setup | Business name (the folder is named after it automatically); anything to hand over | S1, S2 |
 | 1 AI today | Use, tools, best result, spend, challenges, what didn't stick, three jobs for AI | A1 to A7 |
 | 2 Tool stack | Software and costs, CRM, where work gets stuck, what the team likes and avoids | T1 to T5 |
 | Milestone | The core is done (14 questions, about 10 minutes). Keep going into the journey (about 20 minutes) or finish here | |
