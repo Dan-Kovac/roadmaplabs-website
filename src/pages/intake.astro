@@ -1,0 +1,548 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Public, so it can sit in the page. Unset means the voice panel shows its placeholder.
+const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
+---
+<Base
+  title="Client intake | Roadmap Labs"
+  description="The Roadmap Labs client intake: answer the business OS interview by chat or by voice, and share any files or links that help."
+  path="/intake"
+  noindex
+>
+<style is:global>
+  .ik-hero { max-width: 1200px; margin: 0 auto; padding: 88px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
+  .ik-hero h1 { margin: 0; font-size: clamp(40px, 5.2vw, 64px); line-height: 1.04; letter-spacing: -0.03em; font-weight: 500; max-width: 18ch; }
+  .ik-hero p { margin: 0; font-size: 19px; line-height: 29px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 38em; }
+  .ik-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px 96px; box-sizing: border-box; display: grid; gap: 24px; }
+  .ik-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px; align-items: stretch; }
+  @media (max-width: 900px) { .ik-grid { grid-template-columns: 1fr; } .ik-hero { padding-top: 64px; } }
+
+  /* ---------- Voice panel ---------- */
+  .ik-voice { padding: 32px; min-height: 0; gap: 16px; }
+  .ik-voice h2 { margin: 0; max-width: 16ch; font: 600 28px/1.15 var(--font-sans); letter-spacing: -0.02em; }
+  .ik-voice p { max-width: 36ch; color: rgba(255,255,255,.86); }
+  .ik-voice .ev-eyebrow { color: rgba(255,255,255,.75); }
+  .ik-orb { position: relative; width: 132px; height: 132px; margin: 12px 0 4px; flex: none; }
+  .ik-orb i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(0,163,255,.55); animation: ik-ring 3.6s cubic-bezier(.2,.7,.2,1) infinite; }
+  .ik-orb i:nth-child(2) { animation-delay: 1.2s; }
+  .ik-orb i:nth-child(3) { animation-delay: 2.4s; }
+  .ik-orb b { position: absolute; inset: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #5fc4ff, #0a4cff 60%, #052a8f); box-shadow: 0 0 40px rgba(0,163,255,.45); animation: ik-breathe 3.6s ease-in-out infinite; }
+  .ik-orb svg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #fff; }
+  .ik-voice--off .ik-orb i { border-color: rgba(255,255,255,.22); }
+  .ik-voice--off .ik-orb b { background: radial-gradient(circle at 35% 30%, #4b5563, #15191e 70%); box-shadow: none; }
+  .ik-voice__status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.1); font: 500 13px/18px var(--font-sans); color: var(--paper); }
+  .ik-widget { width: 100%; }
+  /* On wider screens the widget's floating button sits inside the panel instead of the page corner:
+     a transformed box becomes the containing block for its fixed-position children. */
+  @media (min-width: 901px) {
+    .ik-widget { position: relative; height: 96px; transform: translateZ(0); }
+  }
+  @keyframes ik-ring { 0% { transform: scale(.55); opacity: .9; } 100% { transform: scale(1.15); opacity: 0; } }
+  @keyframes ik-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+
+  /* ---------- Chat panel ---------- */
+  .ik-chat { display: flex; flex-direction: column; padding: 0; overflow: hidden; min-height: 620px; }
+  .ik-chat__head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .ik-avatar { width: 36px; height: 36px; flex: none; border-radius: 50%; background: var(--gradient-signal); color: #fff; display: grid; place-items: center; font: 600 15px/1 var(--font-sans); }
+  .ik-chat__who { display: flex; flex-direction: column; min-width: 0; }
+  .ik-chat__who strong { font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; }
+  .ik-chat__who span { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-progress { margin-left: auto; text-align: right; font: 500 12px/18px var(--font-sans); color: var(--text-secondary); white-space: nowrap; }
+  .ik-bar { height: 3px; background: var(--fog); }
+  .ik-bar i { display: block; height: 100%; width: 0; background: var(--gradient-signal); transition: width .4s ease; }
+  .ik-log { flex: 1 1 auto; height: 460px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+  .ik-msg { margin: 0; max-width: 85%; padding: 12px 16px; border-radius: 16px; font: 400 16px/24px var(--font-sans); letter-spacing: -0.01em; white-space: pre-wrap; overflow-wrap: anywhere; animation: rl-rise .35s cubic-bezier(.2,.7,.2,1) both; }
+  .ik-msg--riley { align-self: flex-start; background: var(--fog); color: var(--ink); border-bottom-left-radius: 4px; }
+  .ik-msg--q { font-weight: 500; }
+  .ik-msg--you { align-self: flex-end; background: var(--roadmap-blue); color: var(--paper); border-bottom-right-radius: 4px; }
+  .ik-msg--skip { align-self: flex-end; background: transparent; border: 1px dashed var(--border-control); color: var(--text-secondary); font-style: italic; }
+  .ik-msg--typing { display: inline-flex; gap: 4px; padding: 14px 16px; }
+  .ik-msg--typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--steel); animation: ik-dot 1s ease-in-out infinite; }
+  .ik-msg--typing span:nth-child(2) { animation-delay: .15s; } .ik-msg--typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes ik-dot { 0%, 100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+  .ik-divider { display: flex; align-items: center; gap: 12px; margin: 8px 0 0; font: 600 12px/18px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-divider::before, .ik-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .ik-choices { display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; }
+  .ik-note { margin: 0; align-self: flex-start; font: 400 13px/18px var(--font-sans); color: var(--text-muted); }
+  .ik-note button { padding: 0; border: 0; background: none; font: inherit; color: var(--roadmap-blue); text-decoration: underline; cursor: pointer; }
+  .ik-composer { border-top: 1px solid var(--border); padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+  .ik-composer textarea { resize: none; max-height: 220px; min-height: 48px; width: 100%; box-sizing: border-box; }
+  .ik-composer__actions { display: flex; gap: 8px; }
+  .ik-composer__hint { grid-column: 1 / -1; font: 400 12px/16px var(--font-sans); color: var(--text-muted); padding: 0 4px; }
+  .ik-composer[data-locked] textarea, .ik-composer[data-locked] button { opacity: .5; pointer-events: none; }
+  @media (max-width: 560px) {
+    .ik-composer { grid-template-columns: 1fr; }
+    .ik-composer__actions .rl-btn { flex: 1; justify-content: center; }
+    .ik-msg { max-width: 92%; }
+    .ik-progress { display: none; }
+  }
+
+  /* ---------- Anything to add ---------- */
+  .ik-extra { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: start; }
+  .ik-extra h2 { margin: 0 0 8px; font: 600 28px/1.15 var(--font-sans); letter-spacing: -0.02em; }
+  .ik-extra p { margin: 0; font: 400 16px/24px var(--font-sans); color: var(--text-secondary); }
+  .ik-extra form { display: grid; gap: 16px; }
+  .ik-extra input[type="file"] { padding: 10px 12px; cursor: pointer; }
+  .ik-extra .ik-help { margin: 6px 0 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
+  .ik-extra[data-ready] { outline: 2px solid var(--roadmap-blue); outline-offset: -2px; }
+  @media (max-width: 900px) { .ik-extra { grid-template-columns: 1fr; gap: 20px; } }
+</style>
+
+<section class="ik-hero">
+  <span class="rl-tag">Client intake</span>
+  <h1>Let's build your business's operating system</h1>
+  <p>Riley will ask how the business runs today: what you sell, who buys it, and the work that happens behind the scenes. The core takes about 10 minutes. Type your answers in the chat or talk them through by voice, and skip anything you're not sure of. We'll fill the gaps together on a short follow-up call.</p>
+</section>
+
+<div class="ik-wrap">
+  <div class="ik-grid">
+    <!-- Voice -->
+    <section class:list={['rl-signal', 'rl-signal--dark', 'rl-flow', 'ik-voice', { 'ik-voice--off': !agentId }]} aria-labelledby="ik-voice-title">
+      <span class="ev-eyebrow">Talk it through</span>
+      <h2 id="ik-voice-title">Rather talk than type?</h2>
+      <p>Riley can run the same interview by voice. Talk as you would on a call, and take your time on the workflow questions.</p>
+      <div class="ik-orb" aria-hidden="true">
+        <i></i><i></i><i></i><b></b>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </div>
+      {agentId ? (
+        <>
+          <p style="font-size: 14px; line-height: 20px">Your browser will ask to use the microphone when you start.</p>
+          <div class="ik-widget">
+            <elevenlabs-convai agent-id={agentId} placement="bottom-left"></elevenlabs-convai>
+          </div>
+          <script is:inline src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+        </>
+      ) : (
+        <span class="ik-voice__status" role="status">Voice interview coming online: use the chat for now</span>
+      )}
+    </section>
+
+    <!-- Chat -->
+    <section class="rl-card rl-card--bordered ik-chat" aria-labelledby="ik-chat-title">
+      <div class="ik-chat__head">
+        <span class="ik-avatar" aria-hidden="true">R</span>
+        <div class="ik-chat__who">
+          <strong id="ik-chat-title">Riley</strong>
+          <span>Roadmap Labs intake</span>
+        </div>
+        <span class="ik-progress" id="ik-progress" aria-live="polite"></span>
+      </div>
+      <div class="ik-bar" aria-hidden="true"><i id="ik-bar"></i></div>
+      <div class="ik-log" id="ik-log" role="log" aria-live="polite" aria-relevant="additions">
+        <noscript><p class="ik-msg ik-msg--riley">The chat needs JavaScript. Please turn it on, or email dan@roadmaplabs.com.au and we'll send the questions another way.</p></noscript>
+      </div>
+      <form class="ik-composer" id="ik-composer" data-locked>
+        <label class="cs-sr" for="ik-input" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Your answer</label>
+        <textarea class="rl-input" id="ik-input" rows="1" placeholder="Type your answer…" autocomplete="off"></textarea>
+        <div class="ik-composer__actions">
+          <button class="rl-btn rl-btn--outline rl-btn--lg" type="button" id="ik-skip">Skip</button>
+          <button class="rl-btn rl-btn--lg" type="submit" id="ik-send">Send</button>
+        </div>
+        <span class="ik-composer__hint">Enter to send, Shift+Enter for a new line.</span>
+      </form>
+    </section>
+  </div>
+
+  <!-- Anything to add -->
+  <section class="rl-card rl-card--bordered ik-extra" id="ik-extra" aria-labelledby="ik-extra-title">
+    <div>
+      <h2 id="ik-extra-title">Anything to add?</h2>
+      <p>Files and links save us asking. A price list, a brand guide, a proposal you send, or a quick screen recording of how something works are all useful.</p>
+    </div>
+    <div>
+      <div class="form-thanks" id="ik-thanks" tabindex="-1" role="status" hidden>
+        <h3 style="margin: 0 0 8px; font: 600 20px/28px var(--font-sans); letter-spacing: -0.01em">Thanks, that's everything.</h3>
+        <p>Roadmap Labs will review your answers and follow up within 2 business days. If anything's urgent, email <a href="mailto:dan@roadmaplabs.com.au" style="color: inherit">dan@roadmaplabs.com.au</a>.</p>
+      </div>
+      <form id="ik-form" novalidate>
+        <input type="hidden" name="197" id="ik-employee">
+        <input type="hidden" name="198" id="ik-client">
+        <div>
+          <label class="rl-label" for="ik-files">Files<span style="font-weight: 400"> (optional)</span></label>
+          <input class="rl-input" id="ik-files" name="195" type="file" multiple style="width: 100%; box-sizing: border-box">
+          <p class="ik-help">Up to about 4MB in total. For anything bigger, share it from Google Drive or Dropbox and paste the link below.</p>
+        </div>
+        <div>
+          <label class="rl-label" for="ik-link">Link<span style="font-weight: 400"> (optional)</span></label>
+          <input class="rl-input" id="ik-link" name="196" type="text" inputmode="url" placeholder="A Drive or Dropbox folder, or paste a Loom/screen-recording link" style="width: 100%; box-sizing: border-box">
+        </div>
+        <button class="rl-btn rl-btn--lg" type="submit" id="ik-submit" style="justify-content: center">Send what I have so far</button>
+        <p class="form-status form-status--error" id="ik-error" role="alert" hidden></p>
+        <span style="font-size: 12px; line-height: 18px; color: var(--text-muted)">Your answers go straight to Roadmap Labs and are only used for your project. See our <a href="/privacy" style="color: inherit">privacy policy</a>.</span>
+      </form>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { QUESTIONS, CORE, FULL, SESSIONS, CLOSING, SKIPPED, MAX_UPLOAD_BYTES } from '../data/intake';
+
+  type Step =
+    | { type: 'q'; qid: number; text: string; phase: 'core' | 'full' | 'closing'; divider?: string }
+    | { type: 'choice' }
+    | { type: 'files' };
+  type Action = { t: 'a'; v: string } | { t: 'c'; v: 'more' | 'wrap' };
+
+  const STORE = 'rl-intake-v1';
+  const byN = new Map(QUESTIONS.map((q) => [q.n, q]));
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+  const log = $<HTMLDivElement>('ik-log');
+  const composer = $<HTMLFormElement>('ik-composer');
+  const input = $<HTMLTextAreaElement>('ik-input');
+  const skipBtn = $<HTMLButtonElement>('ik-skip');
+  const progress = $<HTMLSpanElement>('ik-progress');
+  const bar = $<HTMLElement>('ik-bar');
+  const extra = $<HTMLElement>('ik-extra');
+  const form = $<HTMLFormElement>('ik-form');
+  const submitBtn = $<HTMLButtonElement>('ik-submit');
+  const errorEl = $<HTMLParagraphElement>('ik-error');
+  const thanks = $<HTMLDivElement>('ik-thanks');
+
+  // Per-employee / per-client links: ?employee=&client=
+  const params = new URLSearchParams(location.search);
+  $<HTMLInputElement>('ik-employee').value = params.get('employee') ?? '';
+  $<HTMLInputElement>('ik-client').value = params.get('client') ?? '';
+
+  // ---------- State ----------
+  const steps: Step[] = CORE.map((n) => qStep(n, 'core'));
+  steps.push({ type: 'choice' });
+  let pos = 0;
+  let actions: Action[] = [];
+  const answers = new Map<number, string>();
+  let replaying = false;
+  let sent = false;
+
+  function qStep(n: number, phase: 'core' | 'full'): Step {
+    const q = byN.get(n)!;
+    return { type: 'q', qid: q.qid, text: q.text, phase };
+  }
+
+
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify(actions)); } catch {}
+  }
+  function load(): Action[] {
+    try { const a = JSON.parse(localStorage.getItem(STORE) || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
+  }
+  function clear() {
+    try { localStorage.removeItem(STORE); } catch {}
+  }
+
+  // ---------- Rendering ----------
+  function scroll() {
+    if (!replaying) log.scrollTop = log.scrollHeight;
+  }
+  function add(el: HTMLElement) {
+    log.appendChild(el);
+    scroll();
+    return el;
+  }
+  function msg(text: string, who: 'riley' | 'you' | 'skip', extraClass = '') {
+    const p = document.createElement('p');
+    p.className = `ik-msg ik-msg--${who} ${extraClass}`.trim();
+    p.textContent = text;
+    if (replaying) p.style.animation = 'none';
+    return add(p);
+  }
+  function divider(text: string) {
+    const d = document.createElement('div');
+    d.className = 'ik-divider';
+    d.textContent = text;
+    return add(d);
+  }
+  function note(text: string, linkText?: string, onClick?: () => void) {
+    const p = document.createElement('p');
+    p.className = 'ik-note';
+    p.append(text);
+    if (linkText && onClick) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = linkText;
+      b.addEventListener('click', onClick);
+      p.append(' ', b);
+    }
+    return add(p);
+  }
+
+  const wait = (ms: number) => (replaying ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
+  async function rileySays(text: string, extraClass = '') {
+    if (!replaying) {
+      const t = document.createElement('div');
+      t.className = 'ik-msg ik-msg--riley ik-msg--typing';
+      t.setAttribute('aria-hidden', 'true');
+      t.innerHTML = '<span></span><span></span><span></span>';
+      add(t);
+      await wait(Math.min(900, 320 + text.length * 6));
+      t.remove();
+    }
+    return msg(text, 'riley', extraClass);
+  }
+
+  function lock(locked: boolean) {
+    if (locked) composer.setAttribute('data-locked', '');
+    else composer.removeAttribute('data-locked');
+    input.disabled = locked;
+    skipBtn.disabled = locked;
+    $<HTMLButtonElement>('ik-send').disabled = locked;
+    if (!locked && !replaying && (actions.length || matchMedia('(pointer: fine)').matches)) input.focus({ preventScroll: true });
+  }
+
+  function updateProgress() {
+    const s = steps[pos];
+    const coreDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'core').length;
+    const fullTotal = steps.filter((x) => x.type === 'q' && x.phase === 'full').length;
+    const fullDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'full').length;
+    let label = '';
+    let pct = 0;
+    if (!s || s.type === 'files') { label = 'All done'; pct = 100; }
+    else if (s.type === 'choice') { label = 'Core done'; pct = fullTotal ? 34 : 90; }
+    else if (s.phase === 'core') { label = `Core · ${coreDone + 1} of ${CORE.length}`; pct = (coreDone / CORE.length) * (fullTotal ? 34 : 90); }
+    else if (s.phase === 'full') { label = `Full set · ${fullDone + 1} of ${fullTotal}`; pct = 34 + (fullDone / fullTotal) * 60; }
+    else { label = 'Last question'; pct = 95; }
+    progress.textContent = label;
+    bar.style.width = `${Math.round(pct)}%`;
+  }
+
+  // ---------- Flow ----------
+  async function present() {
+    updateProgress();
+    const s = steps[pos];
+    if (!s) return;
+    if (s.type === 'q') {
+      if (s.divider) divider(s.divider);
+      await rileySays(s.text, 'ik-msg--q');
+      lock(false);
+    } else if (s.type === 'choice') {
+      lock(true);
+      await rileySays("That's the core done - about 10 minutes. Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.");
+      const wrap = document.createElement('div');
+      wrap.className = 'ik-choices';
+      const more = document.createElement('button');
+      more.type = 'button'; more.className = 'rl-btn'; more.textContent = 'Keep going';
+      const done = document.createElement('button');
+      done.type = 'button'; done.className = 'rl-btn rl-btn--outline'; done.textContent = 'Wrap up now';
+      more.addEventListener('click', () => { wrap.remove(); act({ t: 'c', v: 'more' }); });
+      done.addEventListener('click', () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); });
+      wrap.append(more, done);
+      add(wrap);
+      if (!replaying) more.focus({ preventScroll: true });
+    } else if (s.type === 'files') {
+      lock(true);
+      await rileySays("Last thing: if there's anything you can share, like a price list, a brand guide or a screen recording of how something works, add it in the card below. Then press Send everything and you're done.");
+      readyToSend();
+    }
+  }
+
+  function addClosing() {
+    steps.push({ type: 'q', qid: CLOSING.anythingElse.qid, text: CLOSING.anythingElse.text, phase: 'closing' });
+    steps.push({ type: 'files' });
+  }
+
+  /** Apply one action to the current step. Returns false if it doesn't fit (stale saved state). */
+  function apply(a: Action): boolean {
+    const s = steps[pos];
+    if (!s) return false;
+    if (a.t === 'a' && s.type === 'q') {
+      answers.set(s.qid, a.v);
+      if (a.v === SKIPPED) msg('Skipped for now', 'skip');
+      else msg(a.v, 'you');
+    } else if (a.t === 'c' && s.type === 'choice') {
+      if (a.v === 'more') {
+        msg('Keep going', 'you');
+        let session = 0;
+        for (const n of FULL) {
+          const q = byN.get(n)!;
+          const divider = q.session !== session ? SESSIONS[q.session] : undefined;
+          session = q.session;
+          steps.push({ type: 'q', qid: q.qid, text: q.text, phase: 'full', divider });
+        }
+      } else {
+        msg('Wrap up now', 'you');
+      }
+      addClosing();
+    } else {
+      return false;
+    }
+    pos++;
+    return true;
+  }
+
+  async function act(a: Action) {
+    if (sent) return;
+    if (!apply(a)) return;
+    actions.push(a);
+    save();
+    lock(true);
+    if (steps[pos]?.type === 'q' && steps[pos - 1]?.type === 'choice' && a.t === 'c' && a.v === 'wrap') {
+      await rileySays('No problem. One last question before you go.');
+    }
+    await present();
+  }
+
+  function readyToSend() {
+    submitBtn.textContent = 'Send everything';
+    extra.setAttribute('data-ready', '');
+    if (!replaying) {
+      extra.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+    }
+  }
+
+  // ---------- Optional: questions to Riley ----------
+  const looksLikeQuestion = (t: string) =>
+    t.length < 240 && /\?\s*$/.test(t) && /^(what|why|how|who|whom|where|when|which|can|could|do|does|did|is|are|should|would|will|sorry|wait|hang on|um)\b/i.test(t);
+
+  async function askRiley(text: string, current: string): Promise<string | null> {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 9000);
+    try {
+      const r = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, question: current }),
+        signal: ctrl.signal,
+      });
+      if (r.status !== 200) return null;
+      const d = await r.json();
+      return typeof d.reply === 'string' && d.reply.trim() ? d.reply.trim() : null;
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  composer.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const s = steps[pos];
+    const text = input.value.trim();
+    if (!text || !s || s.type !== 'q') return;
+    input.value = '';
+    autosize();
+    if (looksLikeQuestion(text)) {
+      lock(true);
+      const reply = await askRiley(text, s.text);
+      if (reply) {
+        msg(text, 'you');
+        await rileySays(reply);
+        note('Back to it:');
+        await rileySays(s.text, 'ik-msg--q');
+        const at = pos;
+        const keep = note('Was that actually your answer?', 'Save it as my answer', () => {
+          keep.remove();
+          if (pos === at) act({ t: 'a', v: text });
+        });
+        lock(false);
+        return;
+      }
+    }
+    act({ t: 'a', v: text });
+  });
+
+  skipBtn.addEventListener('click', () => {
+    if (steps[pos]?.type === 'q') act({ t: 'a', v: SKIPPED });
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      composer.requestSubmit();
+    }
+  });
+  function autosize() {
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight + 2, 220)}px`;
+  }
+  input.addEventListener('input', autosize);
+
+  // ---------- Submit ----------
+  function fail(text: string) {
+    errorEl.textContent = text;
+    errorEl.hidden = false;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorEl.hidden = true;
+    const files = $<HTMLInputElement>('ik-files').files;
+    const total = files ? Array.from(files).reduce((sum, f) => sum + f.size, 0) : 0;
+    if (total > MAX_UPLOAD_BYTES) {
+      fail('Those files are too big to send through the page (the limit is about 4MB in total). Please put them in Google Drive, Dropbox or similar and paste the link instead.');
+      return;
+    }
+
+    const data = new FormData(form);
+    if (!total) data.delete('195');
+    // Only questions that were offered: answered as typed, or "to fill" if skipped.
+    for (const [qid, v] of answers) data.set(String(qid), v);
+
+    const hasSomething = answers.size > 0 || total > 0 || String(data.get('196') || '').trim();
+    if (!hasSomething) {
+      fail('There\'s nothing to send yet. Answer a question or two in the chat first, or add a file or link.');
+      return;
+    }
+
+    const label = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+    try {
+      const r = await fetch('/api/intake-submit', { method: 'POST', body: data });
+      const d = await r.json().catch(() => null);
+      if (r.status === 413) throw new Error('Those files are too big to send through the page. Please share them from Google Drive or Dropbox and paste the link instead.');
+      if (!r.ok || !d?.ok) throw new Error(d?.error || "That didn't send. Please try again.");
+      sent = true;
+      clear();
+      form.hidden = true;
+      thanks.hidden = false;
+      extra.removeAttribute('data-ready');
+      thanks.focus();
+      lock(true);
+      pos = steps.length;
+      updateProgress();
+      await rileySays("Thanks, that's everything. Roadmap Labs will review your answers and follow up within 2 business days.");
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = label;
+      fail(err instanceof Error && err.message ? err.message : "That didn't send. Please try again.");
+    }
+  });
+
+  // ---------- Start ----------
+  async function start() {
+    lock(true);
+    const saved = load();
+    const client = params.get('client');
+    if (saved.length) {
+      replaying = true;
+      msg(`Hi${client ? `, ${client}` : ''}. I'm Riley. Welcome back.`, 'riley');
+      updateProgress();
+      for (const a of saved) {
+        const s = steps[pos];
+        if (s?.type === 'q') { if (s.divider) divider(s.divider); msg(s.text, 'riley', 'ik-msg--q'); }
+        else if (s?.type === 'choice') msg("That's the core done - about 10 minutes. Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.", 'riley');
+        if (!apply(a)) break;
+        actions.push(a);
+      }
+      const startOver = note('Picked up where you left off.', 'Start over', () => {
+        if (!confirm('Clear your answers and start again?')) return;
+        clear();
+        location.reload();
+      });
+      startOver.style.animation = 'none';
+      replaying = false;
+      log.scrollTop = log.scrollHeight;
+      await present();
+      return;
+    }
+    await rileySays(`Hi${client ? `, ${client}` : ''}. I'm Riley, and I'll be asking about the business one question at a time.`);
+    await rileySays("Answer in your own words; there are no wrong answers. If you're not sure about one, press Skip and we'll come back to it on the follow-up call.");
+    await rileySays(`We'll start with the core: ${CORE.length} questions, about 10 minutes.`);
+    await present();
+  }
+
+  start();
+</script>
+
+</Base>
