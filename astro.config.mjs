@@ -13,6 +13,10 @@ export default defineConfig({
   // Static output with the Vercel adapter: every page is prerendered, and only routes that opt out
   // with `export const prerender = false` (the /api endpoints) run as serverless functions.
   output: 'static',
+  // Intake endpoints are public, unauthenticated form handlers; Vercel's proxy makes Astro's
+  // origin check false-positive on POSTs, so the check is disabled. No authenticated state is
+  // read or written cross-origin.
+  security: { checkOrigin: false },
   adapter: vercel(),
   build: { format: 'file', inlineStylesheets: 'always' },
   compressHTML: true,
