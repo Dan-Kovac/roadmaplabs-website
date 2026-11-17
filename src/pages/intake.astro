@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 
-// Public, so it can sit in the page. Unset means the voice panel shows its placeholder.
+// Public, so it can sit in the page. Unset means voice mode shows a "coming online" note and chat carries everything.
 const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
 ---
 <Base
@@ -11,53 +11,62 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   noindex
 >
 <style is:global>
-  .ik-hero { max-width: 1200px; margin: 0 auto; padding: 88px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
-  .ik-hero h1 { margin: 0; font-size: clamp(40px, 5.2vw, 64px); line-height: 1.04; letter-spacing: -0.03em; font-weight: 500; max-width: 18ch; }
-  .ik-hero p { margin: 0; font-size: 19px; line-height: 29px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 38em; }
-  .ik-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px 96px; box-sizing: border-box; display: grid; gap: 24px; }
-  .ik-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px; align-items: stretch; }
-  @media (max-width: 900px) { .ik-grid { grid-template-columns: 1fr; } .ik-hero { padding-top: 64px; } }
+  .ik-hero { max-width: 880px; margin: 0 auto; padding: 72px 24px 32px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+  .ik-hero h1 { margin: 0; font-size: clamp(38px, 5vw, 60px); line-height: 1.04; letter-spacing: -0.03em; font-weight: 500; max-width: 18ch; }
+  .ik-hero p { margin: 0; font-size: 18px; line-height: 28px; letter-spacing: -0.01em; color: var(--text-secondary); max-width: 40em; }
+  .ik-shell { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; box-sizing: border-box; }
 
-  /* ---------- Voice panel ---------- */
-  .ik-voice { padding: 32px; min-height: 0; gap: 16px; }
-  .ik-voice h2 { margin: 0; max-width: 16ch; font: 600 28px/1.15 var(--font-sans); letter-spacing: -0.02em; }
-  .ik-voice p { max-width: 36ch; color: rgba(255,255,255,.86); }
-  .ik-voice .ev-eyebrow { color: rgba(255,255,255,.75); }
-  .ik-orb { position: relative; width: 132px; height: 132px; margin: 12px 0 4px; flex: none; }
-  .ik-orb i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(0,163,255,.55); animation: ik-ring 3.6s cubic-bezier(.2,.7,.2,1) infinite; }
+  /* ---------- The one component ---------- */
+  .ik { position: relative; display: flex; flex-direction: column; height: min(800px, calc(100svh - 96px)); min-height: 600px; background: var(--paper); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-float); overflow: hidden; }
+  .ik-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 14px 20px; border-bottom: 1px solid var(--border); }
+  .ik-avatar { position: relative; width: 38px; height: 38px; flex: none; border-radius: 50%; background: var(--gradient-signal); color: #fff; display: grid; place-items: center; font: 600 15px/1 var(--font-sans); }
+  .ik-avatar::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; background: #00a3ff; border: 2px solid var(--paper); box-shadow: 0 0 0 0 rgba(0,163,255,.6); animation: rl-pulse 1.8s ease-out infinite; }
+  .ik-who { display: flex; flex-direction: column; min-width: 0; }
+  .ik-who strong { font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; }
+  .ik-who span { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ik-modes { margin-left: auto; display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: var(--fog); flex: none; }
+  .ik-modes button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 600 13px/20px var(--font-sans); cursor: pointer; transition: background-color .2s ease, color .2s ease; }
+  .ik-modes button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px rgba(0,7,16,.12); }
+  .ik-modes button:focus-visible { outline: 2px solid var(--roadmap-blue); outline-offset: 1px; }
+  .ik-bar { height: 3px; background: var(--fog); flex: none; }
+  .ik-bar i { display: block; height: 100%; width: 0; background: var(--gradient-signal); transition: width .4s ease; }
+
+  /* Voice stage: only in voice mode */
+  .ik-stage { display: none; position: relative; flex: none; height: 300px; background: var(--gradient-signal-dark); background-size: 160% 160%; animation: rl-pan 14s ease-in-out infinite alternate; color: var(--paper); overflow: hidden; isolation: isolate; }
+  .ik[data-mode="voice"] .ik-stage { display: block; }
+  .ik-stage::before { content: ""; position: absolute; inset: -30%; z-index: -1; background: radial-gradient(40% 40% at 50% 45%, rgba(0,163,255,.35), transparent 70%); animation: rl-drift 16s ease-in-out infinite alternate; }
+  .ik-stage__inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px; text-align: center; }
+  .ik-orb { position: relative; width: 140px; height: 140px; flex: none; }
+  .ik-orb i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(0,163,255,.6); animation: ik-ring 3.6s cubic-bezier(.2,.7,.2,1) infinite; }
   .ik-orb i:nth-child(2) { animation-delay: 1.2s; }
   .ik-orb i:nth-child(3) { animation-delay: 2.4s; }
-  .ik-orb b { position: absolute; inset: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #5fc4ff, #0a4cff 60%, #052a8f); box-shadow: 0 0 40px rgba(0,163,255,.45); animation: ik-breathe 3.6s ease-in-out infinite; }
+  .ik-orb b { position: absolute; inset: 32px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #5fc4ff, #0a4cff 60%, #052a8f); box-shadow: 0 0 44px rgba(0,163,255,.5); animation: ik-breathe 3.6s ease-in-out infinite; }
   .ik-orb svg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #fff; }
-  .ik-voice--off .ik-orb i { border-color: rgba(255,255,255,.22); }
-  .ik-voice--off .ik-orb b { background: radial-gradient(circle at 35% 30%, #4b5563, #15191e 70%); box-shadow: none; }
-  .ik-voice__status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.1); font: 500 13px/18px var(--font-sans); color: var(--paper); }
-  .ik-widget { width: 100%; }
-  /* On wider screens the widget's floating button sits inside the panel instead of the page corner:
-     a transformed box becomes the containing block for its fixed-position children. */
-  @media (min-width: 901px) {
-    .ik-widget { position: relative; height: 96px; transform: translateZ(0); }
-  }
+  .ik-stage[data-speaking] .ik-orb b { animation-duration: .9s; }
+  .ik-stage[data-speaking] .ik-orb i { animation-duration: 1.4s; }
+  .ik-stage--off .ik-orb i { border-color: rgba(255,255,255,.22); }
+  .ik-stage--off .ik-orb b { background: radial-gradient(circle at 35% 30%, #4b5563, #15191e 70%); box-shadow: none; }
+  .ik-stage__status { margin: 0; max-width: 40ch; font: 500 14px/20px var(--font-sans); color: rgba(255,255,255,.88); }
+  .ik-stage__pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,.1); font: 500 13px/18px var(--font-sans); color: var(--paper); }
+  /* The ElevenLabs widget renders with fixed positioning. A transformed box becomes the containing block
+     for its fixed children, so the widget lives inside the stage instead of the page corner. */
+  .ik-widget { position: absolute; inset: 0; transform: translateZ(0); }
+  .ik-stage__inner--agent { justify-content: flex-start; padding-top: 28px; }
   @keyframes ik-ring { 0% { transform: scale(.55); opacity: .9; } 100% { transform: scale(1.15); opacity: 0; } }
   @keyframes ik-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 
-  /* ---------- Chat panel ---------- */
-  .ik-chat { display: flex; flex-direction: column; padding: 0; overflow: hidden; min-height: 620px; }
-  .ik-chat__head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
-  .ik-avatar { width: 36px; height: 36px; flex: none; border-radius: 50%; background: var(--gradient-signal); color: #fff; display: grid; place-items: center; font: 600 15px/1 var(--font-sans); }
-  .ik-chat__who { display: flex; flex-direction: column; min-width: 0; }
-  .ik-chat__who strong { font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; }
-  .ik-chat__who span { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
-  .ik-progress { margin-left: auto; text-align: right; font: 500 12px/18px var(--font-sans); color: var(--text-secondary); white-space: nowrap; }
-  .ik-bar { height: 3px; background: var(--fog); }
-  .ik-bar i { display: block; height: 100%; width: 0; background: var(--gradient-signal); transition: width .4s ease; }
-  .ik-log { flex: 1 1 auto; height: 460px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-  .ik-msg { margin: 0; max-width: 85%; padding: 12px 16px; border-radius: 16px; font: 400 16px/24px var(--font-sans); letter-spacing: -0.01em; white-space: pre-wrap; overflow-wrap: anywhere; animation: rl-rise .35s cubic-bezier(.2,.7,.2,1) both; }
-  .ik-msg--riley { align-self: flex-start; background: var(--fog); color: var(--ink); border-bottom-left-radius: 4px; }
+  /* Thread */
+  .ik-log { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+  .ik-msg { margin: 0; max-width: 82%; padding: 12px 16px; border-radius: 18px; font: 400 16px/24px var(--font-sans); letter-spacing: -0.01em; white-space: pre-wrap; overflow-wrap: anywhere; animation: rl-rise .35s cubic-bezier(.2,.7,.2,1) both; }
+  .ik-msg--riley { align-self: flex-start; background: var(--fog); color: var(--ink); border-bottom-left-radius: 6px; }
   .ik-msg--q { font-weight: 500; }
-  .ik-msg--you { align-self: flex-end; background: var(--roadmap-blue); color: var(--paper); border-bottom-right-radius: 4px; }
+  .ik-msg--error { background: #fef3f2; color: #b42318; }
+  .ik-msg--you { align-self: flex-end; background: var(--roadmap-blue); color: var(--paper); border-bottom-right-radius: 6px; }
+  .ik-msg--spoken::before { content: "Spoken"; display: block; margin-bottom: 2px; font: 600 11px/16px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; opacity: .75; }
   .ik-msg--skip { align-self: flex-end; background: transparent; border: 1px dashed var(--border-control); color: var(--text-secondary); font-style: italic; }
-  .ik-msg--typing { display: inline-flex; gap: 4px; padding: 14px 16px; }
+  .ik-msg--file { align-self: flex-end; display: inline-flex; align-items: center; gap: 10px; background: var(--paper); color: var(--ink); border: 1px solid var(--border); border-bottom-right-radius: 6px; }
+  .ik-msg--file svg { flex: none; color: var(--roadmap-blue); }
+  .ik-msg--typing { display: inline-flex; gap: 4px; padding: 15px 16px; }
   .ik-msg--typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--steel); animation: ik-dot 1s ease-in-out infinite; }
   .ik-msg--typing span:nth-child(2) { animation-delay: .15s; } .ik-msg--typing span:nth-child(3) { animation-delay: .3s; }
   @keyframes ik-dot { 0%, 100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
@@ -66,114 +75,142 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   .ik-choices { display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; }
   .ik-note { margin: 0; align-self: flex-start; font: 400 13px/18px var(--font-sans); color: var(--text-muted); }
   .ik-note button { padding: 0; border: 0; background: none; font: inherit; color: var(--roadmap-blue); text-decoration: underline; cursor: pointer; }
-  .ik-composer { border-top: 1px solid var(--border); padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
-  .ik-composer textarea { resize: none; max-height: 220px; min-height: 48px; width: 100%; box-sizing: border-box; }
-  .ik-composer__actions { display: flex; gap: 8px; }
-  .ik-composer__hint { grid-column: 1 / -1; font: 400 12px/16px var(--font-sans); color: var(--text-muted); padding: 0 4px; }
-  .ik-composer[data-locked] textarea, .ik-composer[data-locked] button { opacity: .5; pointer-events: none; }
-  @media (max-width: 560px) {
-    .ik-composer { grid-template-columns: 1fr; }
-    .ik-composer__actions .rl-btn { flex: 1; justify-content: center; }
-    .ik-msg { max-width: 92%; }
-    .ik-progress { display: none; }
-  }
 
-  /* ---------- Anything to add ---------- */
-  .ik-extra { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: start; }
-  .ik-extra h2 { margin: 0 0 8px; font: 600 28px/1.15 var(--font-sans); letter-spacing: -0.02em; }
-  .ik-extra p { margin: 0; font: 400 16px/24px var(--font-sans); color: var(--text-secondary); }
-  .ik-extra form { display: grid; gap: 16px; }
-  .ik-extra input[type="file"] { padding: 10px 12px; cursor: pointer; }
-  .ik-extra .ik-help { margin: 6px 0 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
-  .ik-extra[data-ready] { outline: 2px solid var(--roadmap-blue); outline-offset: -2px; }
-  @media (max-width: 900px) { .ik-extra { grid-template-columns: 1fr; gap: 20px; } }
+  /* Attach tray + chips */
+  .ik-tray { flex: none; margin: 0 12px; padding: 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--fog); display: grid; gap: 10px; }
+  .ik-tray[hidden] { display: none; }
+  .ik-tray__row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ik-tray__row .rl-input { min-height: 40px; padding: 8px 12px; font-size: 15px; }
+  .ik-tray small { font: 400 12px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-chips { flex: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px; }
+  .ik-chips:empty { display: none; }
+  .ik-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 6px 4px 10px; border-radius: 999px; background: var(--fog); font: 500 12px/18px var(--font-sans); color: var(--ink); }
+  .ik-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+  .ik-chip button { width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--text-secondary); cursor: pointer; font: 600 14px/1 var(--font-sans); }
+  .ik-chip button:hover { background: var(--mist); color: var(--ink); }
+
+  /* Composer */
+  .ik-composer { flex: none; margin: 10px 12px 0; display: flex; align-items: flex-end; gap: 6px; padding: 6px; border: 1px solid var(--border-control); border-radius: 18px; background: var(--paper); transition: border-color .2s ease, box-shadow .2s ease; }
+  .ik-composer:focus-within { border-color: var(--roadmap-blue); box-shadow: 0 0 0 3px rgba(10,76,255,.12); }
+  .ik-composer textarea { flex: 1; min-width: 0; resize: none; border: 0; outline: 0; background: transparent; padding: 9px 6px; max-height: 200px; min-height: 40px; box-sizing: border-box; font: 400 16px/22px var(--font-sans); letter-spacing: -0.01em; color: var(--ink); }
+  .ik-composer textarea::placeholder { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ik-icon { width: 40px; height: 40px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--graphite); cursor: pointer; transition: background-color .2s ease, color .2s ease; }
+  .ik-icon:hover { background: var(--fog); color: var(--ink); }
+  .ik-icon:focus-visible, .ik-skip:focus-visible { outline: 2px solid var(--roadmap-blue); outline-offset: 1px; }
+  .ik-icon[aria-pressed="true"], .ik-icon[aria-expanded="true"] { background: rgba(10,76,255,.1); color: var(--roadmap-blue); }
+  .ik-mic[aria-pressed="true"] { background: var(--roadmap-blue); color: var(--paper); box-shadow: 0 0 0 0 rgba(10,76,255,.5); animation: ik-listen 1.4s ease-out infinite; }
+  @keyframes ik-listen { 0% { box-shadow: 0 0 0 0 rgba(10,76,255,.45); } 100% { box-shadow: 0 0 0 10px rgba(10,76,255,0); } }
+  .ik-send { background: var(--roadmap-blue); color: var(--paper); }
+  .ik-send:hover { background: #083fd6; color: var(--paper); }
+  .ik-skip { flex: none; height: 40px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 600 13px/20px var(--font-sans); cursor: pointer; }
+  .ik-skip:hover { background: var(--fog); color: var(--ink); }
+  .ik-composer[data-locked] textarea, .ik-composer[data-locked] .ik-skip, .ik-composer[data-locked] .ik-send, .ik-composer[data-locked] .ik-mic { opacity: .45; pointer-events: none; }
+  .ik-foot { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; padding: 8px 18px 12px; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
+  .ik-foot a { color: inherit; }
+  .ik-foot button { padding: 0; border: 0; background: none; font: 600 12px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; }
+  .ik-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (max-width: 640px) {
+    .ik-hero { padding-top: 48px; }
+    .ik-shell { padding: 0 12px 64px; }
+    .ik { height: calc(100svh - 80px); min-height: 520px; border-radius: 16px; }
+    .ik-head { padding: 12px; }
+    .ik-modes button { padding: 6px 10px; }
+    .ik-modes .ik-modes__label { display: none; }
+    .ik-stage { height: 240px; }
+    .ik-orb { transform: scale(.8); margin: -14px 0; }
+    .ik-log { padding: 14px; }
+    .ik-msg { max-width: 90%; }
+    .ik-skip { padding: 0 8px; }
+    .ik-chip span { max-width: 180px; }
+  }
 </style>
 
 <section class="ik-hero">
   <span class="rl-tag">Client intake</span>
   <h1>Let's build your business's operating system</h1>
-  <p>Riley will ask how the business runs today: what you sell, who buys it, and the work that happens behind the scenes. The core takes about 10 minutes. Type your answers in the chat or talk them through by voice, and skip anything you're not sure of. We'll fill the gaps together on a short follow-up call.</p>
+  <p>Riley will ask how the business runs today: what you sell, who buys it, and the work behind the scenes. The core takes about 10 minutes. Type, speak or switch to a voice interview at any point, and skip anything you're not sure of. We'll fill the gaps together on a short follow-up call.</p>
 </section>
 
-<div class="ik-wrap">
-  <div class="ik-grid">
-    <!-- Voice -->
-    <section class:list={['rl-signal', 'rl-signal--dark', 'rl-flow', 'ik-voice', { 'ik-voice--off': !agentId }]} aria-labelledby="ik-voice-title">
-      <span class="ev-eyebrow">Talk it through</span>
-      <h2 id="ik-voice-title">Rather talk than type?</h2>
-      <p>Riley can run the same interview by voice. Talk as you would on a call, and take your time on the workflow questions.</p>
-      <div class="ik-orb" aria-hidden="true">
-        <i></i><i></i><i></i><b></b>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+<div class="ik-shell">
+  <section class="ik" id="ik" data-mode="chat" data-agent={agentId || undefined} aria-label="Intake interview with Riley">
+    <header class="ik-head">
+      <span class="ik-avatar" aria-hidden="true">R</span>
+      <div class="ik-who">
+        <strong>Riley</strong>
+        <span id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
       </div>
-      {agentId ? (
-        <>
-          <p style="font-size: 14px; line-height: 20px">Your browser will ask to use the microphone when you start.</p>
-          <div class="ik-widget">
-            <elevenlabs-convai agent-id={agentId} placement="bottom-left"></elevenlabs-convai>
-          </div>
-          <script is:inline src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-        </>
-      ) : (
-        <span class="ik-voice__status" role="status">Voice interview coming online: use the chat for now</span>
-      )}
-    </section>
+      <div class="ik-modes" role="group" aria-label="How you'd like to answer">
+        <button type="button" data-mode="chat" aria-pressed="true">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+          <span class="ik-modes__label">Chat</span>
+        </button>
+        <button type="button" data-mode="voice" aria-pressed="false">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"/></svg>
+          <span class="ik-modes__label">Voice interview</span>
+        </button>
+      </div>
+    </header>
+    <div class="ik-bar" aria-hidden="true"><i id="ik-bar"></i></div>
 
-    <!-- Chat -->
-    <section class="rl-card rl-card--bordered ik-chat" aria-labelledby="ik-chat-title">
-      <div class="ik-chat__head">
-        <span class="ik-avatar" aria-hidden="true">R</span>
-        <div class="ik-chat__who">
-          <strong id="ik-chat-title">Riley</strong>
-          <span>Roadmap Labs intake</span>
-        </div>
-        <span class="ik-progress" id="ik-progress" aria-live="polite"></span>
+    <div class:list={['ik-stage', { 'ik-stage--off': !agentId }]} id="ik-stage">
+      <div class:list={['ik-stage__inner', { 'ik-stage__inner--agent': agentId }]}>
+        {agentId ? (
+          <>
+            <p class="ik-stage__status" id="ik-stage-status">Start the call and Riley picks up where you are. Your answers appear in the thread below.</p>
+            <div class="ik-widget" id="ik-widget"></div>
+          </>
+        ) : (
+          <>
+            <div class="ik-orb" aria-hidden="true">
+              <i></i><i></i><i></i><b></b>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            </div>
+            <span class="ik-stage__pill" role="status">Voice interview coming online: use the chat for now</span>
+            <p class="ik-stage__status">You can still speak your answers: press the mic in the chat box below.</p>
+          </>
+        )}
       </div>
-      <div class="ik-bar" aria-hidden="true"><i id="ik-bar"></i></div>
-      <div class="ik-log" id="ik-log" role="log" aria-live="polite" aria-relevant="additions">
-        <noscript><p class="ik-msg ik-msg--riley">The chat needs JavaScript. Please turn it on, or email dan@roadmaplabs.com.au and we'll send the questions another way.</p></noscript>
-      </div>
-      <form class="ik-composer" id="ik-composer" data-locked>
-        <label class="cs-sr" for="ik-input" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Your answer</label>
-        <textarea class="rl-input" id="ik-input" rows="1" placeholder="Type your answer…" autocomplete="off"></textarea>
-        <div class="ik-composer__actions">
-          <button class="rl-btn rl-btn--outline rl-btn--lg" type="button" id="ik-skip">Skip</button>
-          <button class="rl-btn rl-btn--lg" type="submit" id="ik-send">Send</button>
-        </div>
-        <span class="ik-composer__hint">Enter to send, Shift+Enter for a new line.</span>
-      </form>
-    </section>
-  </div>
-
-  <!-- Anything to add -->
-  <section class="rl-card rl-card--bordered ik-extra" id="ik-extra" aria-labelledby="ik-extra-title">
-    <div>
-      <h2 id="ik-extra-title">Anything to add?</h2>
-      <p>Files and links save us asking. A price list, a brand guide, a proposal you send, or a quick screen recording of how something works are all useful.</p>
     </div>
-    <div>
-      <div class="form-thanks" id="ik-thanks" tabindex="-1" role="status" hidden>
-        <h3 style="margin: 0 0 8px; font: 600 20px/28px var(--font-sans); letter-spacing: -0.01em">Thanks, that's everything.</h3>
-        <p>Roadmap Labs will review your answers and follow up within 2 business days. If anything's urgent, email <a href="mailto:dan@roadmaplabs.com.au" style="color: inherit">dan@roadmaplabs.com.au</a>.</p>
+
+    <div class="ik-log" id="ik-log" role="log" aria-live="polite" aria-relevant="additions">
+      <noscript><p class="ik-msg ik-msg--riley">The interview needs JavaScript. Please turn it on, or email dan@roadmaplabs.com.au and we'll send the questions another way.</p></noscript>
+    </div>
+
+    <div class="ik-tray" id="ik-tray" hidden>
+      <div class="ik-tray__row">
+        <label class="rl-btn rl-btn--outline" for="ik-files" style="cursor: pointer">Add files</label>
+        <input class="ik-sr" id="ik-files" type="file" multiple>
+        <small>Up to about 4MB in total. For anything bigger, paste a link instead.</small>
       </div>
-      <form id="ik-form" novalidate>
-        <input type="hidden" name="197" id="ik-employee">
-        <input type="hidden" name="198" id="ik-client">
-        <div>
-          <label class="rl-label" for="ik-files">Files<span style="font-weight: 400"> (optional)</span></label>
-          <input class="rl-input" id="ik-files" name="195" type="file" multiple style="width: 100%; box-sizing: border-box">
-          <p class="ik-help">Up to about 4MB in total. For anything bigger, share it from Google Drive or Dropbox and paste the link below.</p>
-        </div>
-        <div>
-          <label class="rl-label" for="ik-link">Link<span style="font-weight: 400"> (optional)</span></label>
-          <input class="rl-input" id="ik-link" name="196" type="text" inputmode="url" placeholder="A Drive or Dropbox folder, or paste a Loom/screen-recording link" style="width: 100%; box-sizing: border-box">
-        </div>
-        <button class="rl-btn rl-btn--lg" type="submit" id="ik-submit" style="justify-content: center">Send what I have so far</button>
-        <p class="form-status form-status--error" id="ik-error" role="alert" hidden></p>
-        <span style="font-size: 12px; line-height: 18px; color: var(--text-muted)">Your answers go straight to Roadmap Labs and are only used for your project. See our <a href="/privacy" style="color: inherit">privacy policy</a>.</span>
+      <form class="ik-tray__row" id="ik-linkform">
+        <label class="ik-sr" for="ik-link">Link</label>
+        <input class="rl-input" id="ik-link" type="text" inputmode="url" autocomplete="off" placeholder="A Drive or Dropbox link, or paste a Loom/screen-recording link">
+        <button class="rl-btn" type="submit">Add link</button>
       </form>
+    </div>
+    <div class="ik-chips" id="ik-chips" aria-label="Attached"></div>
+
+    <form class="ik-composer" id="ik-composer" data-locked>
+      <button class="ik-icon" type="button" id="ik-attach" aria-label="Attach files or a link" aria-expanded="false" aria-controls="ik-tray">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>
+      </button>
+      <label class="ik-sr" for="ik-input">Your answer</label>
+      <textarea id="ik-input" rows="1" placeholder="Type your answer…" autocomplete="off"></textarea>
+      <button class="ik-icon ik-mic" type="button" id="ik-mic" aria-label="Speak your answer" aria-pressed="false" hidden>
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <button class="ik-skip" type="button" id="ik-skip">Skip</button>
+      <button class="ik-icon ik-send" type="submit" id="ik-send" aria-label="Send">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </form>
+    <div class="ik-foot">
+      <span id="ik-hint">Enter to send · Paperclip for files (about 4MB in total) or links</span>
+      <span><button type="button" id="ik-send-now" hidden>Send what I have so far</button></span>
     </div>
   </section>
+  <p style="margin: 14px 4px 0; font-size: 12px; line-height: 18px; color: var(--text-muted)">Your answers go straight to Roadmap Labs and are only used for your project. See our <a href="/privacy" style="color: inherit">privacy policy</a>.</p>
 </div>
 
 <script>
@@ -183,49 +220,73 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     | { type: 'q'; qid: number; text: string; phase: 'core' | 'full' | 'closing'; divider?: string }
     | { type: 'choice' }
     | { type: 'files' };
-  type Action = { t: 'a'; v: string } | { t: 'c'; v: 'more' | 'wrap' };
+  /** a = answer (s: spoken in a voice interview), c = path choice. */
+  type Action = { t: 'a'; v: string; s?: 1 } | { t: 'c'; v: 'more' | 'wrap' };
+  type Mode = 'chat' | 'voice';
+  interface Saved { v: 2; actions: Action[]; links: string[]; mode: Mode }
 
   const STORE = 'rl-intake-v1';
+  const CHOICE_TEXT = "That's the core done - about 10 minutes. Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.";
+  const FILES_TEXT = "Last thing: if there's anything you can share, like a price list, a brand guide or a screen recording of how something works, add it with the paperclip below. Then press Send everything and you're done.";
+  const TOO_BIG = "That's too big to send through the page (about 4MB in total). Put it in Google Drive or Dropbox and paste the link instead.";
+
   const byN = new Map(QUESTIONS.map((q) => [q.n, q]));
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
+  const root = $<HTMLElement>('ik');
   const log = $<HTMLDivElement>('ik-log');
   const composer = $<HTMLFormElement>('ik-composer');
   const input = $<HTMLTextAreaElement>('ik-input');
   const skipBtn = $<HTMLButtonElement>('ik-skip');
+  const sendBtn = $<HTMLButtonElement>('ik-send');
+  const micBtn = $<HTMLButtonElement>('ik-mic');
+  const attachBtn = $<HTMLButtonElement>('ik-attach');
+  const tray = $<HTMLDivElement>('ik-tray');
+  const fileInput = $<HTMLInputElement>('ik-files');
+  const linkForm = $<HTMLFormElement>('ik-linkform');
+  const linkInput = $<HTMLInputElement>('ik-link');
+  const chips = $<HTMLDivElement>('ik-chips');
   const progress = $<HTMLSpanElement>('ik-progress');
   const bar = $<HTMLElement>('ik-bar');
-  const extra = $<HTMLElement>('ik-extra');
-  const form = $<HTMLFormElement>('ik-form');
-  const submitBtn = $<HTMLButtonElement>('ik-submit');
-  const errorEl = $<HTMLParagraphElement>('ik-error');
-  const thanks = $<HTMLDivElement>('ik-thanks');
+  const stage = $<HTMLElement>('ik-stage');
+  const sendNow = $<HTMLButtonElement>('ik-send-now');
+  const agentId = root.dataset.agent || '';
 
   // Per-employee / per-client links: ?employee=&client=
   const params = new URLSearchParams(location.search);
-  $<HTMLInputElement>('ik-employee').value = params.get('employee') ?? '';
-  $<HTMLInputElement>('ik-client').value = params.get('client') ?? '';
+  const employee = params.get('employee') ?? '';
+  const client = params.get('client') ?? '';
 
-  // ---------- State ----------
+  // ---------- State (shared by chat and voice) ----------
   const steps: Step[] = CORE.map((n) => qStep(n, 'core'));
   steps.push({ type: 'choice' });
   let pos = 0;
   let actions: Action[] = [];
+  let links: string[] = [];
+  let files: File[] = [];
+  let mode: Mode = 'chat';
   const answers = new Map<number, string>();
   let replaying = false;
   let sent = false;
+  let sending = false;
 
   function qStep(n: number, phase: 'core' | 'full'): Step {
     const q = byN.get(n)!;
     return { type: 'q', qid: q.qid, text: q.text, phase };
   }
 
-
   function save() {
-    try { localStorage.setItem(STORE, JSON.stringify(actions)); } catch {}
+    if (sent) return;
+    try { localStorage.setItem(STORE, JSON.stringify({ v: 2, actions, links, mode } satisfies Saved)); } catch {}
   }
-  function load(): Action[] {
-    try { const a = JSON.parse(localStorage.getItem(STORE) || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
+  function load(): Saved {
+    const empty: Saved = { v: 2, actions: [], links: [], mode: 'chat' };
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (Array.isArray(raw)) return { ...empty, actions: raw }; // first version stored just the actions
+      if (raw && raw.v === 2) return { ...empty, ...raw };
+    } catch {}
+    return empty;
   }
   function clear() {
     try { localStorage.removeItem(STORE); } catch {}
@@ -235,7 +296,8 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   function scroll() {
     if (!replaying) log.scrollTop = log.scrollHeight;
   }
-  function add(el: HTMLElement) {
+  function add<T extends HTMLElement>(el: T): T {
+    if (replaying) el.style.animation = 'none';
     log.appendChild(el);
     scroll();
     return el;
@@ -244,7 +306,15 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     const p = document.createElement('p');
     p.className = `ik-msg ik-msg--${who} ${extraClass}`.trim();
     p.textContent = text;
-    if (replaying) p.style.animation = 'none';
+    return add(p);
+  }
+  function fileMsg(text: string) {
+    const p = document.createElement('p');
+    p.className = 'ik-msg ik-msg--file';
+    p.innerHTML = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>';
+    const span = document.createElement('span');
+    span.textContent = text;
+    p.append(span);
     return add(p);
   }
   function divider(text: string) {
@@ -266,6 +336,19 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     }
     return add(p);
   }
+  function buttons(list: { label: string; primary?: boolean; onClick: () => void }[]) {
+    const wrap = document.createElement('div');
+    wrap.className = 'ik-choices';
+    for (const b of list) {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = b.primary ? 'rl-btn' : 'rl-btn rl-btn--outline';
+      el.textContent = b.label;
+      el.addEventListener('click', b.onClick);
+      wrap.append(el);
+    }
+    return add(wrap);
+  }
 
   const wait = (ms: number) => (replaying ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
   async function rileySays(text: string, extraClass = '') {
@@ -281,13 +364,15 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     return msg(text, 'riley', extraClass);
   }
 
+  const finePointer = matchMedia('(pointer: fine)').matches;
   function lock(locked: boolean) {
     if (locked) composer.setAttribute('data-locked', '');
     else composer.removeAttribute('data-locked');
     input.disabled = locked;
     skipBtn.disabled = locked;
-    $<HTMLButtonElement>('ik-send').disabled = locked;
-    if (!locked && !replaying && (actions.length || matchMedia('(pointer: fine)').matches)) input.focus({ preventScroll: true });
+    sendBtn.disabled = locked;
+    micBtn.disabled = locked;
+    if (!locked && !replaying && mode === 'chat' && (actions.length || finePointer)) input.focus({ preventScroll: true });
   }
 
   function updateProgress() {
@@ -297,42 +382,40 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     const fullDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'full').length;
     let label = '';
     let pct = 0;
-    if (!s || s.type === 'files') { label = 'All done'; pct = 100; }
-    else if (s.type === 'choice') { label = 'Core done'; pct = fullTotal ? 34 : 90; }
-    else if (s.phase === 'core') { label = `Core · ${coreDone + 1} of ${CORE.length}`; pct = (coreDone / CORE.length) * (fullTotal ? 34 : 90); }
-    else if (s.phase === 'full') { label = `Full set · ${fullDone + 1} of ${fullTotal}`; pct = 34 + (fullDone / fullTotal) * 60; }
-    else { label = 'Last question'; pct = 95; }
+    if (sent) { label = 'Sent. Thank you'; pct = 100; }
+    else if (!s || s.type === 'files') { label = 'All questions done'; pct = 100; }
+    else if (s.type === 'choice') { label = 'Core done'; pct = 34; }
+    else if (s.phase === 'core') { label = `Core · question ${coreDone + 1} of ${CORE.length}`; pct = (coreDone / CORE.length) * 34; }
+    else if (s.phase === 'full') { label = `Full set · question ${fullDone + 1} of ${fullTotal}`; pct = 34 + (fullDone / fullTotal) * 60; }
+    else { label = 'Last question'; pct = 96; }
     progress.textContent = label;
     bar.style.width = `${Math.round(pct)}%`;
+    sendNow.hidden = sent || answers.size === 0 || s?.type === 'files';
   }
 
   // ---------- Flow ----------
-  async function present() {
+  async function present(i = pos) {
     updateProgress();
-    const s = steps[pos];
-    if (!s) return;
+    const s = steps[i];
+    if (!s || sent) return;
     if (s.type === 'q') {
       if (s.divider) divider(s.divider);
       await rileySays(s.text, 'ik-msg--q');
-      lock(false);
+      if (i === pos) lock(false);
     } else if (s.type === 'choice') {
       lock(true);
-      await rileySays("That's the core done - about 10 minutes. Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.");
-      const wrap = document.createElement('div');
-      wrap.className = 'ik-choices';
-      const more = document.createElement('button');
-      more.type = 'button'; more.className = 'rl-btn'; more.textContent = 'Keep going';
-      const done = document.createElement('button');
-      done.type = 'button'; done.className = 'rl-btn rl-btn--outline'; done.textContent = 'Wrap up now';
-      more.addEventListener('click', () => { wrap.remove(); act({ t: 'c', v: 'more' }); });
-      done.addEventListener('click', () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); });
-      wrap.append(more, done);
-      add(wrap);
-      if (!replaying) more.focus({ preventScroll: true });
+      await rileySays(CHOICE_TEXT);
+      if (i !== pos) return;
+      const wrap = buttons([
+        { label: 'Keep going', primary: true, onClick: () => { wrap.remove(); act({ t: 'c', v: 'more' }); } },
+        { label: 'Wrap up now', onClick: () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); } },
+      ]);
+      if (!replaying && mode === 'chat') (wrap.firstChild as HTMLButtonElement).focus({ preventScroll: true });
     } else if (s.type === 'files') {
       lock(true);
-      await rileySays("Last thing: if there's anything you can share, like a price list, a brand guide or a screen recording of how something works, add it in the card below. Then press Send everything and you're done.");
-      readyToSend();
+      await rileySays(FILES_TEXT);
+      buttons([{ label: 'Send everything', primary: true, onClick: () => sendAll() }]);
+      openTray(true);
     }
   }
 
@@ -341,56 +424,57 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     steps.push({ type: 'files' });
   }
 
-  /** Apply one action to the current step. Returns false if it doesn't fit (stale saved state). */
-  function apply(a: Action): boolean {
+  /** Apply one action to the current step: updates state now and returns the rendering to run in order,
+   *  or null if the action doesn't fit (stale saved state, or a tool call for a step that has moved on). */
+  function apply(a: Action): (() => void) | null {
     const s = steps[pos];
-    if (!s) return false;
+    if (!s) return null;
+    let render: () => void;
     if (a.t === 'a' && s.type === 'q') {
       answers.set(s.qid, a.v);
-      if (a.v === SKIPPED) msg('Skipped for now', 'skip');
-      else msg(a.v, 'you');
+      render = () => (a.v === SKIPPED ? msg('Skipped for now', 'skip') : msg(a.v, 'you', a.s ? 'ik-msg--spoken' : ''));
     } else if (a.t === 'c' && s.type === 'choice') {
+      render = () => msg(a.v === 'more' ? 'Keep going' : 'Wrap up now', 'you');
       if (a.v === 'more') {
-        msg('Keep going', 'you');
         let session = 0;
         for (const n of FULL) {
           const q = byN.get(n)!;
-          const divider = q.session !== session ? SESSIONS[q.session] : undefined;
+          const div = q.session !== session ? SESSIONS[q.session] : undefined;
           session = q.session;
-          steps.push({ type: 'q', qid: q.qid, text: q.text, phase: 'full', divider });
+          steps.push({ type: 'q', qid: q.qid, text: q.text, phase: 'full', divider: div });
         }
-      } else {
-        msg('Wrap up now', 'you');
       }
       addClosing();
     } else {
-      return false;
+      return null;
     }
     pos++;
-    return true;
+    return render;
   }
 
-  async function act(a: Action) {
-    if (sent) return;
-    if (!apply(a)) return;
+  // Thread rendering runs through one queue so messages always appear in script order,
+  // even when voice tool calls arrive faster than Riley's typing animation.
+  let queue: Promise<unknown> = Promise.resolve();
+  const enqueue = (fn: () => unknown) => (queue = queue.then(fn).catch(() => {}));
+
+  /** State changes synchronously, so callers (e.g. voice tools) see the new position immediately. */
+  function act(a: Action): boolean {
+    if (sent) return false;
+    const render = apply(a);
+    if (!render) return false;
     actions.push(a);
     save();
     lock(true);
-    if (steps[pos]?.type === 'q' && steps[pos - 1]?.type === 'choice' && a.t === 'c' && a.v === 'wrap') {
-      await rileySays('No problem. One last question before you go.');
-    }
-    await present();
+    const next = pos;
+    enqueue(async () => {
+      render();
+      if (a.t === 'c' && a.v === 'wrap') await rileySays('No problem. One last question before you go.');
+      await present(next);
+    });
+    return true;
   }
 
-  function readyToSend() {
-    submitBtn.textContent = 'Send everything';
-    extra.setAttribute('data-ready', '');
-    if (!replaying) {
-      extra.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
-    }
-  }
-
-  // ---------- Optional: questions to Riley ----------
+  // ---------- Optional: questions to Riley in chat ----------
   const looksLikeQuestion = (t: string) =>
     t.length < 240 && /\?\s*$/.test(t) && /^(what|why|how|who|whom|where|when|which|can|could|do|does|did|is|are|should|would|will|sorry|wait|hang on|um)\b/i.test(t);
 
@@ -416,6 +500,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
 
   composer.addEventListener('submit', async (e) => {
     e.preventDefault();
+    stopListening();
     const s = steps[pos];
     const text = input.value.trim();
     if (!text || !s || s.type !== 'q') return;
@@ -442,6 +527,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   });
 
   skipBtn.addEventListener('click', () => {
+    stopListening();
     if (steps[pos]?.type === 'q') act({ t: 'a', v: SKIPPED });
   });
 
@@ -453,93 +539,271 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   });
   function autosize() {
     input.style.height = 'auto';
-    input.style.height = `${Math.min(input.scrollHeight + 2, 220)}px`;
+    input.style.height = `${Math.min(input.scrollHeight, 200)}px`;
   }
   input.addEventListener('input', autosize);
 
-  // ---------- Submit ----------
-  function fail(text: string) {
-    errorEl.textContent = text;
-    errorEl.hidden = false;
+  // ---------- Speech to text in chat (browser speech recognition) ----------
+  const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  let rec: any = null;
+  if (SR) micBtn.hidden = false;
+  function stopListening() {
+    if (rec) { try { rec.stop(); } catch {} }
+  }
+  micBtn.addEventListener('click', () => {
+    if (rec) { stopListening(); return; }
+    const base = input.value.trim() ? input.value.trimEnd() + ' ' : '';
+    rec = new SR();
+    rec.lang = 'en-AU';
+    rec.interimResults = true;
+    rec.continuous = true;
+    rec.onresult = (e: any) => {
+      let text = '';
+      for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+      input.value = base + text.trimStart();
+      autosize();
+    };
+    rec.onerror = (e: any) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') note("The browser didn't allow the microphone. You can type instead, or allow it in the address bar and try again.");
+    };
+    rec.onend = () => {
+      rec = null;
+      micBtn.setAttribute('aria-pressed', 'false');
+      micBtn.setAttribute('aria-label', 'Speak your answer');
+      input.placeholder = 'Type your answer…';
+      input.focus({ preventScroll: true });
+    };
+    try {
+      rec.start();
+      micBtn.setAttribute('aria-pressed', 'true');
+      micBtn.setAttribute('aria-label', 'Stop listening');
+      input.placeholder = 'Listening… press the mic again when you’re done';
+    } catch {
+      rec = null;
+    }
+  });
+
+  // ---------- Attachments ----------
+  function openTray(open: boolean) {
+    tray.hidden = !open;
+    attachBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  attachBtn.addEventListener('click', () => openTray(tray.hidden));
+
+  const fmtSize = (b: number) => (b < 1024 * 1024 ? `${Math.max(1, Math.round(b / 1024))} KB` : `${(b / 1024 / 1024).toFixed(1)} MB`);
+  const totalBytes = () => files.reduce((sum, f) => sum + f.size, 0);
+
+  function renderChips() {
+    chips.textContent = '';
+    const chip = (label: string, onRemove: () => void) => {
+      const c = document.createElement('span');
+      c.className = 'ik-chip';
+      const s = document.createElement('span');
+      s.textContent = label;
+      const x = document.createElement('button');
+      x.type = 'button';
+      x.textContent = '×';
+      x.setAttribute('aria-label', `Remove ${label}`);
+      x.addEventListener('click', onRemove);
+      c.append(s, x);
+      chips.append(c);
+    };
+    files.forEach((f, i) => chip(`${f.name} · ${fmtSize(f.size)}`, () => { files.splice(i, 1); renderChips(); }));
+    links.forEach((l, i) => chip(l, () => { links.splice(i, 1); save(); renderChips(); }));
   }
 
-  form.addEventListener('submit', async (e) => {
+  fileInput.addEventListener('change', () => {
+    for (const f of Array.from(fileInput.files || [])) {
+      if (totalBytes() + f.size > MAX_UPLOAD_BYTES) {
+        rileySays(`${f.name}: ${TOO_BIG}`);
+        continue;
+      }
+      files.push(f);
+      fileMsg(`${f.name} · ${fmtSize(f.size)}`);
+    }
+    fileInput.value = '';
+    renderChips();
+  });
+
+  linkForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    errorEl.hidden = true;
-    const files = $<HTMLInputElement>('ik-files').files;
-    const total = files ? Array.from(files).reduce((sum, f) => sum + f.size, 0) : 0;
-    if (total > MAX_UPLOAD_BYTES) {
-      fail('Those files are too big to send through the page (the limit is about 4MB in total). Please put them in Google Drive, Dropbox or similar and paste the link instead.');
+    const v = linkInput.value.trim();
+    if (!v) return;
+    links.push(v);
+    linkInput.value = '';
+    fileMsg(v);
+    save();
+    renderChips();
+  });
+
+  // ---------- Submit ----------
+  async function sendAll() {
+    if (sending || sent) return;
+    stopListening();
+    if (totalBytes() > MAX_UPLOAD_BYTES) { rileySays(TOO_BIG, 'ik-msg--error'); return; }
+    if (!answers.size && !files.length && !links.length) {
+      rileySays("There's nothing to send yet. Answer a question or two first, or attach a file or link.");
       return;
     }
-
-    const data = new FormData(form);
-    if (!total) data.delete('195');
+    const data = new FormData();
     // Only questions that were offered: answered as typed, or "to fill" if skipped.
     for (const [qid, v] of answers) data.set(String(qid), v);
+    if (links.length) data.set(String(CLOSING.link), links.join(' | '));
+    for (const f of files) data.append(String(CLOSING.files), f, f.name);
+    data.set(String(CLOSING.employee), employee);
+    data.set(String(CLOSING.client), client);
 
-    const hasSomething = answers.size > 0 || total > 0 || String(data.get('196') || '').trim();
-    if (!hasSomething) {
-      fail('There\'s nothing to send yet. Answer a question or two in the chat first, or add a file or link.');
-      return;
-    }
-
-    const label = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending…';
+    sending = true;
+    lock(true);
+    root.querySelectorAll<HTMLButtonElement>('.ik-choices button').forEach((b) => (b.disabled = true));
+    const sendingNote = note('Sending…');
     try {
       const r = await fetch('/api/intake-submit', { method: 'POST', body: data });
       const d = await r.json().catch(() => null);
-      if (r.status === 413) throw new Error('Those files are too big to send through the page. Please share them from Google Drive or Dropbox and paste the link instead.');
+      if (r.status === 413) throw new Error(TOO_BIG);
       if (!r.ok || !d?.ok) throw new Error(d?.error || "That didn't send. Please try again.");
       sent = true;
       clear();
-      form.hidden = true;
-      thanks.hidden = false;
-      extra.removeAttribute('data-ready');
-      thanks.focus();
-      lock(true);
-      pos = steps.length;
+      openTray(false);
+      chips.textContent = '';
+      sendingNote.remove();
       updateProgress();
-      await rileySays("Thanks, that's everything. Roadmap Labs will review your answers and follow up within 2 business days.");
+      await rileySays("Thanks, that's everything. Roadmap Labs will review your answers and follow up within 2 business days. If anything's urgent, email dan@roadmaplabs.com.au.");
     } catch (err) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = label;
-      fail(err instanceof Error && err.message ? err.message : "That didn't send. Please try again.");
+      sendingNote.remove();
+      await rileySays(err instanceof Error && err.message ? err.message : "That didn't send. Please try again.", 'ik-msg--error');
+      root.querySelectorAll<HTMLButtonElement>('.ik-choices button').forEach((b) => (b.disabled = false));
+      buttons([{ label: 'Try again', primary: true, onClick: () => sendAll() }]);
+      if (steps[pos]?.type === 'q') lock(false);
+    } finally {
+      sending = false;
     }
+  }
+  sendNow.addEventListener('click', () => {
+    if (confirm("Send your answers so far? Anything you haven't reached yet will be left out.")) sendAll();
+  });
+
+  // ---------- Modes ----------
+  let widgetLoaded = false;
+  function setMode(m: Mode, persist = true) {
+    mode = m;
+    root.dataset.mode = m;
+    root.querySelectorAll<HTMLButtonElement>('.ik-modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    if (m === 'voice') {
+      stopListening();
+      loadWidget();
+    }
+    if (persist) save();
+    scroll();
+  }
+  root.querySelectorAll<HTMLButtonElement>('.ik-modes button').forEach((b) =>
+    b.addEventListener('click', () => setMode(b.dataset.mode as Mode)),
+  );
+
+  // ---------- Voice interview (ElevenLabs ConvAI widget) ----------
+  // The agent runs the same script through client tools, so voice and chat share one thread and one state.
+  // Agent setup (prompt + tool definitions) is in docs/intake-voice-agent.md.
+  function loadWidget() {
+    if (widgetLoaded || !agentId) return;
+    widgetLoaded = true;
+    const host = $<HTMLDivElement>('ik-widget');
+    const w = document.createElement('elevenlabs-convai');
+    w.setAttribute('agent-id', agentId);
+    w.setAttribute('placement', 'bottom');
+    w.setAttribute('transcript', 'false');
+    w.setAttribute('text-input', 'false');
+    w.setAttribute('avatar-orb-color-1', '#0a4cff');
+    w.setAttribute('avatar-orb-color-2', '#00a3ff');
+    w.setAttribute('text-contents', JSON.stringify({ main_label: 'Talk it through with Riley', start_call: 'Start voice interview', end_call: 'End interview' }));
+    host.append(w);
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+    s.async = true;
+    document.head.append(s);
+  }
+
+  function stepPrompt(): string {
+    const s = steps[pos];
+    if (sent) return 'The interview has been submitted. Thank them and end the call.';
+    if (!s) return 'The interview is finished.';
+    if (s.type === 'q') return `Ask this question exactly as written, then wait for the answer: "${s.text}"`;
+    if (s.type === 'choice') return `The core questions are done. Say exactly: "${CHOICE_TEXT}" Then call choose_path with path "keep_going" or "wrap_up".`;
+    return 'All the questions are done. Tell them they can add files or links in the chat with the paperclip button, then press Send everything on the screen. Thank them and end the call.';
+  }
+
+  let speakingTimer = 0;
+  document.addEventListener('elevenlabs-convai:call', (event: any) => {
+    const config = event?.detail?.config;
+    if (!config) return;
+    config.clientTools = {
+      ...(config.clientTools || {}),
+      get_current_question: () => stepPrompt(),
+      record_answer: (p: { answer?: string }) => {
+        if (steps[pos]?.type !== 'q') return `No question is waiting. ${stepPrompt()}`;
+        const v = String(p?.answer ?? '').trim();
+        act({ t: 'a', v: v || SKIPPED, s: 1 });
+        return `Saved. Next: ${stepPrompt()}`;
+      },
+      skip_question: () => {
+        if (steps[pos]?.type !== 'q') return `No question is waiting. ${stepPrompt()}`;
+        act({ t: 'a', v: SKIPPED, s: 1 });
+        return `Skipped. Next: ${stepPrompt()}`;
+      },
+      choose_path: (p: { path?: string }) => {
+        if (steps[pos]?.type !== 'choice') return `There's no choice to make right now. ${stepPrompt()}`;
+        const more = /keep|more|full|continue/i.test(String(p?.path ?? ''));
+        root.querySelectorAll('.ik-choices').forEach((c) => c.remove());
+        act({ t: 'c', v: more ? 'more' : 'wrap' });
+        return `Done. Next: ${stepPrompt()}`;
+      },
+    };
+    const onConnect = config.onConnect;
+    config.onConnect = (...args: unknown[]) => {
+      stage.classList.add('ik-stage--live');
+      onConnect?.(...args);
+    };
+    const onAudio = config.onAudio;
+    config.onAudio = (...args: unknown[]) => {
+      stage.setAttribute('data-speaking', '');
+      clearTimeout(speakingTimer);
+      speakingTimer = window.setTimeout(() => stage.removeAttribute('data-speaking'), 1200);
+      onAudio?.(...args);
+    };
   });
 
   // ---------- Start ----------
   async function start() {
     lock(true);
     const saved = load();
-    const client = params.get('client');
-    if (saved.length) {
+    links = Array.isArray(saved.links) ? saved.links.filter((l) => typeof l === 'string') : [];
+    renderChips();
+    setMode(saved.mode === 'voice' ? 'voice' : 'chat', false);
+    if (saved.actions.length) {
       replaying = true;
       msg(`Hi${client ? `, ${client}` : ''}. I'm Riley. Welcome back.`, 'riley');
-      updateProgress();
-      for (const a of saved) {
+      for (const a of saved.actions) {
         const s = steps[pos];
         if (s?.type === 'q') { if (s.divider) divider(s.divider); msg(s.text, 'riley', 'ik-msg--q'); }
-        else if (s?.type === 'choice') msg("That's the core done - about 10 minutes. Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.", 'riley');
-        if (!apply(a)) break;
+        else if (s?.type === 'choice') msg(CHOICE_TEXT, 'riley');
+        const render = apply(a);
+        if (!render) break;
+        render();
         actions.push(a);
       }
-      const startOver = note('Picked up where you left off.', 'Start over', () => {
+      note('Picked up where you left off.', 'Start over', () => {
         if (!confirm('Clear your answers and start again?')) return;
         clear();
         location.reload();
       });
-      startOver.style.animation = 'none';
       replaying = false;
       log.scrollTop = log.scrollHeight;
-      await present();
+      enqueue(() => present());
       return;
     }
     await rileySays(`Hi${client ? `, ${client}` : ''}. I'm Riley, and I'll be asking about the business one question at a time.`);
-    await rileySays("Answer in your own words; there are no wrong answers. If you're not sure about one, press Skip and we'll come back to it on the follow-up call.");
+    await rileySays(`Answer in your own words, by typing or with the mic. Prefer a proper conversation? Switch to Voice interview at the top at any point and we'll carry on from the same question. If you're not sure about one, press Skip and we'll come back to it on the follow-up call.`);
     await rileySays(`We'll start with the core: ${CORE.length} questions, about 10 minutes.`);
-    await present();
+    enqueue(() => present());
   }
 
   start();
