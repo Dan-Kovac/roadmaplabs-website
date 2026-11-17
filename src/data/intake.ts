@@ -96,3 +96,13 @@ export const SKIPPED = 'to fill';
 
 /** Vercel rejects serverless request bodies over ~4.5MB; keep uploads under this. */
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+
+/** Screen recordings: uploaded straight to a private Supabase Storage bucket (free tier caps files at 50MB). */
+export const RECORDING = {
+  bucket: 'intake-recordings',
+  maxBytes: 50 * 1024 * 1024,
+  /** Stop recording well before the cap. */
+  stopAtBytes: 45 * 1024 * 1024,
+  maxSeconds: 5 * 60,
+  videoBitsPerSecond: 1_000_000,
+} as const;

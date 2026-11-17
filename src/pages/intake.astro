@@ -82,6 +82,16 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   .ik-tray__row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .ik-tray__row .rl-input { min-height: 40px; padding: 8px 12px; font-size: 15px; }
   .ik-tray small { font: 400 12px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-recdot { display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: #e5484d; flex: none; }
+  .ik-recbar { flex: none; margin: 8px 12px 0; padding: 8px 8px 8px 14px; display: flex; align-items: center; gap: 10px; border-radius: 14px; background: var(--abyss); color: var(--paper); font: 500 13px/18px var(--font-sans); }
+  .ik-recbar[hidden] { display: none; }
+  .ik-recbar .ik-recdot { margin: 0; animation: ik-blink 1.2s ease-in-out infinite; }
+  .ik-recbar[data-uploading] .ik-recdot { background: #00a3ff; }
+  .ik-recbar__meter { flex: 1; min-width: 40px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.18); overflow: hidden; }
+  .ik-recbar__meter i { display: block; height: 100%; width: 0; background: var(--gradient-signal); transition: width .4s ease; }
+  .ik-recbar .rl-btn { min-height: 32px; padding: 4px 14px; background: var(--paper); color: var(--ink); }
+  .ik-recbar[data-uploading] .rl-btn { display: none; }
+  @keyframes ik-blink { 50% { opacity: .35; } }
   .ik-chips { flex: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px; }
   .ik-chips:empty { display: none; }
   .ik-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 6px 4px 10px; border-radius: 999px; background: var(--fog); font: 500 12px/18px var(--font-sans); color: var(--ink); }
@@ -183,11 +193,21 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
         <input class="ik-sr" id="ik-files" type="file" multiple>
         <small>Up to about 4MB in total. For anything bigger, paste a link instead.</small>
       </div>
+      <div class="ik-tray__row" id="ik-rec-row" hidden>
+        <button class="rl-btn rl-btn--outline" type="button" id="ik-rec"><span class="ik-recdot" aria-hidden="true"></span>Record your screen</button>
+        <small>Talk us through it. Keep it short: up to 5 minutes. Longer? Paste a Loom link instead.</small>
+      </div>
       <form class="ik-tray__row" id="ik-linkform">
         <label class="ik-sr" for="ik-link">Link</label>
         <input class="rl-input" id="ik-link" type="text" inputmode="url" autocomplete="off" placeholder="A Drive or Dropbox link, or paste a Loom/screen-recording link">
         <button class="rl-btn" type="submit">Add link</button>
       </form>
+    </div>
+    <div class="ik-recbar" id="ik-recbar" role="status" hidden>
+      <span class="ik-recdot" aria-hidden="true"></span>
+      <span id="ik-rec-label">Recording 0:00</span>
+      <span class="ik-recbar__meter" aria-hidden="true"><i id="ik-rec-meter"></i></span>
+      <button class="rl-btn" type="button" id="ik-rec-stop">Stop</button>
     </div>
     <div class="ik-chips" id="ik-chips" aria-label="Attached"></div>
 
@@ -206,7 +226,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
       </button>
     </form>
     <div class="ik-foot">
-      <span id="ik-hint">Enter to send · Paperclip for files (about 4MB in total) or links</span>
+      <span id="ik-hint">Enter to send · Paperclip for files (about 4MB in total), links or a screen recording</span>
       <span><button type="button" id="ik-send-now" hidden>Send what I have so far</button></span>
     </div>
   </section>
@@ -214,7 +234,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
 </div>
 
 <script>
-  import { QUESTIONS, CORE, FULL, SESSIONS, CLOSING, SKIPPED, MAX_UPLOAD_BYTES } from '../data/intake';
+  import { QUESTIONS, CORE, FULL, SESSIONS, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
 
   type Step =
     | { type: 'q'; qid: number; text: string; phase: 'core' | 'full' | 'closing'; divider?: string }
@@ -227,7 +247,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
 
   const STORE = 'rl-intake-v1';
   const CHOICE_TEXT = "That's the core done - about 10 minutes. Want to keep going? The full set adds the deeper brand and workflow questions (about 15 more minutes), or you can wrap up now.";
-  const FILES_TEXT = "Last thing: if there's anything you can share, like a price list, a brand guide or a screen recording of how something works, add it with the paperclip below. Then press Send everything and you're done.";
+  const FILES_TEXT = "Last thing: if there's anything you can share, like a price list, a brand guide or a quick recording of your screen as you walk through how something works, add it with the paperclip below. Then press Send everything and you're done.";
   const TOO_BIG = "That's too big to send through the page (about 4MB in total). Put it in Google Drive or Dropbox and paste the link instead.";
 
   const byN = new Map(QUESTIONS.map((q) => [q.n, q]));
@@ -250,6 +270,12 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
   const bar = $<HTMLElement>('ik-bar');
   const stage = $<HTMLElement>('ik-stage');
   const sendNow = $<HTMLButtonElement>('ik-send-now');
+  const recRow = $<HTMLDivElement>('ik-rec-row');
+  const recBtn = $<HTMLButtonElement>('ik-rec');
+  const recBar = $<HTMLDivElement>('ik-recbar');
+  const recLabel = $<HTMLSpanElement>('ik-rec-label');
+  const recMeter = $<HTMLElement>('ik-rec-meter');
+  const recStop = $<HTMLButtonElement>('ik-rec-stop');
   const agentId = root.dataset.agent || '';
 
   // Per-employee / per-client links: ?employee=&client=
@@ -609,7 +635,7 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
       chips.append(c);
     };
     files.forEach((f, i) => chip(`${f.name} · ${fmtSize(f.size)}`, () => { files.splice(i, 1); renderChips(); }));
-    links.forEach((l, i) => chip(l, () => { links.splice(i, 1); save(); renderChips(); }));
+    links.forEach((l, i) => chip(linkLabel(l), () => { links.splice(i, 1); save(); renderChips(); }));
   }
 
   fileInput.addEventListener('change', () => {
@@ -625,21 +651,167 @@ const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
     renderChips();
   });
 
-  linkForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const v = linkInput.value.trim();
-    if (!v) return;
+  /** "loom.com/share/x" -> "https://loom.com/share/x", so the Jotform link field gets a real URL. */
+  function normaliseLink(v: string) {
+    const t = v.trim();
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) return t;
+    if (/^[\w-]+(\.[\w-]+)+([/?#:]\S*)?$/.test(t)) return `https://${t}`;
+    return t;
+  }
+  const linkLabel = (l: string) => (l.startsWith('Screen recording') ? l.split(': ')[0] : l);
+  function addLink(raw: string, label?: string) {
+    const v = normaliseLink(raw);
+    if (!v || links.includes(v)) return false;
     links.push(v);
-    linkInput.value = '';
-    fileMsg(v);
+    fileMsg(label ?? v);
     save();
     renderChips();
+    return true;
+  }
+  linkForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (addLink(linkInput.value)) linkInput.value = '';
   });
+
+  // ---------- Screen recording (getDisplayMedia -> MediaRecorder -> private Supabase bucket) ----------
+  const canRecord = !!navigator.mediaDevices?.getDisplayMedia && typeof MediaRecorder !== 'undefined';
+  if (canRecord) recRow.hidden = false;
+  let recBusy = false;
+  let stopRecording: ((why?: 'time' | 'size') => void) | null = null;
+  const fmtDur = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const MAX_LABEL = fmtDur(RECORDING.maxSeconds);
+
+  function showRecBar(label: string, pct: number, uploading = false) {
+    recBar.hidden = false;
+    recBar.toggleAttribute('data-uploading', uploading);
+    recLabel.textContent = label;
+    recMeter.style.width = `${Math.min(100, Math.round(pct * 100))}%`;
+  }
+
+  async function startRecording() {
+    if (recBusy) return;
+    let display: MediaStream;
+    try {
+      display = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15, max: 24 } }, audio: true });
+    } catch {
+      note("Screen sharing didn't start. You can try again, or paste a Loom link instead.");
+      return;
+    }
+    recBusy = true;
+    openTray(false);
+    // Narration from the mic if allowed; system/tab audio if the browser shared it. Mix both when there are two.
+    let mic: MediaStream | null = null;
+    try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); } catch {}
+    const tracks: MediaStreamTrack[] = [...display.getVideoTracks()];
+    const audioIn = [display, mic].filter((s): s is MediaStream => !!s && s.getAudioTracks().length > 0);
+    let ctx: AudioContext | null = null;
+    if (audioIn.length === 1) tracks.push(audioIn[0].getAudioTracks()[0]);
+    else if (audioIn.length > 1) {
+      ctx = new AudioContext();
+      const dest = ctx.createMediaStreamDestination();
+      for (const s of audioIn) ctx.createMediaStreamSource(s).connect(dest);
+      tracks.push(dest.stream.getAudioTracks()[0]);
+    }
+    const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) || '';
+    let rec: MediaRecorder;
+    try {
+      rec = new MediaRecorder(new MediaStream(tracks), { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: RECORDING.videoBitsPerSecond, audioBitsPerSecond: 64_000 });
+    } catch {
+      [display, mic].forEach((s) => s?.getTracks().forEach((t) => t.stop()));
+      recBusy = false;
+      note("This browser can't record the screen. Please paste a Loom link instead.");
+      return;
+    }
+    const chunks: Blob[] = [];
+    let bytes = 0;
+    let stoppedBy: 'time' | 'size' | undefined;
+    const started = Date.now();
+    const elapsed = () => (Date.now() - started) / 1000;
+    stopRecording = (why) => {
+      stoppedBy ??= why;
+      if (rec.state !== 'inactive') rec.stop();
+    };
+    rec.ondataavailable = (e) => {
+      if (!e.data.size) return;
+      chunks.push(e.data);
+      bytes += e.data.size;
+      if (bytes >= RECORDING.stopAtBytes) stopRecording?.('size');
+    };
+    const tick = window.setInterval(() => {
+      const s = elapsed();
+      showRecBar(`Recording ${fmtDur(s)} of ${MAX_LABEL}`, Math.max(s / RECORDING.maxSeconds, bytes / RECORDING.stopAtBytes));
+      if (s >= RECORDING.maxSeconds) stopRecording?.('time');
+    }, 500);
+    display.getVideoTracks()[0]?.addEventListener('ended', () => stopRecording?.());
+    rec.onstop = async () => {
+      clearInterval(tick);
+      stopRecording = null;
+      [display, mic].forEach((s) => s?.getTracks().forEach((t) => t.stop()));
+      ctx?.close().catch(() => {});
+      const seconds = elapsed();
+      const blob = new Blob(chunks, { type: (rec.mimeType || mime || 'video/webm').split(';')[0] });
+      if (stoppedBy === 'time') note(`That's ${MAX_LABEL}, so the recording stopped there. Shorter is better; for anything longer, paste a Loom link.`);
+      if (stoppedBy === 'size') note('The recording reached the size limit, so it stopped there. For anything longer, paste a Loom link.');
+      try {
+        await uploadRecording(blob, seconds);
+      } catch (err) {
+        rileySays(err instanceof Error && err.message ? err.message : "The recording couldn't be saved. Please try again, or paste a Loom link instead.", 'ik-msg--error');
+      } finally {
+        recBar.hidden = true;
+        recBusy = false;
+      }
+    };
+    rec.start(1000);
+    showRecBar(`Recording 0:00 of ${MAX_LABEL}`, 0);
+    recStop.focus({ preventScroll: true });
+  }
+
+  async function postRecording(body: object) {
+    const r = await fetch('/api/intake-recording', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => null);
+    if (!r.ok || !d?.ok) throw new Error(d?.error || "The recording couldn't be saved. Please try again, or paste a Loom link instead.");
+    return d;
+  }
+
+  function putFile(url: string, blob: Blob, onProgress: (p: number) => void) {
+    return new Promise<void>((resolve, reject) => {
+      const x = new XMLHttpRequest();
+      x.open('PUT', url);
+      x.setRequestHeader('content-type', blob.type);
+      x.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+      x.onload = () => (x.status >= 200 && x.status < 300 ? resolve() : reject(new Error("The recording didn't upload. Please try again, or paste a Loom link instead.")));
+      x.onerror = () => reject(new Error("The recording didn't upload. Check your connection and try again, or paste a Loom link instead."));
+      x.send(blob);
+    });
+  }
+
+  async function uploadRecording(blob: Blob, seconds: number) {
+    if (!blob.size) throw new Error('That recording came out empty. Please try again, or paste a Loom link instead.');
+    if (blob.size > RECORDING.maxBytes) throw new Error(`That recording is ${fmtSize(blob.size)}, over the 50MB limit. Please record a shorter one, or paste a Loom link instead.`);
+    showRecBar('Uploading recording… 0%', 0, true);
+    const started = await postRecording({ action: 'start', contentType: blob.type, size: blob.size, client });
+    await putFile(started.uploadUrl, blob, (p) => showRecBar(`Uploading recording… ${Math.round(p * 100)}%`, p, true));
+    const done = await postRecording({ action: 'finish', path: started.path });
+    const label = `Screen recording, ${fmtDur(seconds)}`;
+    links.push(`${label}: ${done.url} (stored at ${done.path})`);
+    fileMsg(`${label} · ${fmtSize(blob.size)}`);
+    save();
+    renderChips();
+  }
+
+  recBtn.addEventListener('click', () => startRecording());
+  recStop.addEventListener('click', () => stopRecording?.());
 
   // ---------- Submit ----------
   async function sendAll() {
     if (sending || sent) return;
     stopListening();
+    if (recBusy) {
+      rileySays('Hang on, your screen recording is still going. Stop it (or wait for the upload to finish), then press Send again.');
+      return;
+    }
+    // A link typed into the box but never added still counts.
+    if (linkInput.value.trim() && addLink(linkInput.value)) linkInput.value = '';
     if (totalBytes() > MAX_UPLOAD_BYTES) { rileySays(TOO_BIG, 'ik-msg--error'); return; }
     if (!answers.size && !files.length && !links.length) {
       rileySays("There's nothing to send yet. Answer a question or two first, or attach a file or link.");
