@@ -17,9 +17,9 @@ export interface CoreQuestion {
 }
 
 export const CORE_STAGES = [
-  { n: 0, title: 'Setup', intro: "First, the basics." },
-  { n: 1, title: 'AI today', intro: 'Next: how AI shows up in the business today. Small jobs count.' },
-  { n: 2, title: 'Tool stack', intro: 'Now the software you run on, and how the team gets on with it.' },
+  { n: 0, title: 'Setup', recap: 'the setup', intro: 'First, the basics, which go in your README.md.' },
+  { n: 1, title: 'AI today', recap: 'your AI today', intro: 'Next, how AI shows up in the business today, which also goes in your README.md. Small jobs count.' },
+  { n: 2, title: 'Tool stack', recap: 'your tool stack', intro: 'Next, your tool stack, which goes in reference.md.' },
 ] as const;
 
 export const CORE_QUESTIONS: CoreQuestion[] = [
@@ -50,9 +50,9 @@ export const JOURNEY = [
     title: 'Acquire',
     qid: 160,
     slots: [163, 164, 165],
-    text: 'How do new customers and business come in? Name each way, one per line: marketing, word of mouth, partnerships, outbound, anything.',
+    text: 'How do new customers and business come in? Name each workflow, one per line: marketing, word of mouth, partnerships, outbound, anything.',
     hint: 'For example, a trades firm: builder referrals, Google reviews, a Facebook page. A clinic: GP referrals, online booking. An agency: LinkedIn, past clients. A shop: Instagram, walk-ins, an email list.',
-    intro: 'Now the journey, in three parts: how work comes in, how it gets done, and what runs around it. First, how new business comes in.',
+    intro: 'Now the journey, in three parts: how work comes in, how it gets done, and what runs around it. Each workflow you describe becomes its own workflow file. First, how new business comes in.',
     example: 'referrals',
   },
   {
@@ -61,7 +61,7 @@ export const JOURNEY = [
     title: 'Deliver',
     qid: 161,
     slots: [167, 168, 169],
-    text: 'How does the work you sold actually get done and delivered? Name each main process, one per line.',
+    text: 'How does the work you sold actually get done and delivered? Name each workflow, one per line.',
     hint: 'For example, a trades firm: quote, schedule the job, do the work, invoice. A clinic: intake forms, appointment, treatment notes. An agency: brief, drafts, review rounds, launch. A shop: pick, pack, ship.',
     intro: 'Next, how the work you sell actually gets done.',
     example: 'quoting',
@@ -72,28 +72,33 @@ export const JOURNEY = [
     title: 'Operate',
     qid: 162,
     slots: [170, 171, 172],
-    text: 'What runs around the work: looking after customers, keeping them happy, reaching back out, running the business day to day? Name each process, one per line.',
+    text: 'What runs around the work: looking after customers, keeping them happy, reaching back out, running the business day to day? Name each workflow, one per line.',
     hint: 'For example, a trades firm: chasing unpaid invoices, warranty call-backs. A clinic: recall reminders. An agency: monthly reporting. A shop: returns, reorders, asking for reviews.',
     intro: 'Last part: everything that runs around the work.',
     example: 'invoicing',
   },
 ] as const;
 
-/** The process drill: identical for every process, saved as one labelled block in the stage's next slot. */
+/** The drill: identical for every workflow, saved as one labelled block in the stage's next slot.
+ *  The answers fill that workflow's files: the skill (D1, D3), its reference file (D4) and the routine that starts it (D9). */
 export const DRILL = [
-  { id: 'D1', label: 'How', text: 'How do you do it today, step by step?' },
+  { id: 'D1', label: 'How', text: 'Walk me through it step by step. This becomes the skill: the written instructions.' },
   { id: 'D2', label: 'Tools', text: 'Which tools are involved?' },
-  { id: 'D3', label: 'Good looks like', text: 'What does good look like?' },
-  { id: 'D4', label: 'Example', text: 'Do you have an example I can see: a real email, proposal, checklist, screenshot? Attach it, paste it, or record your screen.' },
+  { id: 'D3', label: 'Good looks like', text: 'What does good look like? This becomes the quality bar in the skill.' },
+  { id: 'D4', label: 'Example', text: 'Do you have a real example? It becomes a reference file next to the skill: a real email, proposal, checklist or screenshot.' },
   { id: 'D5', label: 'Hand to AI', text: 'Would you want to hand this to AI, keep it with a person, or split it? Why?' },
   { id: 'D6', label: 'Time', text: 'How long does it take, how often? (e.g. 2 hours, twice a week)' },
   { id: 'D7', label: 'Value', text: "What's it worth: what does it bring in or protect when it goes well?" },
   { id: 'D8', label: 'Cost', text: "Roughly what does it cost? Tell me who does it, the hours per week, and their hourly cost or annual pay." },
+  { id: 'D9', label: 'Starts when', text: "What starts it: a time or an event? That's the routine." },
 ] as const;
+
+/** Light example under D9. */
+export const D9_HINT = 'For example: every Monday at 9am, or when a new enquiry lands in the inbox.';
 
 export const D5_CHIPS = ['Hand it over', 'Split it', 'Keep it with a person'] as const;
 
-/** Up to three processes are drilled per journey stage; any more go into the closing answer under "More processes". */
+/** Up to three workflows are drilled per journey stage; any more go into the closing answer under "More workflows". */
 export const MAX_PROCESSES = 3;
 
 /** Rough benchmark for the D8 helper: annual pay divided by about 1,800 working hours, about 48 working weeks a year. */
@@ -110,7 +115,7 @@ export const CLOSING = {
   client: 198,
 } as const;
 
-/** Every text field the submit endpoint accepts: the core, the journey lists, the nine process slots, the closing fields. */
+/** Every text field the submit endpoint accepts: the core, the journey lists, the nine workflow slots, the closing fields. */
 export const TEXT_QIDS = new Set<number>([
   ...CORE_QUESTIONS.map((q) => q.qid),
   ...JOURNEY.flatMap((j) => [j.qid, ...j.slots]),

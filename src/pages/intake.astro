@@ -474,7 +474,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     <div class="ik-col">
       <span class="ik-done" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
       <h2 id="ik-finish-title">That's everything. Thank you.</h2>
-      <p class="ik-finish__lead">Everything you shared is safely with Roadmap Labs. We'll follow up within 2 business days.</p>
+      <p class="ik-finish__lead">Everything you shared becomes files: your README, brand, customer and reference files, plus one workflow file for each job you described. We'll follow up within 2 business days.</p>
       <ul class="ik-captured" id="ik-captured" aria-label="What we received"></ul>
       <ol class="ik-next" aria-label="What happens next">
         <li><strong>We read it all</strong>Roadmap Labs reviews your answers, files and recordings.</li>
@@ -490,7 +490,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 </section>
 
 <script>
-  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, MAX_PROCESSES, BENCHMARK, TIMING, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
+  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, TIMING, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
 
   type J = 0 | 1 | 2;
   type Step =
@@ -512,12 +512,11 @@ const svg = (d: string, size = 20, sw = 2) =>
   const STORE = 'rl-intake-v3';
   const CHOICE_TEXT = "That's the core done, about 10 minutes. Want to keep going into the journey? It's about 20 more minutes on how work comes in, gets done and gets looked after. Or you can finish here.";
   const TOO_BIG = "That's too big to send through the page (about 4MB in total). Put it in Google Drive or Dropbox and paste the link instead.";
-  const STAGE_NAME = ['the setup', 'AI today', 'your tool stack'] as const;
 
   const textByQid = new Map<number, string>([
     ...CORE_QUESTIONS.map((q) => [q.qid, q.text] as [number, string]),
     ...JOURNEY.map((j) => [j.qid, j.text] as [number, string]),
-    ...JOURNEY.flatMap((J) => J.slots.map((qid, p) => [qid, `${J.title} process ${p + 1}`] as [number, string])),
+    ...JOURNEY.flatMap((J) => J.slots.map((qid, p) => [qid, `${J.title} workflow ${p + 1}`] as [number, string])),
     [CLOSING.anythingElse.qid, CLOSING.anythingElse.text],
   ]);
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -632,7 +631,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
   function procBlock(pr: Proc) {
     if (pr.skipped) return SKIPPED;
-    const lines = [`Process: ${pr.name}`];
+    const lines = [`Workflow: ${pr.name}`];
     DRILL.forEach((d, i) => { if (pr.answers[i] !== undefined) lines.push(`${d.label}: ${pr.answers[i]}`); });
     return lines.join('\n');
   }
@@ -643,7 +642,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       const rest = undrilled(j as J);
       return rest.length ? `${J.title}: ${rest.join('; ')}` : '';
     }).filter(Boolean);
-    return parts.length ? `More processes:\n${parts.join('\n')}` : '';
+    return parts.length ? `More workflows:\n${parts.join('\n')}` : '';
   }
   /** Everything for Jotform, by qid: only what was actually asked. */
   function payloadFields(): [number, string][] {
@@ -801,7 +800,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const s = steps[pos];
     input.placeholder = locked
       ? (answerable(s) || !s ? 'Harry is typing…' : s.type === 'files' ? 'All questions answered' : 'Pick an option above')
-      : s?.type === 'list' ? 'One per line…' : s?.type === 'name' ? 'Name the process…' : 'Type your answer…';
+      : s?.type === 'list' ? 'One per line…' : s?.type === 'name' ? 'Name the workflow…' : 'Type your answer…';
     if (!locked && !replaying && mode === 'chat' && (actions.length || finePointer)) input.focus({ preventScroll: true });
   }
 
@@ -854,13 +853,16 @@ const svg = (d: string, size = 20, sw = 2) =>
     const qs = CORE_QUESTIONS.filter((q) => q.stage === n);
     const got = qs.filter((q) => filled(answers.get(q.qid))).map((q) => q.topic);
     const gaps = qs.length - got.length;
-    if (!got.length) return `That's ${STAGE_NAME[n]} done; we'll fill it in on the call.`;
-    return `That's ${STAGE_NAME[n]} done. I've got ${listJoin(got)}${gaps ? `, with ${gaps} to fill on the call` : ''}.`;
+    const name = CORE_STAGES[n].recap;
+    if (!got.length) return `That's ${name} done; we'll fill it in on the call.`;
+    return `That's ${name} captured: ${listJoin(got)}${gaps ? `, with ${gaps} to fill on the call` : ''}.`;
   }
   function journeyRecap(j: J) {
     const names = procs[j].filter((p) => !p.skipped).map((p) => p.name);
     const title = JOURNEY[j].title;
-    return names.length ? `That's ${title} done: ${listJoin(names)} captured.` : `That's ${title} done; we'll go through it on the call.`;
+    return names.length
+      ? `That's ${title} captured: ${listJoin(names)}, each now a workflow file.`
+      : `That's ${title} done; we'll go through it on the call.`;
   }
   async function transition(i: number) {
     const s = steps[i];
@@ -872,7 +874,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       await harrySays(s.j === 0 ? JOURNEY[0].intro : `${journeyRecap((s.j - 1) as J)} ${JOURNEY[s.j].intro}`);
     } else if (s.type === 'drill' && s.d === 0) {
       const name = procs[s.j][s.p].name;
-      await harrySays(s.p === 0 ? `Let's start with ${name}. Eight quick questions about it.` : `Next: ${name}. Same eight questions.`);
+      await harrySays(s.p === 0 ? `Let's start with ${name}. Nine quick questions; together they make its workflow file.` : `Next: ${name}. Same nine questions, its own workflow file.`);
     } else if (s.type === 'another') {
       const pr = procs[s.j][s.p];
       const n = pr.answers.filter(filled).length;
@@ -886,7 +888,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   function header(s: Step) {
     if (s.type === 'q' && s.phase === 'core' && s.first) section(`Part ${s.stage! + 1} of 4`, CORE_STAGES[s.stage!].title);
     else if (s.type === 'list') section('Part 4 of 4 · The journey', JOURNEY[s.j].title);
-    else if (s.type === 'drill' && s.d === 0) section(`${JOURNEY[s.j].title} · process ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
+    else if (s.type === 'drill' && s.d === 0) section(`${JOURNEY[s.j].title} · workflow ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
   }
   /** Replay after a refresh: the question as it was asked, no transitions or helpers. Synchronous on purpose. */
   function renderStatic(i: number) {
@@ -973,6 +975,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const body = q.parentElement;
     if (s.type === 'q' && s.hint) hint(body, s.hint);
     if (s.type === 'list') hint(body, JOURNEY[s.j].hint);
+    if (s.type === 'drill' && s.d === 8) hint(body, D9_HINT);
     if (i === pos) {
       if (s.type === 'name' && s.options.length) quick(helpers(body), s.options.map((o) => ({ label: o, onClick: () => act({ t: 'a', v: o }) })));
       if (s.type === 'drill' && s.d === 3) exampleActions(helpers(body));
@@ -1046,7 +1049,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const got = CORE_QUESTIONS.filter((q) => filled(answers.get(q.qid))).length;
     card.innerHTML = `<span class="ik-mile__ring" aria-hidden="true"><svg viewBox="0 0 64 64" width="64" height="64"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28"/></svg><b>${n}/${n}</b></span>`;
     card.append(el('h3', '', "That's the core done"));
-    card.append(el('p', '', `${got} of ${n} answered${n - got ? `, ${n - got} to fill on the call` : ''}: the basics, AI today and your tool stack. Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after. Or finish here.`));
+    card.append(el('p', '', `${got} of ${n} answered${n - got ? `, ${n - got} to fill on the call` : ''}: the basics, AI today and your tool stack. Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after; each job you describe becomes a workflow file. Or finish here.`));
     card.setAttribute('aria-label', CHOICE_TEXT);
     if (replaying || !live) card.querySelector<SVGCircleElement>('.fg')!.style.cssText = 'animation: none; stroke-dashoffset: 0';
     add(card);
@@ -1104,12 +1107,12 @@ const svg = (d: string, size = 20, sw = 2) =>
       render = show(a.v, a.s);
       const { list, multiLine } = parseItems(a.v);
       items[s.j] = list;
-      // One process per stage is guaranteed: take the first they named, or ask.
+      // One workflow per stage is guaranteed: take the first they named, or ask.
       if (multiLine) startProcess(s.j, 0, list[0]);
       else if (list.length >= 2) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'Which of these matters most to start with?', options: list.slice(0, 6).map(short) });
       else if (list.length === 1 && list[0].length <= 80) startProcess(s.j, 0, list[0]);
-      else if (list.length === 1) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'What would you call that process, in a few words?', options: [] });
-      else steps.push({ type: 'name', j: s.j, p: 0, prompt: `Which ${J.title.toLowerCase()} process should we start with? Just name one, like ${J.example}.`, options: [] });
+      else if (list.length === 1) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'What would you call that workflow, in a few words?', options: [] });
+      else steps.push({ type: 'name', j: s.j, p: 0, prompt: `Which ${J.title.toLowerCase()} workflow should we start with? Just name one, like ${J.example}.`, options: [] });
     } else if (a.t === 'a' && s.type === 'name') {
       render = show(a.v, a.s);
       if (a.v === SKIPPED) {
@@ -1126,7 +1129,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       render = show(a.v === 'done' ? 'No, move on' : a.v.startsWith('next:') ? `Yes: ${a.v.slice(5)}` : 'Yes, another one');
       if (a.v === 'done') nextStage(s.j);
       else if (a.v.startsWith('next:')) startProcess(s.j, s.p + 1, a.v.slice(5));
-      else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: `Which one? Name the next ${JOURNEY[s.j].title.toLowerCase()} process.`, options: undrilled(s.j).slice(0, 6) });
+      else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: `Which one? Name the next ${JOURNEY[s.j].title.toLowerCase()} workflow.`, options: undrilled(s.j).slice(0, 6) });
     } else if (a.t === 'c' && s.type === 'choice') {
       render = show(a.v === 'more' ? 'Keep going into the journey' : 'Finish here');
       if (a.v === 'more') steps.push({ type: 'list', j: 0 });
@@ -1598,7 +1601,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : /s$/.test(w) ? 'es' : 's'}`;
     item(`${plural(answered, 'answer')} received`, skipped ? `· ${skipped} to fill, we'll cover ${skipped === 1 ? 'it' : 'them'} on the call` : undefined);
     const mapped = procs.flat().filter((p) => p && !p.skipped);
-    if (mapped.length) item(`${plural(mapped.length, 'process')} mapped`, `· ${listJoin(mapped.map((p) => p.name))}`);
+    if (mapped.length) item(`${plural(mapped.length, 'workflow')} mapped`, `· ${listJoin(mapped.map((p) => p.name))}`);
     const shared = [files.length && plural(files.length, 'file'), plainLinks && plural(plainLinks, 'link'), recs && plural(recs, 'screen recording')].filter(Boolean) as string[];
     if (shared.length) item(`${listJoin(shared)} shared`);
     item('Saved to Roadmap Labs', `· ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
@@ -1680,7 +1683,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     if (s?.type === 'drill') {
       const open = DRILL.filter((d, i) => i > s.d && !pending.has(`d:${s.j}:${s.p}:${i}`));
-      return open.length ? ` Still open for this process: ${open.map((d) => `${d.id} "${d.text}"`).join('; ')}.` : '';
+      return open.length ? ` Still open for this workflow: ${open.map((d) => `${d.id} "${d.text}"`).join('; ')}.` : '';
     }
     return '';
   }
@@ -1697,18 +1700,20 @@ const svg = (d: string, size = 20, sw = 2) =>
       case 'list':
         return `Stage 3, the journey: ${JOURNEY[s.j].title} (${JOURNEY[s.j].id}). Ask exactly: "${JOURNEY[s.j].text}" Then call record_answer with what they name, one per line.`;
       case 'name':
-        return `${JOURNEY[s.j].title}. Ask: "${s.prompt}"${s.options.length ? ` They mentioned: ${s.options.join('; ')}.` : ''} Then call record_answer with the process name, in their words.`;
+        return `${JOURNEY[s.j].title}. Ask: "${s.prompt}"${s.options.length ? ` They mentioned: ${s.options.join('; ')}.` : ''} Then call record_answer with the workflow name, in their words.`;
       case 'drill': {
         const pr = procs[s.j][s.p];
         const extra =
           s.d === 3 ? ' They can attach a file, paste text or a link, or record their screen on the page.'
           : s.d === 4 ? ' Offer three answers: hand it over, split it, or keep it with a person. Ask why.'
+          : s.d === 8 ? ' Keep it light: one short answer is enough. This becomes the routine that starts the workflow.'
+          : s.d === 0 ? ' This becomes the skill: the written instructions. Reflect their tool and step names back.'
           : s.d === 7 ? ` Help them reach an hourly figure: who does it, hours per week, and their hourly cost or annual pay. As a rough benchmark, annual pay divided by about ${BENCHMARK.hoursPerYear} hours is an hourly cost. Use only their figures and say it is a rough benchmark. Never invent numbers.`
           : '';
-        return `${JOURNEY[s.j].title}, process "${pr.name}", ${DRILL[s.d].id} (${s.d + 1} of ${DRILL.length}). Ask exactly: "${DRILL[s.d].text}"${extra} Then call record_answer.${openInStage()}${openInStage() ? ROAM : ''}`;
+        return `${JOURNEY[s.j].title}, workflow "${pr.name}", ${DRILL[s.d].id} (${s.d + 1} of ${DRILL.length}). Ask exactly: "${DRILL[s.d].text}"${extra} Then call record_answer.${openInStage()}${openInStage() ? ROAM : ''}`;
       }
       case 'another':
-        return `"${procs[s.j][s.p].name}" is done. Ask: "Another one in ${JOURNEY[s.j].title}?"${s.next ? ` They also mentioned "${s.next}".` : ''} If yes, call choose_path with path "another" and the process name; if no, call choose_path with path "next_stage".`;
+        return `"${procs[s.j][s.p].name}" is done. Ask: "Another one in ${JOURNEY[s.j].title}?"${s.next ? ` They also mentioned "${s.next}".` : ''} If yes, call choose_path with path "another" and the workflow name; if no, call choose_path with path "next_stage".`;
       case 'choice':
         return `The core (stages 0 to 2) is done. Say: "${CHOICE_TEXT}" Then call choose_path with path "keep_going" or "wrap_up".`;
       default:
@@ -1817,6 +1822,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     root.dataset.view = 'chat';
     updateProgress();
     await harrySays(`Hi${client ? ` ${client}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. We'll start with the core: ${CORE_QUESTIONS.length} questions, about 10 minutes.`);
+    await harrySays('Everything we build for you ends up as files in one folder: workflows (your jobs), routines (what kicks them off) and skills (the instructions, written down). I\'m collecting what goes in them.');
     enqueue(() => present());
   }
   $<HTMLButtonElement>('ik-start-chat').addEventListener('click', () => { setMode('chat'); begin(); });
