@@ -77,7 +77,7 @@ export type Faq = { q: string; a: string };
 export const HOME_FAQ: Faq[] = [
   {
     q: 'Why Claude?',
-    a: "Because that's where your system lives. An install is a Claude project inside your own account: your documents and processes as its knowledge, your instructions, connected to tools you already use like Google Drive and Slack. Your team shares the one workspace, and we hand it over - it runs in your account, not ours.",
+    a: "Because that's where your system lives. An install is a Claude project inside your own account: your documents and processes as its knowledge, your instructions, connected to tools you already use like Google Drive and Slack. Your team shares the one workspace, and we hand it over - it runs in your account, not ours. It's also the foundation the automations are built on.",
   },
   {
     q: 'Can you build this on ChatGPT or another platform?',

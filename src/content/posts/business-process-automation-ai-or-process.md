@@ -124,6 +124,6 @@ The problem is that people often start there. Start inside the business, automat
 
 ## Book a free session
 
-If you don't have the time to map this out, or you're not sure how to apply AI to your systems, that's what the free session is for. We'll work out where AI fits in your business. Your team answers a short intake in their own time, then it's 30 minutes with Dan, and you get a custom report of the automations worth doing, each with what it saves over 12 months. There's no obligation and no lock-in.
+If you don't have the time to map this out, or you're not sure how to apply AI to your systems, that's what the free session is for. We'll work out where AI fits in your business. Your team answers a short intake in their own time, then it's 30 minutes with Dan. You get a custom report with every automation ranked by what it saves over 12 months. There's no obligation and no lock-in.
 
 [Book a session](/contact)

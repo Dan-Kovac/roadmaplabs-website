@@ -126,6 +126,6 @@ If you want to start further back, with which processes are worth automating at 
 
 ## Book a free session
 
-We'll work out where AI fits in your business. Your team answers a short intake in their own time, then it's 30 minutes with Dan, and you get a custom report of the automations worth doing, each with what it saves over 12 months. There's no obligation and no lock-in.
+We'll work out where AI fits in your business. Your team answers a short intake in their own time, then it's 30 minutes with Dan. You get a custom report with every automation ranked by what it saves over 12 months. There's no obligation and no lock-in.
 
 [Book a session](mailto:dan@roadmaplabs.com.au?subject=Free%20session)
