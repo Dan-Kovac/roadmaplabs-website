@@ -76,6 +76,14 @@ export type Faq = { q: string; a: string };
 
 export const HOME_FAQ: Faq[] = [
   {
+    q: 'Why Claude?',
+    a: "Because that's where your system lives. An install is a Claude project inside your own account: your documents and processes as its knowledge, your instructions, connected to tools you already use like Google Drive and Slack. Your team shares the one workspace, and we hand it over - it runs in your account, not ours.",
+  },
+  {
+    q: 'Can you build this on ChatGPT or another platform?',
+    a: "Mostly, yes - with honest limits. The foundation of an install is your knowledge and process files, and those travel: ChatGPT Projects, for example, also take uploaded files and custom instructions. What doesn't travel on its own are the connections and automations - they're built with each platform's own tools, so we'd rebuild and test them rather than promise they carry over. We build on Claude because that's the platform our intake and install process is built for - not because the others can't do parts of the job.",
+  },
+  {
     q: 'Which AI provider and tools should we use?',
     a: "We generally recommend Claude from Anthropic, with the right CRM and tooling around it. In the session we'll talk through what suits your business and the tools you already have.",
   },
@@ -97,7 +105,7 @@ export const HOME_FAQ: Faq[] = [
   },
   {
     q: 'How much does a project cost?',
-    a: "A typical engagement ranges from $5,000 to $50,000. The price depends on what we're building and the systems it needs to work with. We agree the scope and price before work starts.",
+    a: "The price depends on what we're building and the systems it needs to work with. We agree the scope and price before work starts.",
   },
   {
     q: 'Are we locked in?',
@@ -108,7 +116,7 @@ export const HOME_FAQ: Faq[] = [
 export const CONTACT_FAQ: Faq[] = [
   {
     q: 'Is the session really free?',
-    a: 'Yes. The hour and the custom report cost nothing. You only pay if you choose to have us build something.',
+    a: 'Yes. The intake, the session and the custom report cost nothing. You only pay if you choose to have us build something.',
   },
   {
     q: 'Can we take the report and do it ourselves?',
@@ -120,7 +128,7 @@ export const CONTACT_FAQ: Faq[] = [
   },
   {
     q: 'What does a project cost if we go ahead?',
-    a: "A typical engagement ranges from $5,000 to $50,000, depending on what we're building. Every automation in the report comes with its 12-month value, and we agree the scope and price before anything starts.",
+    a: "It depends on what we're building. Every automation in the report comes with its 12-month value, and we agree the scope and price before anything starts.",
   },
 ];
 

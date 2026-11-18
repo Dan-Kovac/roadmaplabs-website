@@ -107,7 +107,7 @@ function figure(slug: string, href: string, alt: string) {
 
 export type RenderedPost = { intro: string; sections: { id: string; title: string; html: string }[]; takeaways: string | null; cta: { title: string; html: string } | null };
 
-/** Renders the Markdown body. "Key takeaways" and the closing "Book a free 1-hour session" sections are returned separately. */
+/** Renders the Markdown body. "Key takeaways" and the closing "Book a free session" sections are returned separately. */
 export function renderPost(post: Post): RenderedPost {
   const marked = new Marked({ gfm: true });
   marked.use({
@@ -144,7 +144,7 @@ export function renderPost(post: Post): RenderedPost {
     const title = part.slice(0, nl).trim();
     const html = marked.parse(part.slice(nl + 1)) as string;
     if (/^key takeaways$/i.test(title)) takeaways = html;
-    else if (/^book a free 1-hour session$/i.test(title)) cta = { title, html };
+    else if (/^book a free (1-hour )?session$/i.test(title)) cta = { title, html };
     else sections.push({ id: slugify(title), title, html });
   }
   return { intro, sections, takeaways, cta };
