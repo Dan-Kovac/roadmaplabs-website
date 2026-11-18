@@ -176,6 +176,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-mile__ring .fg { stroke: url(#ik-grad); stroke-linecap: round; stroke-dasharray: 176; stroke-dashoffset: 176; animation: ik-draw 1.1s .15s var(--ease) forwards; }
   .ik-mile__ring b { position: absolute; inset: 0; display: grid; place-items: center; font: 700 15px/1 var(--font-sans); color: var(--ink); }
   .ik-mile .ik-choices { grid-column: 1 / -1; margin-top: 14px; }
+  .ik-grow__eyebrow { display: block; margin-bottom: 6px; font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-grow .ik-choices { margin-top: 14px; }
   @keyframes ik-draw { to { stroke-dashoffset: 0; } }
   .ik-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
   .ik-opt { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 76px; padding: 14px 16px; border: 1px solid rgba(0,7,16,.12); border-radius: 16px; background: var(--paper); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease), box-shadow .2s ease; }
@@ -810,6 +812,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   import { readme, reference, workflow, fromDocuments, folderName as folderFor, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
   import { readRole, ROLE_QUESTION, ROLE_QUESTION_LEGACY, ROLE_FOLLOW_UP, ROLE_CHIPS, ROUTE_NAME, type Route } from '../data/intake-roles';
   import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
+  import { GROWTH_QUESTIONS, GROWTH_OFFER, buildPayload } from '../data/intake-growth';
 
   type J = 0 | 1 | 2;
   type Step =
@@ -820,16 +823,20 @@ const svg = (d: string, size = 20, sw = 2) =>
     | { type: 'drill'; j: J; p: number; d: number }
     | { type: 'another'; j: J; p: number; next?: string }
     | { type: 'files' }
+    // Stage 3b, the optional Growth add-on: the offer, then one step per question (never part of the core).
+    | { type: 'gchoice' }
+    | { type: 'growth'; g: number }
     // Role steps: which questions to ask. Routing only, never an access permission.
     | { type: 'role'; mode: 'first' | 'change' | 'add' | 'legacy'; echo?: string }
     | { type: 'role2'; mode: 'first' | 'change' | 'add'; first: string; echo?: string };
-  type Answerable = Extract<Step, { type: 'q' | 'list' | 'name' | 'drill' | 'role' | 'role2' }>;
+  type Answerable = Extract<Step, { type: 'q' | 'list' | 'name' | 'drill' | 'role' | 'role2' | 'growth' }>;
   /** a = answer (s: spoken in a voice interview; r/n: the role and respondent it was given under),
    *  c = a choice (milestone, "another one?", "role:change"/"role:add"/"role:legacy"), p = a voice answer given ahead of its turn. */
   type Action = { t: 'a'; v: string; s?: 1; r?: string; n?: string } | { t: 'c'; v: string } | { t: 'p'; k: string; v: string; s?: 1 };
   type Mode = 'chat' | 'voice';
-  /** Same key and shape as before. `flow: 2` marks sessions that started with the role step; older ones lack it. */
-  interface Saved { v: 3; actions: Action[]; links: string[]; mode: Mode; flow?: 2 }
+  /** Same key and shape as before. `flow: 2` marks sessions that started with the role step; older ones lack it.
+   *  `g: 1` marks sessions that know the optional Growth add-on, so a session saved before it replays exactly as it was. */
+  interface Saved { v: 3; actions: Action[]; links: string[]; mode: Mode; flow?: 2; g?: 1 }
   interface Proc { name: string; answers: (string | undefined)[]; skipped?: boolean }
 
   // A new key for the new spine, so progress saved under the old 44-question script never replays into it.
@@ -922,6 +929,9 @@ const svg = (d: string, size = 20, sw = 2) =>
   const procs: Proc[][] = [[], [], []]; // drilled processes per journey stage
   const items: string[][] = [[], [], []]; // what they listed per journey stage
   const pending = new Map<string, { v: string; s?: 1 }>(); // voice answers given ahead of their turn
+  const growth: (string | undefined)[] = []; // the optional Growth answers, G1-G8 (undefined = not offered)
+  /** The Growth add-on is offered in this session. Off while replaying a session saved before it existed. */
+  let growthOn = false;
   let replaying = false;
   let sent = false;
   let sending = false;
@@ -964,6 +974,13 @@ const svg = (d: string, size = 20, sw = 2) =>
       const b = plan.shift()!;
       const key = blockKey(b);
       if (usedBlocks.has(key)) continue;
+      // Stage 3b: after all three journey stages, offer the optional Growth questions before the closing question.
+      if (b.k === 'closing' && growthDue()) {
+        usedBlocks.add('growth');
+        plan.unshift(b);
+        steps.push({ type: 'gchoice' });
+        return;
+      }
       usedBlocks.add(key);
       if (b.k === 'q') {
         const q = CORE_QUESTIONS.find((x) => x.id === b.id)!;
@@ -976,14 +993,16 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
   }
 
-  const answerable = (s?: Step): s is Answerable => !!s && (s.type === 'q' || s.type === 'list' || s.type === 'name' || s.type === 'drill' || s.type === 'role' || s.type === 'role2');
+  const answerable = (s?: Step): s is Answerable => !!s && (s.type === 'q' || s.type === 'list' || s.type === 'name' || s.type === 'drill' || s.type === 'role' || s.type === 'role2' || s.type === 'growth');
+  /** Growth is offered once, only after all three journey stages were taken (not after "Finish here"). */
+  const growthDue = () => growthOn && !usedBlocks.has('growth') && JOURNEY.every((_J, j) => usedBlocks.has(`j:${j}`));
   /** On the team route, Operate is about the person's own week. */
   const teamWeek = (j: J) => j === 2 && route() === 'team' && !roles.includes('owner');
   const jTitle = (j: J) => (teamWeek(j) ? 'Your week' : JOURNEY[j].title);
   const TEAM_LIST_TEXT = 'What do you do in a normal week? Name each task, one per line.';
   const TEAM_LIST_HINT = 'For example, an office manager: invoicing, booking jobs, answering the phones, ordering stock. A marketing coordinator: social posts, the newsletter, monthly reporting.';
   const stepKey = (s?: Step) =>
-    !s ? '' : s.type === 'q' ? `q:${s.id}` : s.type === 'list' ? `q:${JOURNEY[s.j].id}` : s.type === 'drill' ? `d:${s.j}:${s.p}:${s.d}` : '';
+    !s ? '' : s.type === 'q' ? `q:${s.id}` : s.type === 'list' ? `q:${JOURNEY[s.j].id}` : s.type === 'drill' ? `d:${s.j}:${s.p}:${s.d}` : s.type === 'growth' ? `g:${s.g}` : '';
   function stepText(s?: Step): string {
     if (!s) return '';
     switch (s.type) {
@@ -995,6 +1014,8 @@ const svg = (d: string, size = 20, sw = 2) =>
       case 'drill': return DRILL[s.d].text;
       case 'another': return teamWeek(s.j) ? 'Another task from your week?' : `Another one in ${JOURNEY[s.j].title}?`;
       case 'choice': return CHOICE_TEXT;
+      case 'gchoice': return GROWTH_OFFER.text;
+      case 'growth': return GROWTH_QUESTIONS[s.g].text;
       default: return '';
     }
   }
@@ -1046,27 +1067,31 @@ const svg = (d: string, size = 20, sw = 2) =>
     return parts.length ? `More workflows:\n${parts.join('\n')}` : '';
   }
   /** Everything for Jotform, by qid: only what was actually asked. */
+  /** The pure builder (src/data/intake-growth.ts) keeps today's order; the Growth block only appears when answered. */
   function payloadFields(): [number, string][] {
-    const out = new Map(answers);
-    JOURNEY.forEach((J, j) => procs[j].forEach((pr, p) => { if (pr) out.set(J.slots[p], procBlock(pr)); }));
-    const more = moreProcesses();
-    if (more) { const base = out.get(CLOSING.anythingElse.qid); out.set(CLOSING.anythingElse.qid, base ? `${base}\n\n${more}` : more); }
-    if (roleTag()) {
-      const by = `Answered as: ${roleTag()}${respondent() ? ` (${respondent()})` : ''}`;
-      const base = out.get(CLOSING.anythingElse.qid);
-      out.set(CLOSING.anythingElse.qid, base ? `${base}\n\n${by}` : by);
-    }
-    return [...out];
+    const slots: [number, string][] = [];
+    JOURNEY.forEach((J, j) => procs[j].forEach((pr, p) => { if (pr) slots.push([J.slots[p], procBlock(pr)]); }));
+    return buildPayload({
+      answers,
+      slots,
+      more: moreProcesses(),
+      answeredAs: roleTag() ? `Answered as: ${roleTag()}${respondent() ? ` (${respondent()})` : ''}` : '',
+      growth,
+      anythingElseQid: CLOSING.anythingElse.qid,
+    });
   }
+  const growthSent = () => growth.some(filled);
   function tally() {
     const all = [...answers.values(), ...procs.flat().flatMap((p) => (p.skipped ? [SKIPPED] : p.answers.filter((v): v is string => v !== undefined)))];
+    // Growth answers count only when the Growth block is sent (at least one answered).
+    if (growthSent()) all.push(...growth.filter((v): v is string => v !== undefined));
     return { answered: all.filter(filled).length, skipped: all.filter((v) => v === SKIPPED).length };
   }
-  const hasAnything = () => answers.size > 0 || procs.some((ps) => ps.length > 0);
+  const hasAnything = () => answers.size > 0 || procs.some((ps) => ps.length > 0) || growthSent();
 
   function save() {
     if (sent) return;
-    try { localStorage.setItem(STORE, JSON.stringify({ v: 3, actions, links, mode, ...(flow2 ? { flow: 2 as const } : {}) } satisfies Saved)); } catch {}
+    try { localStorage.setItem(STORE, JSON.stringify({ v: 3, actions, links, mode, ...(flow2 ? { flow: 2 as const } : {}), ...(growthOn ? { g: 1 as const } : {}) } satisfies Saved)); } catch {}
   }
   function load(): Saved {
     const empty: Saved = { v: 3, actions: [], links: [], mode: 'chat' };
@@ -1232,6 +1257,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     else if (sent) { label = `All sent · ${folder}`; pct = 100; }
     else if (!s || s.type === 'files') { label = `Ready to send · ${folder}`; pct = 100; }
     else if (s.type === 'choice') { label = `Core done · ${folder}`; pct = 34; }
+    else if (s.type === 'gchoice') { label = `Journey done · ${folder}`; pct = 95; }
+    else if (s.type === 'growth') { label = `Growth, optional · ${folder}`; pct = 95; }
     else if (s.type === 'q' && s.phase === 'core') { label = `${CORE_STAGES[s.stage!].title} · ${folder}`; pct = (coreDone / CORE_QUESTIONS.length) * 34; }
     else if (s.type === 'q') { label = `Last question · ${folder}`; pct = 96; }
     else {
@@ -1254,12 +1281,24 @@ const svg = (d: string, size = 20, sw = 2) =>
     bar.style.width = `${Math.max(2, Math.round(pct))}%`;
     sendNow.hidden = sent || !hasAnything() || s?.type === 'files';
     const caption = document.getElementById('ik-voice-caption');
-    if (caption) caption.textContent = !s ? '' : s.type === 'choice' ? "That's the core done. Into the journey, or finish here?" : s.type === 'files' ? 'All questions done.' : stepText(s);
+    if (caption) caption.textContent = !s ? '' : s.type === 'choice' ? "That's the core done. Into the journey, or finish here?" : s.type === 'gchoice' ? 'Optional: about 5 minutes of growth questions, or skip to the last question.' : s.type === 'files' ? 'All questions done.' : stepText(s);
   }
 
   // ---------- Your folder: what's been captured so far ----------
   // Provisional depth rules live in src/data/intake-depth.ts. This shows captured context, never finished files.
-  interface FolderFile { path: string; state: FileState; kind: 'core' | 'docs' | 'workflow' }
+  interface FolderFile { path: string; state: FileState; kind: 'core' | 'docs' | 'workflow' | 'growth' }
+  /** growth.md: the optional Growth answers captured so far. Solid at six or more answered. */
+  function growthState(): FileState {
+    const got = GROWTH_QUESTIONS.filter((_q, i) => filled(growth[i]));
+    const open = GROWTH_QUESTIONS.find((_q, i) => !filled(growth[i]));
+    const solid = got.length >= 6;
+    return {
+      depth: solid ? 'solid' : got.length ? 'thin' : 'empty',
+      has: got.length <= 2 ? got.map((q) => q.topic) : [got[0].topic, `${got.length - 1} more growth answers`],
+      gap: solid ? '' : open ? `not ${open.topic} yet` : '',
+      size: got.length,
+    };
+  }
   // The header subtitle and the panel use the same name: a short S1 answer, or the placeholder.
   const folderName = () => folderFor(answers.get(CORE_QUESTIONS[0].qid));
   function folderFiles(): FolderFile[] {
@@ -1279,6 +1318,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       used.add(f);
       out.push({ path: `workflows/${f}`, state: workflow(pr.answers), kind: 'workflow' });
     }
+    out.push({ path: 'growth.md', state: growthState(), kind: 'growth' });
     return out;
   }
   const fileOf = (path: string) => folderFiles().find((f) => f.path === path);
@@ -1328,11 +1368,13 @@ const svg = (d: string, size = 20, sw = 2) =>
     };
     dir(folderName());
     // Core files appear once their first answer lands; brand.md and customer.md come from documents, so they show from the start.
-    for (const f of list.filter((x) => x.kind !== 'workflow')) if (f.kind === 'docs' || f.state.size > 0) row(f);
+    for (const f of list.filter((x) => x.kind === 'core' || x.kind === 'docs')) if (f.kind === 'docs' || f.state.size > 0) row(f);
     dir('workflows/', 'ik-dir--sub');
     const wfs = list.filter((x) => x.kind === 'workflow');
     if (wfs.length) wfs.forEach(row);
     else tree.append(el('p', 'ik-placeholder', 'One file for each workflow you name in the journey.'));
+    // The optional Growth add-on: shown only once a growth answer lands.
+    for (const f of list.filter((x) => x.kind === 'growth')) if (f.state.size > 0) row(f);
     $<HTMLElement>('ik-folder-n').textContent = String(list.filter((f) => f.state.depth !== 'empty').length);
     const roleLine = $<HTMLElement>('ik-role-line');
     roleLine.hidden = !roleTag() || sent;
@@ -1400,6 +1442,13 @@ const svg = (d: string, size = 20, sw = 2) =>
       await harrySays(s.p === 0 ? `Let's start with ${name}. It gets its own file: ${workflowPath(s.j, s.p)}.` : `Next: ${name}, in ${workflowPath(s.j, s.p)}.`);
     } else if (s.type === 'another') {
       await harrySays(describe(workflowPath(s.j, s.p)));
+    } else if (s.type === 'gchoice') {
+      const recap = recapOf(before(i));
+      if (recap) await harrySays(recap);
+    } else if (s.type === 'growth' && s.g === 0) {
+      await harrySays('Growth, then. Short answers are fine, and you can skip any of them.');
+    } else if (s.type === 'q' && s.phase === 'closing' && (before(i)?.type === 'growth' || before(i)?.type === 'gchoice')) {
+      await harrySays(growthSent() ? `${describe('growth.md')} One last question.` : 'No problem. One last question.');
     } else if (s.type === 'q' && s.phase === 'closing') {
       const last = before(i);
       const fromJourney = last && last.type !== 'q' && last.type !== 'choice';
@@ -1422,12 +1471,14 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (s.type === 'q' && s.phase === 'core' && s.first) section(partLabel(`c${s.stage}`), CORE_STAGES[s.stage!].title);
     else if (s.type === 'list') section(`${partLabel('journey')} · The journey`, jTitle(s.j));
     else if (s.type === 'drill' && s.d === 0) section(`${JOURNEY[s.j].title} · workflow ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
+    else if (s.type === 'growth' && s.g === 0) section('Optional · about 5 minutes', 'Growth');
   }
   /** Replay after a refresh: the question as it was asked, no transitions or helpers. Synchronous on purpose. */
   function renderStatic(i: number) {
     const s = steps[i];
     if (!s) return;
     if (s.type === 'choice') { milestone(false); return; }
+    if (s.type === 'gchoice') { growthCard(); return; }
     if (s.type === 'files') return;
     if (s.type === 'another') { harrySays(stepText(s), { question: true }); return; }
     header(s);
@@ -1492,6 +1543,24 @@ const svg = (d: string, size = 20, sw = 2) =>
       if (!replaying && mode === 'chat') (wrap.firstChild as HTMLButtonElement).focus({ preventScroll: true });
       return;
     }
+    if (s.type === 'gchoice') {
+      lock(true);
+      settleQuestions();
+      root.dataset.choosing = '';
+      anchor();
+      const card = growthCard();
+      if (steps[pos] !== s) return;
+      const wrap = el('div', 'ik-choices');
+      wrap.append(
+        option(GROWTH_OFFER.yes, GROWTH_OFFER.yesSub, true, () => { wrap.remove(); act({ t: 'c', v: 'growth' }); }, 'growth'),
+        option(GROWTH_OFFER.no, GROWTH_OFFER.noSub, false, () => { wrap.remove(); act({ t: 'c', v: 'nogrowth' }); }, 'nogrowth'),
+      );
+      card.append(wrap);
+      scroll();
+      reveal(wrap);
+      if (!replaying && mode === 'chat') (wrap.firstChild as HTMLButtonElement).focus({ preventScroll: true });
+      return;
+    }
     if (s.type === 'files') {
       lock(true);
       settleQuestions();
@@ -1519,7 +1588,10 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (s.type === 'list') hint(body, stepText(s) === TEAM_LIST_TEXT ? TEAM_LIST_HINT : JOURNEY[s.j].hint);
     if (s.type === 'role') hint(body, 'This only changes which questions I ask, so they fit your part of the business.');
     if (s.type === 'drill' && s.d === 8) hint(body, D9_HINT);
+    if (s.type === 'growth') hint(body, GROWTH_QUESTIONS[s.g].hint);
     if (steps[pos] === s) {
+      // Growth is optional: skip this one with the usual Skip, or all the rest from here.
+      if (s.type === 'growth') quick(helpers(body), [{ label: GROWTH_OFFER.no, data: 'growth:skip', onClick: () => act({ t: 'c', v: 'growth:skip' }) }]);
       if (s.type === 'name' && s.options.length) quick(helpers(body), s.options.map((o) => ({ label: o, onClick: () => act({ t: 'a', v: o }) })));
       // Optional shortcuts; typing your role works just the same.
       if (s.type === 'role') quick(helpers(body), ROLE_CHIPS.map((c) => ({ label: c, onClick: () => (c === 'Other' ? (input.focus({ preventScroll: true }), (input.placeholder = 'Tell me in a few words…')) : act({ t: 'a', v: c })) })));
@@ -1601,6 +1673,14 @@ const svg = (d: string, size = 20, sw = 2) =>
         : `That's your core done: your week and the tools you use. ${describe('reference.md')} Keep going with a few questions on how you use AI? Or finish here.`));
     card.setAttribute('aria-label', CHOICE_TEXT);
     if (replaying || !live) card.querySelector<SVGCircleElement>('.fg')!.style.cssText = 'animation: none; stroke-dashoffset: 0';
+    add(card);
+    return card;
+  }
+  /** The optional Growth offer: same card and choice buttons as the milestone, without the core-done ring. */
+  function growthCard() {
+    const card = el('div', 'ik-card ik-grow');
+    card.append(el('span', 'ik-grow__eyebrow', 'Optional · about 5 minutes'), el('h3', '', GROWTH_OFFER.title), el('p', '', GROWTH_OFFER.text));
+    card.setAttribute('aria-label', GROWTH_OFFER.text);
     add(card);
     return card;
   }
@@ -1712,6 +1792,20 @@ const svg = (d: string, size = 20, sw = 2) =>
       if (a.v === 'done') nextStage(s.j);
       else if (a.v.startsWith('next:')) startProcess(s.j, s.p + 1, a.v.slice(5));
       else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: `Which one? Name the next ${JOURNEY[s.j].title.toLowerCase()} workflow.`, options: undrilled(s.j).slice(0, 6) });
+    } else if (a.t === 'c' && s.type === 'gchoice' && (a.v === 'growth' || a.v === 'nogrowth')) {
+      render = show(a.v === 'growth' ? GROWTH_OFFER.yes : GROWTH_OFFER.no);
+      if (a.v === 'growth') GROWTH_QUESTIONS.forEach((_q, g) => steps.push({ type: 'growth', g }));
+    } else if (a.t === 'a' && s.type === 'growth') {
+      growth[s.g] = a.v;
+      render = show(a.v, a.s);
+    } else if (a.t === 'c' && a.v === 'growth:skip' && s.type === 'growth') {
+      // Skip the rest: each remaining question is "to fill", the same as skipping it on its own.
+      for (let g = s.g; g < GROWTH_QUESTIONS.length; g++) growth[g] = SKIPPED;
+      for (let k = steps.length - 1; k > pos; k--) if (steps[k].type === 'growth') steps.splice(k, 1);
+      render = () => {
+        const p = answer(SKIPPED, 'skip');
+        p.lastChild!.textContent = "Skipped the growth questions. We'll cover them on the call if useful";
+      };
     } else if (a.t === 'c' && s.type === 'choice') {
       render = show(a.v === 'more' ? (route() === 'owner' ? 'Keep going into the journey' : 'Keep going') : 'Finish here');
       if (a.v !== 'more') plan = plan.filter((b) => b.k === 'closing');
@@ -2308,6 +2402,12 @@ const svg = (d: string, size = 20, sw = 2) =>
       }
       case 'another':
         return `"${procs[s.j][s.p].name}" is done. Ask: "Another one in ${JOURNEY[s.j].title}?"${s.next ? ` They also mentioned "${s.next}".` : ''} If yes, call choose_path with path "another" and the workflow name; if no, call choose_path with path "next_stage".`;
+      case 'gchoice':
+        return `The journey is done. Say: "${GROWTH_OFFER.text}" Then call choose_path with path "growth" to answer them, or "skip_growth" to go to the last question.`;
+      case 'growth': {
+        const q = GROWTH_QUESTIONS[s.g];
+        return `Optional growth question ${q.id} (${s.g + 1} of ${GROWTH_QUESTIONS.length}, about 5 minutes in all). Ask exactly: "${q.text}" Then call record_answer, or skip_question if they'd rather not. If they want to skip all the remaining growth questions, call choose_path with path "skip_growth".`;
+      }
       case 'choice':
         return `The core (stages 0 to 2) is done. Say: "${CHOICE_TEXT}" Then call choose_path with path "keep_going" or "wrap_up".`;
       default:
@@ -2327,7 +2427,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     return null;
   }
-  const currentId = (s?: Step) => (s?.type === 'q' ? s.id : s?.type === 'list' ? JOURNEY[s.j].id : s?.type === 'drill' ? DRILL[s.d].id : '');
+  const currentId = (s?: Step) => (s?.type === 'q' ? s.id : s?.type === 'list' ? JOURNEY[s.j].id : s?.type === 'drill' ? DRILL[s.d].id : s?.type === 'growth' ? GROWTH_QUESTIONS[s.g].id : '');
 
   /** Rough loudness of a base64 audio chunk from the agent (16-bit PCM); any chunk still counts as speech. */
   function chunkLevel(b64: unknown) {
@@ -2368,6 +2468,15 @@ const svg = (d: string, size = 20, sw = 2) =>
       choose_path: (p: { path?: string; name?: string }) => {
         const s = steps[pos];
         const path = String(p?.path ?? '');
+        if (s?.type === 'gchoice') {
+          root.querySelectorAll('.ik-choices').forEach((c) => c.remove());
+          act({ t: 'c', v: /skip|\bno\b|wrap|finish|last|done/i.test(path) ? 'nogrowth' : 'growth' });
+          return `Done. Next: ${stepPrompt()}`;
+        }
+        if (s?.type === 'growth' && /skip|\bno\b|finish|done|stop|move/i.test(path)) {
+          act({ t: 'c', v: 'growth:skip' });
+          return `Done. Next: ${stepPrompt()}`;
+        }
         if (s?.type === 'choice') {
           root.querySelectorAll('.ik-choices').forEach((c) => c.remove());
           act({ t: 'c', v: /keep|more|journey|continue/i.test(path) ? 'more' : 'wrap' });
@@ -2414,7 +2523,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (begun) return;
     begun = true;
     root.dataset.view = 'chat';
-    if (!actions.length && !steps.length) { flow2 = true; steps.push({ type: 'role', mode: 'first' }); }
+    if (!actions.length && !steps.length) { flow2 = true; growthOn = true; steps.push({ type: 'role', mode: 'first' }); }
     updateProgress();
     const hiName = greetName || client;
     await harrySays(`Hi${hiName ? ` ${hiName}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. First, a quick one about your role, so the questions fit.`);
@@ -2528,6 +2637,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     root.dataset.view = 'chat';
     if (saved.flow === 2) { flow2 = true; steps.push({ type: 'role', mode: 'first' }); }
     else { setPlan('owner', false); pullNext(); } // saved before roles: exactly the order it was started in
+    // Saved before the Growth add-on: replay exactly as it was (no growth step can shift their saved answers).
+    growthOn = saved.g === 1;
     replaying = true;
     for (const a of saved.actions) {
       if (a.t !== 'p') renderStatic(pos);
@@ -2541,6 +2652,8 @@ const svg = (d: string, size = 20, sw = 2) =>
       const a: Action = { t: 'c', v: 'role:legacy' };
       if (apply(a)) { actions.push(a); save(); }
     }
+    // A session saved before the add-on that hasn't reached the closing question yet: offer Growth from here on.
+    if (!growthOn && !usedBlocks.has('closing') && !sent) { growthOn = true; save(); }
     renderFolder();
     replaying = false;
     // Files live in memory only; links and recordings are saved. If they'd attached files, ask them to add them again.
