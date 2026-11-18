@@ -116,7 +116,7 @@ export const HOME_FAQ: Faq[] = [
 export const CONTACT_FAQ: Faq[] = [
   {
     q: 'Is the session really free?',
-    a: 'Yes. The intake, the session and the custom report cost nothing. You only pay if you choose to have us build something.',
+    a: 'Yes. You see the process, the files and the plan before you pay anything, and only pay if we build.',
   },
   {
     q: 'Can we take the report and do it ourselves?',
