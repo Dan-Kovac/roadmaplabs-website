@@ -124,8 +124,8 @@ If you want to start further back, with which processes are worth automating at 
 
 **What should you ask an AI automation agency before signing?** What share of the task will be automated, how much team time it still takes, how long the build will be, what it costs to run, and how you'll measure it.
 
-## Book a free 1-hour session
+## Book a free session
 
-We'll work out where AI fits in your business. Within 48 hours you'll get a custom report of the automations worth doing, each with what it saves over 12 months. There's no obligation and no lock-in.
+We'll work out where AI fits in your business. Your team answers a short intake in their own time, then it's 30 minutes with Dan. You get a custom report with every automation ranked by what it saves over 12 months. There's no obligation and no lock-in.
 
-[Book a session](mailto:dan@roadmaplabs.com.au?subject=Free%201-hour%20session)
+[Book a session](mailto:dan@roadmaplabs.com.au?subject=Free%20session)

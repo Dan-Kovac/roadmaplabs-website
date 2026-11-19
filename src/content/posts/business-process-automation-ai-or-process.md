@@ -84,7 +84,7 @@ You'll end up with a page of tasks. That page is more useful than any list of "1
 
 ## How to decide what to automate first
 
-Now rank them. For each task, work out how many hours it takes, what those hours cost, and the potential impact of doing it faster or better. Those numbers give you a roadmap: what to go after, and in what order. It's the same ranking that goes into the report after our [free 1-hour session](#book-a-free-1-hour-session).
+Now rank them. For each task, work out how many hours it takes, what those hours cost, and the potential impact of doing it faster or better. Those numbers give you a roadmap: what to go after, and in what order. It's the same ranking that goes into the report after our [free session](#book-a-free-session).
 
 Then tackle them one at a time. Building one good automation takes evaluation, testing and iteration. It's doable, and we've had great success with it, but it's not the one-shot job people think it is. That's especially true for an established business, where the work has to hold up to the standard your customers already expect.
 
@@ -122,8 +122,8 @@ The problem is that people often start there. Start inside the business, automat
 
 **Should you start with AI for sales outreach or marketing?** Usually not. Get your existing processes working with AI first, then look at growth once you know what your customers respond to.
 
-## Book a free 1-hour session
+## Book a free session
 
-If you don't have the time to map this out, or you're not sure how to apply AI to your systems, that's what the free session is for. We'll work out where AI fits in your business. Within 48 hours you'll get a custom report of the automations worth doing, each with what it saves over 12 months. There's no obligation and no lock-in.
+If you don't have the time to map this out, or you're not sure how to apply AI to your systems, that's what the free session is for. We'll work out where AI fits in your business. Your team answers a short intake in their own time, then it's 30 minutes with Dan. You get a custom report with every automation ranked by what it saves over 12 months. There's no obligation and no lock-in.
 
 [Book a session](/contact)

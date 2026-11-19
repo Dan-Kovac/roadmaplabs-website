@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Img from '../../components/Img.astro';
 import PostMeta from '../../components/blog/PostMeta.astro';
 import PostList from '../../components/blog/PostList.astro';
-import { getPosts, renderPost, formatDate, type Post } from '../../lib/blog';
+import { getPosts, renderPost, formatDate, slugify, type Post } from '../../lib/blog';
 import { SITE, abs, faqSchema } from '../../data/site';
 import danPhoto from '../../assets/images/dan-kovac.jpg';
 import '../../styles/blog.css';
@@ -129,7 +129,7 @@ const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${enc
       )}
 
       {cta && (
-        <section class="post-cta" id="book-a-free-1-hour-session" aria-labelledby="cta-heading">
+        <section class="post-cta" id={slugify(cta.title)} aria-labelledby="cta-heading">
           <h2 id="cta-heading">{cta.title}</h2>
           <Fragment set:html={cta.html} />
         </section>
@@ -139,7 +139,7 @@ const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${enc
         <Img src={danPhoto} alt="" sizes="64px" widths={[128]} />
         <div>
           <strong>{post.author_name}, founder of Roadmap Labs</strong>
-          <p>I spent 10 years running a digital marketing agency, and I've been implementing AI systems since 2012, long before ChatGPT made it mainstream.</p>
+          <p>I spent 10 years running a digital marketing agency.</p>
           <a class="rl-link-action" href="/about">More about Dan</a>
         </div>
       </aside>
