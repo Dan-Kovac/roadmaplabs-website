@@ -5,3 +5,6 @@ dist/
 .DS_Store
 review/
 .env
+test-results/
+playwright-report/
+blob-report/
