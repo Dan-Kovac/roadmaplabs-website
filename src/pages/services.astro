@@ -1,0 +1,95 @@
+---
+import '../styles/blueprint-pages.css';
+import Base from '../layouts/Base.astro';
+import ClosingCTA from '../components/ClosingCTA.astro';
+import PageHero from '../components/PageHero.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import { faqSchema } from '../data/site';
+import {
+  SERVICE_ACCOUNTS,
+  SERVICE_FAQ,
+  SERVICE_FAQ_HEADING,
+  SERVICE_GROUPS,
+  SERVICE_INTRO,
+  SERVICE_PRODUCTS,
+  SERVICES_PAGE,
+  SHOW_COMPASS_PROJECT_LINK,
+} from '../data/services';
+---
+<Base title={SERVICES_PAGE.title} description={SERVICES_PAGE.description} path="/services" schema={[faqSchema(SERVICE_FAQ)]}>
+  <div class="bp-page">
+    <PageHero
+      eyebrow={SERVICES_PAGE.eyebrow}
+      title={SERVICES_PAGE.h1}
+      lead={SERVICES_PAGE.lead}
+      cta={SERVICES_PAGE.cta}
+      microcopy={SERVICES_PAGE.microcopy}
+    />
+
+    <section class="bp-wrap">
+      <div class="bp-intro">
+        <h2>{SERVICE_INTRO.heading}</h2>
+        <p>{SERVICE_INTRO.body}</p>
+      </div>
+    </section>
+
+    {SERVICE_GROUPS.map((group) => (
+      <section class="bp-wrap" aria-labelledby={`group-${group.index}`}>
+        <div class="bp-grid">
+          <div class="bp-col-4">
+            <p class="bp-kicker bp-sticky" id={`group-${group.index}`}>{group.index} / {group.label}</p>
+          </div>
+          <div class="bp-col-8">
+            {group.items.map((item) => (
+              <article class="bp-service">
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+                {SHOW_COMPASS_PROJECT_LINK && item.project && (
+                  <>
+                    <p class="bp-project">{item.project.label}</p>
+                    <a class="rl-link-action" href={item.project.href}>{item.project.linkLabel}</a>
+                  </>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    ))}
+
+    <section class="bp-wrap">
+      <div class="bp-grid">
+        <div class="bp-col-4"><h2>{SERVICE_PRODUCTS.heading}</h2></div>
+        <div class="bp-col-8 bp-prose">
+          <p>{SERVICE_PRODUCTS.body}</p>
+          <p>{SERVICE_PRODUCTS.support}</p>
+          <div class="bp-links">
+            {SERVICE_PRODUCTS.links.map((link) => (
+              <a class="rl-link-action" href={link.href}>{link.label}</a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bp-wrap">
+      <div class="bp-grid">
+        <div class="bp-col-4"><h2>{SERVICE_ACCOUNTS.heading}</h2></div>
+        <div class="bp-col-8 bp-prose">
+          {SERVICE_ACCOUNTS.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          <a class="rl-link-action" href={SERVICE_ACCOUNTS.link.href}>{SERVICE_ACCOUNTS.link.label}</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="bp-wrap">
+      <div class="bp-grid">
+        <div class="bp-col-4"><h2>{SERVICE_FAQ_HEADING}</h2></div>
+        <div class="bp-col-8">
+          <FaqAccordion items={SERVICE_FAQ} />
+        </div>
+      </div>
+    </section>
+  </div>
+  <ClosingCTA />
+</Base>

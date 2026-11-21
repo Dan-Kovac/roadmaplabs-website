@@ -1,0 +1,36 @@
+---
+import '../styles/blueprint-pages.css';
+import Base from '../layouts/Base.astro';
+import ClosingCTA from '../components/ClosingCTA.astro';
+import PageHero from '../components/PageHero.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import { FAQ_GROUPS, FAQ_ITEMS, FAQ_OPEN_ID, FAQ_PAGE } from '../data/faq';
+import { faqSchema } from '../data/site';
+---
+<Base title={FAQ_PAGE.title} description={FAQ_PAGE.description} path="/faq" schema={[faqSchema(FAQ_ITEMS)]}>
+  <div class="bp-page">
+    <PageHero eyebrow={FAQ_PAGE.eyebrow} title={FAQ_PAGE.h1} lead={FAQ_PAGE.lead} cta={FAQ_PAGE.cta} />
+
+    <nav class="bp-wrap bp-jump-wrap" aria-label="Question groups">
+      <div class="bp-jump">
+        {FAQ_GROUPS.map((group) => (
+          <a href={`#${group.id}`}>{group.heading}</a>
+        ))}
+      </div>
+    </nav>
+
+    {FAQ_GROUPS.map((group) => (
+      <section class="bp-wrap" id={group.id} aria-labelledby={`${group.id}-heading`}>
+        <div class="bp-grid">
+          <div class="bp-col-4">
+            <h2 id={`${group.id}-heading`}>{group.heading}</h2>
+          </div>
+          <div class="bp-col-8">
+            <FaqAccordion items={group.items} openId={group.id === 'price' ? FAQ_OPEN_ID : undefined} />
+          </div>
+        </div>
+      </section>
+    ))}
+  </div>
+  <ClosingCTA />
+</Base>

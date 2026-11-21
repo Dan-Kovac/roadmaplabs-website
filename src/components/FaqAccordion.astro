@@ -1,0 +1,74 @@
+---
+import type { FaqItem } from '../data/faq';
+
+interface Props {
+  items: FaqItem[];
+  /** Item id that is expanded in the initial HTML. */
+  openId?: string;
+}
+const { items, openId } = Astro.props;
+---
+<div class="bp-acc">
+  {items.map((item) => {
+    const open = item.id === openId;
+    return (
+      <article class="bp-acc__item" id={item.id} data-faq-item>
+        <h3 class="bp-acc__q">
+          <button
+            type="button"
+            class="bp-acc__btn"
+            id={`${item.id}-button`}
+            aria-expanded={open ? 'true' : 'false'}
+            aria-controls={`${item.id}-answer`}
+          >
+            <span class="bp-acc__label">{item.q}</span>
+            <span class="bp-pm" data-plus aria-hidden="true" hidden={open}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </span>
+            <span class="bp-pm" data-minus aria-hidden="true" hidden={!open}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 8h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </span>
+          </button>
+        </h3>
+        <div class="bp-acc__panel" id={`${item.id}-answer`} role="region" aria-labelledby={`${item.id}-button`} hidden={!open}>
+          <p>{item.a}</p>
+        </div>
+      </article>
+    );
+  })}
+</div>
+<script>
+  const setOpen = (button: HTMLButtonElement, open: boolean) => {
+    const panelId = button.getAttribute('aria-controls');
+    const panel = panelId ? document.getElementById(panelId) : null;
+    button.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (panel) panel.hidden = !open;
+    const plus = button.querySelector<HTMLElement>('[data-plus]');
+    const minus = button.querySelector<HTMLElement>('[data-minus]');
+    if (plus) plus.hidden = open;
+    if (minus) minus.hidden = !open;
+  };
+
+  const openFromHash = () => {
+    const id = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+    if (!id) return;
+    const item = document.getElementById(id);
+    if (!item?.hasAttribute('data-faq-item')) return;
+    const button = item.querySelector<HTMLButtonElement>('button[aria-expanded]');
+    if (button) setOpen(button, true);
+  };
+
+  const root = document.documentElement;
+  if (root.dataset.faqBound !== 'true') {
+    root.dataset.faqBound = 'true';
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest<HTMLButtonElement>('.bp-acc__btn');
+      if (!button) return;
+      setOpen(button, button.getAttribute('aria-expanded') !== 'true');
+    });
+    window.addEventListener('hashchange', openFromHash);
+  }
+  openFromHash();
+</script>
