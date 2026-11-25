@@ -1,9 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import { INTRO, DEFAULT_AUDIENCE } from '../data/intake-intro';
+import { welcomeVoiceGate } from '../data/intake-welcome';
 
-// Public, so it can sit in the page. Unset means voice mode shows a "coming online" state and chat carries everything.
-const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
+// Public, so it can sit in the page. Unset or blank: the welcome screen does not offer voice.
+// Voice mode, if opened after the welcome, still shows a "coming online" state and chat carries everything.
+const { agentId, offered: offerVoice } = welcomeVoiceGate(import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID);
 
 const icons = {
   clip: '<path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/>',
@@ -70,6 +72,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik[data-mode="voice"] .ik-modes::before { transform: translateX(100%); }
   .ik-modes button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 600 13px/18px var(--font-sans); cursor: pointer; transition: color .3s ease; white-space: nowrap; }
   .ik-modes button[aria-pressed="true"] { color: var(--ink); }
+  /* No agent id: nothing on the welcome screen starts a voice interview. The switch returns once the interview starts. */
+  .ik:not([data-agent])[data-view="welcome"] .ik-modes { display: none; }
   .ik-progress { position: relative; height: 3px; background: rgba(0,7,16,.06); border-radius: 3px; overflow: hidden; }
   .ik-progress i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 3px; background: var(--gradient-signal); transition: width .8s var(--ease); }
   .ik-progress i::after { content: ""; position: absolute; right: 0; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #00a3ff; box-shadow: 0 0 0 4px rgba(0,163,255,.18); }
@@ -620,7 +624,9 @@ const svg = (d: string, size = 20, sw = 2) =>
       </ul>
       <div class="ik-welcome__actions">
         <button class="ik-cta" type="button" id="ik-start-chat"><Fragment set:html={svg(icons.chat, 18)} />Start in chat</button>
-        <button class="ik-cta ik-cta--quiet" type="button" id="ik-start-voice"><Fragment set:html={svg(icons.wave, 18)} />Start a voice interview</button>
+        {offerVoice && (
+          <button class="ik-cta ik-cta--quiet" type="button" id="ik-start-voice"><Fragment set:html={svg(icons.wave, 18)} />Start a voice interview</button>
+        )}
       </div>
       <p class="ik-welcome__fine">Your answers go straight to Roadmap Labs and are only used for your project. Your information is stored securely. If you decide not to go ahead, we delete it promptly. Once your own setup is running, we delete it from our side too. <a href="/privacy">Privacy policy</a></p>
     </div>
@@ -2375,8 +2381,10 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
   root.querySelectorAll<HTMLButtonElement>('.ik-modes button').forEach((b) =>
     b.addEventListener('click', () => {
-      if (root.dataset.view === 'welcome') startFlow(b.dataset.mode as Mode);
-      else setMode(b.dataset.mode as Mode);
+      if (root.dataset.view === 'welcome') {
+        if (b.dataset.mode === 'voice' && !agentId) return;
+        startFlow(b.dataset.mode as Mode);
+      } else setMode(b.dataset.mode as Mode);
     }),
   );
   document.getElementById('ik-voice-fallback')?.addEventListener('click', () => {
@@ -2652,7 +2660,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     openTour(() => begin());
   }
   $<HTMLButtonElement>('ik-start-chat').addEventListener('click', () => startFlow('chat'));
-  $<HTMLButtonElement>('ik-start-voice').addEventListener('click', () => startFlow('voice'));
+  document.getElementById('ik-start-voice')?.addEventListener('click', () => {
+    if (agentId) startFlow('voice');
+  });
 
   // ---------- Preview mock: sign-in screen (?mock=login) ----------
   // Visual only, for Dan to react to. It never gates the real page, checks nothing and stores nothing:
