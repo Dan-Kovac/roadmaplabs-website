@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 
-const EXCLUDE = ['/404', '/thanks', '/intake'];
+const EXCLUDE = ['/404', '/thanks', '/intake', '/intake-admin'];
 
 export default defineConfig({
   site: 'https://roadmaplabs.com.au',

@@ -1,0 +1,75 @@
+{
+  "slug": "test-co",
+  "token": "lcBxk3b3DLjFDLzQzl00ZZDTPWTnLdM9",
+  "businessName": "Test Co (delete me)",
+  "logoUrl": "/briefs/test-co-logo.svg",
+  "accent": "#0f6b5c",
+  "known": [
+    {
+      "text": "A made-up business for testing the tailored intake. Not a real company",
+      "status": "confirmed"
+    },
+    {
+      "text": "Fixes pretend gadgets for pretend customers",
+      "status": "confirmed"
+    },
+    {
+      "text": "Uses a spreadsheet for quotes",
+      "status": "to-check"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "e1",
+      "kind": "search-term",
+      "value": "pretend gadget repair",
+      "source": "made up for testing",
+      "pulled": "2026-11-25",
+      "status": "confirmed"
+    },
+    {
+      "id": "e2",
+      "kind": "monthly-searches",
+      "value": "90",
+      "source": "made up for testing",
+      "pulled": "2026-11-25",
+      "status": "unverified"
+    }
+  ],
+  "skip": [
+    "S1",
+    "A4",
+    "T4"
+  ],
+  "opening": "I've got that Test Co fixes pretend gadgets and quotes from a spreadsheet. Is that still right?",
+  "questions": {
+    "winning": [
+      "When a pretend customer asks for a quote, what do you do first?"
+    ],
+    "doing": [
+      "Which repair always takes longer than it should?"
+    ],
+    "running": [
+      "What do you do every Friday that nobody has written down?"
+    ],
+    "connections": [
+      "Which of your tools can't an AI read at all?"
+    ],
+    "gaps": [
+      "What would you do with a spare day a week?"
+    ],
+    "marketing": [
+      {
+        "text": "People search pretend gadget repair about 90 times a month. Have you thought about how to capture more of that?",
+        "uses": [
+          "e1",
+          "e2"
+        ],
+        "fallback": "When people search for gadget repair, do you know where you show up, and has anything been tried to show up higher?"
+      },
+      {
+        "text": "Which channel do you feel you should be doing more of?"
+      }
+    ]
+  }
+}

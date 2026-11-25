@@ -126,6 +126,8 @@ export interface PayloadParts {
   answeredAs: string;
   /** The eight growth answers (undefined = not offered). */
   growth?: (string | undefined)[];
+  /** Brief-based interviews only: the tailored answers block, already labelled (src/data/brief.ts). */
+  tailored?: string;
   /** The closing field "Anything we didn't ask that we should know?". */
   anythingElseQid: number;
 }
@@ -147,6 +149,13 @@ export function buildPayload(p: PayloadParts): [number, string][] {
     out.set(Q, base ? `${base}\n\n${block}` : block);
   };
   append(p.more);
+  // Tailored answers come before the optional growth block, so if room runs short the growth answers are cut first.
+  const roomFor = () => TEXT_MAX - ((out.get(Q)?.length ?? 0) + (out.has(Q) ? 2 : 0) + (p.answeredAs ? p.answeredAs.length + 2 : 0));
+  if (p.tailored) {
+    const room = roomFor();
+    const marker = '\n[tailored answers cut to fit]\n--- End of tailored questions ---';
+    append(p.tailored.length <= room ? p.tailored : room > marker.length + 60 ? `${p.tailored.slice(0, room - marker.length).trimEnd()}${marker}` : '');
+  }
   const g = growthBlock(p.growth ?? []);
   if (g) {
     const used = (out.get(Q)?.length ?? 0) + (out.has(Q) ? 2 : 0) + (p.answeredAs ? p.answeredAs.length + 2 : 0);

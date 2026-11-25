@@ -211,6 +211,18 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik[data-view="welcome"] .ik-log, .ik[data-view="welcome"] .ik-dock { display: none; }
   .ik-welcome .ik-col { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; margin: auto; padding-top: 24px; padding-bottom: 48px; }
   .ik-welcome h1 { margin: 0; font: 500 clamp(36px, 5.4vw, 56px)/1.04 var(--font-sans); letter-spacing: -0.035em; color: var(--ink); max-width: 15ch; }
+  /* Tailored brief: the client's name, logo and colour (set from the brief at load) */
+  .ik-brandline { display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 6px 12px 6px 8px; border-radius: 999px; background: rgba(255,255,255,.8); border: 1px solid rgba(0,7,16,.08); font: 500 13px/18px var(--font-sans); color: var(--text-secondary); }
+  .ik-brandline[hidden] { display: none; }
+  .ik-brandline img { display: block; height: 24px; width: auto; max-width: 120px; object-fit: contain; }
+  .ik-brandline b { color: var(--ink); font-weight: 600; }
+  .ik-id__logo { display: block; height: 28px; width: auto; max-width: 96px; object-fit: contain; flex: none; }
+  .ik-id__logo[hidden] { display: none; }
+  .ik[data-brand] .ik-bg::before, .ik[data-brand] .ik-bg::after { background: var(--roadmap-blue); }
+  .ik-known { display: grid; gap: 6px; padding: 12px; border-radius: 12px; background: var(--tint); }
+  .ik-known[hidden] { display: none; }
+  .ik-known ul { margin: 0; padding: 0 0 0 18px; display: grid; gap: 4px; font: 400 13px/18px var(--font-sans); color: var(--ink); }
+  .ik-known p { margin: 0; font: 400 12px/17px var(--font-sans); color: var(--text-secondary); }
   .ik-welcome h1 span { background: var(--gradient-signal); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .ik-welcome__lead { margin: 0; max-width: 36em; font: 400 18px/1.55 var(--font-sans); letter-spacing: -0.01em; color: var(--text-secondary); }
   .ik-points { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 10px; }
@@ -549,6 +561,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     <div class="ik-col">
       <div class="ik-top__row">
         <div class="ik-id">
+          <img class="ik-id__logo" id="ik-id-logo" alt="" hidden referrerpolicy="no-referrer">
           <div class="ik-id__text">
             <span class="ik-id__name">Harry</span>
             <span class="ik-id__meta" id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
@@ -581,6 +594,11 @@ const svg = (d: string, size = 20, sw = 2) =>
       <span class="ik-panel__role-actions"><button type="button" id="ik-role-change">Change</button><button type="button" id="ik-role-add">Add a role</button></span>
       <small>Your role only changes which questions you're asked.</small>
     </div>
+    <div class="ik-known" id="ik-known" hidden>
+      <span class="ik-panel__eyebrow">Already know</span>
+      <ul id="ik-known-list"></ul>
+      <p id="ik-known-skip"></p>
+    </div>
     <div class="ik-tree" id="ik-tree" aria-live="polite"></div>
     <p class="ik-panel__fine">The bars are a rough guide to how much we have on each topic so far.</p>
     <button class="ik-panel__link" type="button" id="ik-tour-replay">Replay the walkthrough</button>
@@ -611,6 +629,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   <div class="ik-welcome" id="ik-welcome">
     <div class="ik-col">
       <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+      <p class="ik-brandline" id="ik-brandline" hidden><img id="ik-brand-logo" alt="" hidden referrerpolicy="no-referrer"><span>Prepared for <b id="ik-brand-name"></b></span></p>
       <h1 id="ik-hello">Let's map how your business <span>really runs.</span></h1>
       <p class="ik-welcome__lead">I'm Harry. First the basics, how you use AI today and the tools you run on. Then, if you have time, we'll walk through how work comes in, gets done and gets looked after. Type, talk, or switch to a voice interview whenever you like.</p>
       <ul class="ik-points">
@@ -828,11 +847,14 @@ const svg = (d: string, size = 20, sw = 2) =>
 <script>
   import { readme, reference, workflow, fromDocuments, businessName, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
   import { readRole, ROLE_QUESTION, ROLE_QUESTION_LEGACY, ROLE_FOLLOW_UP, ROLE_CHIPS, ROUTE_NAME, type Route } from '../data/intake-roles';
-  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING, BLOCKED_FILE } from '../data/intake';
+  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL as DRILL_BASE, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING, BLOCKED_FILE } from '../data/intake';
   import { GROWTH_QUESTIONS, GROWTH_OFFER, buildPayload } from '../data/intake-growth';
+  import { DRILL_BRIEF, STAGE_LABEL, MARKETING_FOLLOW_UP, SKIPPABLE, NOT_ASKED, tailoredIds, tailoredBlock, type PublicBrief, type BriefStage } from '../data/brief.ts';
 
   type J = 0 | 1 | 2;
   type Step =
+    // Tailored brief only: the opening check, the brief's own questions, and a follow-up after each marketing answer.
+    | { type: 'tq'; b: BriefStage | 'opening'; i: number; f?: true }
     | { type: 'q'; qid: number; id: string; text: string; phase: 'core' | 'closing'; stage?: 0 | 1 | 2; hint?: string; first?: boolean }
     | { type: 'choice' }
     | { type: 'list'; j: J }
@@ -846,7 +868,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     // Role steps: which questions to ask. Routing only, never an access permission.
     | { type: 'role'; mode: 'first' | 'change' | 'add' | 'legacy'; echo?: string }
     | { type: 'role2'; mode: 'first' | 'change' | 'add'; first: string; echo?: string };
-  type Answerable = Extract<Step, { type: 'q' | 'list' | 'name' | 'drill' | 'role' | 'role2' | 'growth' }>;
+  type Answerable = Extract<Step, { type: 'q' | 'list' | 'name' | 'drill' | 'role' | 'role2' | 'growth' | 'tq' }>;
   /** a = answer (s: spoken in a voice interview; r/n: the role and respondent it was given under),
    *  c = a choice (milestone, "another one?", "role:change"/"role:add"/"role:legacy"), p = a voice answer given ahead of its turn. */
   type Action = { t: 'a'; v: string; s?: 1; r?: string; n?: string } | { t: 'c'; v: string } | { t: 'p'; k: string; v: string; s?: 1 };
@@ -857,7 +879,16 @@ const svg = (d: string, size = 20, sw = 2) =>
   interface Proc { name: string; answers: (string | undefined)[]; skipped?: boolean }
 
   // A new key for the new spine, so progress saved under the old 44-question script never replays into it.
-  const STORE = 'rl-intake-v3';
+  // A brief-based interview saves under its own key, so it never mixes with a standard one on the same device.
+  let STORE = 'rl-intake-v3';
+  /** The per-job questions: the standard nine, plus two more in brief-based interviews (set before anything starts). */
+  let DRILL: readonly { id: string; label: string; text: string }[] = DRILL_BASE;
+  /** The tailored brief from /intake?brief=<token>, fetched from the server. Null for the standard interview. */
+  let brief: PublicBrief | null = null;
+  const tailored = new Map<string, string>(); // tailored answers: "opening", "<stage>:<i>", "marketing:<i>:f"
+  const tqKey = (s: { b: string; i: number; f?: true }) => (s.b === 'opening' ? 'opening' : `${s.b}:${s.i}${s.f ? ':f' : ''}`);
+  const tqId = (s: { b: string; i: number; f?: true }) => { const t = brief ? tailoredIds(brief).find((x) => x.stage === s.b && x.i === s.i) : null; return t ? `${t.id}${s.f ? '-follow-up' : ''}` : ''; };
+  const JOURNEY_STAGE: Partial<Record<BriefStage, J>> = { winning: 0, doing: 1, running: 2 };
   const CHOICE_TEXT = "That's the core done, about 10 minutes. Want to keep going? It's about 20 more minutes on how work comes in, gets done and gets looked after. Or you can finish here.";
   const TOO_BIG = "That's too big to send through the page (about 4MB in total). Put it in Google Drive or Dropbox and paste the link instead.";
 
@@ -956,7 +987,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   // ---------- Routes: which questions, in which order, for this person's role ----------
   // PROVISIONAL. A role only changes which questions are asked and in what order. It is not an access permission:
   // there are no accounts, nothing is restricted, and every answer still goes into the same submission.
-  type Block = { k: 'q'; id: string } | { k: 'j'; j: J } | { k: 'choice' } | { k: 'closing' };
+  type Block = { k: 'q'; id: string } | { k: 'j'; j: J } | { k: 'choice' } | { k: 'closing' } | { k: 't'; b: BriefStage };
   const Q = (...ids: string[]): Block[] => ids.map((id) => ({ k: 'q', id }));
   const ALL_AI = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'];
   const ROUTE_PLAN: Record<Route, Block[]> = {
@@ -967,7 +998,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     // The business name, then their own week through the drill, what blocks them and what they avoid, then tools.
     team: [...Q('S1'), { k: 'j', j: 2 }, ...Q('T3', 'T5', 'T1', 'T2', 'T4'), { k: 'choice' }, ...Q(...ALL_AI), { k: 'closing' }],
   };
-  const blockKey = (b: Block) => (b.k === 'q' ? `q:${b.id}` : b.k === 'j' ? `j:${b.j}` : b.k);
+  const blockKey = (b: Block) => (b.k === 'q' ? `q:${b.id}` : b.k === 'j' ? `j:${b.j}` : b.k === 't' ? `t:${b.b}` : b.k);
   let plan: Block[] = [];
   const usedBlocks = new Set<string>();
   const roles: Route[] = []; // every route they've answered as, in order (a second role adds to it)
@@ -980,10 +1011,29 @@ const svg = (d: string, size = 20, sw = 2) =>
   const respondent = () => greetName || employee;
   function setPlan(r: Route, add: boolean) {
     const fresh = ROUTE_PLAN[r].filter((b) => !usedBlocks.has(blockKey(b)));
-    if (!add) { plan = fresh; return; }
+    if (!add) { plan = withBrief(fresh); return; }
     const merged = plan.filter((b) => b.k !== 'closing');
     for (const b of fresh) if (b.k !== 'closing' && !merged.some((x) => blockKey(x) === blockKey(b))) merged.push(b);
-    plan = [...merged, { k: 'closing' }];
+    plan = withBrief([...merged, { k: 'closing' }]);
+  }
+  /** Brief-based interviews: leave out the questions we already know, and put each stage's tailored questions in
+   *  place: before each part of how the work flows, after the tools questions, and before the last question.
+   *  The standard questions keep their order, so the answers still line up with every other interview. */
+  function withBrief(blocks: Block[]): Block[] {
+    if (!brief) return blocks;
+    const skip = new Set(brief.skip);
+    const out = blocks.filter((b) => !(b.k === 'q' && skip.has(b.id)));
+    const wanted = (k: BriefStage) => (brief!.questions[k]?.length ?? 0) > 0 && !usedBlocks.has(`t:${k}`) && !out.some((x) => x.k === 't' && x.b === k);
+    const before = (pred: (b: Block) => boolean, blk: Block) => { const i = out.findIndex(pred); if (i >= 0) out.splice(i, 0, blk); };
+    (['winning', 'doing', 'running'] as const).forEach((k, j) => { if (wanted(k)) before((b) => b.k === 'j' && b.j === j, { k: 't', b: k }); });
+    if (wanted('connections')) {
+      let last = -1;
+      out.forEach((b, i) => { if (b.k === 'q' && CORE_QUESTIONS.find((q) => q.id === b.id)?.stage === 2) last = i; });
+      if (last >= 0) out.splice(last + 1, 0, { k: 't', b: 'connections' });
+      else before((b) => b.k === 'closing', { k: 't', b: 'connections' });
+    }
+    for (const k of ['gaps', 'marketing'] as const) if (wanted(k)) before((b) => b.k === 'closing', { k: 't', b: k });
+    return out;
   }
   /** Take the next block of the plan that hasn't been asked yet, and add its first step. */
   function pullNext() {
@@ -1005,12 +1055,18 @@ const svg = (d: string, size = 20, sw = 2) =>
         steps.push({ type: 'q', qid: q.qid, id: q.id, text: q.text, phase: 'core', stage: q.stage, hint: q.hint, first: !(before?.type === 'q' && before.phase === 'core' && before.stage === q.stage) });
       } else if (b.k === 'j') steps.push({ type: 'list', j: b.j });
       else if (b.k === 'choice') steps.push({ type: 'choice' });
-      else addClosing();
+      else if (b.k === 't') {
+        (brief?.questions[b.b] ?? []).forEach((_q, i) => {
+          steps.push({ type: 'tq', b: b.b, i });
+          if (b.b === 'marketing') steps.push({ type: 'tq', b: b.b, i, f: true });
+        });
+        if (!steps[pos]) continue; // an empty stage: take the next block
+      } else addClosing();
       return;
     }
   }
 
-  const answerable = (s?: Step): s is Answerable => !!s && (s.type === 'q' || s.type === 'list' || s.type === 'name' || s.type === 'drill' || s.type === 'role' || s.type === 'role2' || s.type === 'growth');
+  const answerable = (s?: Step): s is Answerable => !!s && (s.type === 'q' || s.type === 'list' || s.type === 'name' || s.type === 'drill' || s.type === 'role' || s.type === 'role2' || s.type === 'growth' || s.type === 'tq');
   /** Growth is offered once, only after all three journey stages were taken (not after "Finish here"). */
   const growthDue = () => growthOn && !usedBlocks.has('growth') && JOURNEY.every((_J, j) => usedBlocks.has(`j:${j}`));
   /** On the team route, Operate is about the person's own week. */
@@ -1021,7 +1077,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   const TEAM_LIST_TEXT = 'What do you do in a normal week? Name each task, one per line.';
   const TEAM_LIST_HINT = 'For example, an office manager: invoicing, booking jobs, answering the phones, ordering stock. A marketing coordinator: social posts, the newsletter, monthly reporting.';
   const stepKey = (s?: Step) =>
-    !s ? '' : s.type === 'q' ? `q:${s.id}` : s.type === 'list' ? `q:${JOURNEY[s.j].id}` : s.type === 'drill' ? `d:${s.j}:${s.p}:${s.d}` : s.type === 'growth' ? `g:${s.g}` : '';
+    !s ? '' : s.type === 'q' ? `q:${s.id}` : s.type === 'list' ? `q:${JOURNEY[s.j].id}` : s.type === 'drill' ? `d:${s.j}:${s.p}:${s.d}` : s.type === 'growth' ? `g:${s.g}` : s.type === 'tq' ? `t:${tqKey(s)}` : '';
   function stepText(s?: Step): string {
     if (!s) return '';
     switch (s.type) {
@@ -1035,6 +1091,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       case 'choice': return CHOICE_TEXT;
       case 'gchoice': return GROWTH_OFFER.text;
       case 'growth': return GROWTH_QUESTIONS[s.g].text;
+      case 'tq': return !brief ? '' : s.b === 'opening' ? brief.opening : s.f ? MARKETING_FOLLOW_UP : brief.questions[s.b]?.[s.i] ?? '';
       default: return '';
     }
   }
@@ -1087,11 +1144,24 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
   /** Everything for Jotform, by qid: only what was actually asked. */
   /** The pure builder (src/data/intake-growth.ts) keeps today's order; the Growth block only appears when answered. */
+  /** Brief-based interviews: answers we already have for the questions the brief skips. */
+  function presetAnswers(): Map<number, string> {
+    const m = new Map<number, string>();
+    if (brief) for (const id of brief.skip) {
+      const q = CORE_QUESTIONS.find((x) => x.id === id);
+      if (q) m.set(q.qid, id === 'S1' ? brief.businessName : NOT_ASKED);
+    }
+    return m;
+  }
   function payloadFields(): [number, string][] {
     const slots: [number, string][] = [];
     JOURNEY.forEach((J, j) => procs[j].forEach((pr, p) => { if (pr) slots.push([J.slots[p], procBlock(pr)]); }));
+    // Questions the brief skipped are sent as "not asked", and the business name comes from the brief.
+    const all = new Map(answers);
+    for (const [qid, v] of presetAnswers()) if (!all.has(qid)) all.set(qid, v);
     return buildPayload({
-      answers,
+      answers: all,
+      tailored: brief ? tailoredBlock(brief, tailored) : '',
       slots,
       more: moreProcesses(),
       answeredAs: roleTag() ? `Answered as: ${roleTag()}${respondent() ? ` (${respondent()})` : ''}` : '',
@@ -1104,9 +1174,10 @@ const svg = (d: string, size = 20, sw = 2) =>
     const all = [...answers.values(), ...procs.flat().flatMap((p) => (p.skipped ? [SKIPPED] : p.answers.filter((v): v is string => v !== undefined)))];
     // Growth answers count only when the Growth block is sent (at least one answered).
     if (growthSent()) all.push(...growth.filter((v): v is string => v !== undefined));
+    all.push(...tailored.values());
     return { answered: all.filter(filled).length, skipped: all.filter((v) => v === SKIPPED).length };
   }
-  const hasAnything = () => answers.size > 0 || procs.some((ps) => ps.length > 0) || growthSent();
+  const hasAnything = () => answers.size > 0 || procs.some((ps) => ps.length > 0) || growthSent() || tailored.size > 0;
 
   function save() {
     if (sent) return;
@@ -1271,7 +1342,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const folder = displayName();
     let label = '';
     let pct = 0;
-    if (root.dataset.view === 'welcome') { label = 'Roadmap Labs intake'; pct = 0; }
+    if (root.dataset.view === 'welcome') { label = brief ? `Prepared for ${brief.businessName}` : 'Roadmap Labs intake'; pct = 0; }
     else if (isRoleStep(s)) { label = `Your role · ${folder}`; pct = 1; }
     else if (sent) { label = `All sent · ${folder}`; pct = 100; }
     else if (!s || s.type === 'files') { label = `Ready to send · ${folder}`; pct = 100; }
@@ -1280,6 +1351,10 @@ const svg = (d: string, size = 20, sw = 2) =>
     else if (s.type === 'growth') { label = `Growth, optional · ${folder}`; pct = 95; }
     else if (s.type === 'q' && s.phase === 'core') { label = `${CORE_STAGES[s.stage!].title} · ${folder}`; pct = (coreDone / CORE_QUESTIONS.length) * 34; }
     else if (s.type === 'q') { label = `Last question · ${folder}`; pct = 96; }
+    else if (s.type === 'tq') {
+      label = `${s.b === 'opening' ? 'A quick check' : STAGE_LABEL[s.b]} · ${folder}`;
+      pct = s.b === 'opening' ? 1 : JOURNEY_STAGE[s.b] !== undefined ? 34 + (jy.done / jy.total) * 60 : s.b === 'connections' ? 33 : 94;
+    }
     else {
       pct = 34 + (jy.done / jy.total) * 60;
       label = s.type === 'drill' || s.type === 'another' ? `${jTitle(s.j)}: ${procs[s.j][s.p].name} · ${folder}` : `${jTitle(s.j)} · ${folder}`;
@@ -1294,7 +1369,8 @@ const svg = (d: string, size = 20, sw = 2) =>
       const keys = new Set<string>();
       let total = 0;
       for (const r of roles) for (const b of ROUTE_PLAN[r]) if (!keys.has(blockKey(b))) { keys.add(blockKey(b)); total += weight(b); }
-      const done = steps.slice(0, pos).filter((x) => x.type === 'q' || x.type === 'list' || x.type === 'drill').length;
+      const done = steps.slice(0, pos).filter((x) => x.type === 'q' || x.type === 'list' || x.type === 'drill' || x.type === 'tq').length;
+      if (brief) total += tailoredIds(brief).length;
       pct = Math.min(96, Math.max(2, (done / Math.max(1, total)) * 100));
     }
     bar.style.width = `${Math.max(2, Math.round(pct))}%`;
@@ -1330,9 +1406,10 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
   // The header subtitle and the panel use the same name: a short S1 answer, or the placeholder.
   /** The business name as people say it (no "OS/"), or "Your business" until one is given. */
-  const displayName = () => businessName(answers.get(CORE_QUESTIONS[0].qid)) || 'Your business';
+  const displayName = () => businessName(answers.get(CORE_QUESTIONS[0].qid)) || brief?.businessName || 'Your business';
   function folderFiles(): FolderFile[] {
-    const a = (q: number) => answers.get(q);
+    const preset = presetAnswers();
+    const a = (q: number) => answers.get(q) ?? preset.get(q);
     const shared = files.length > 0 || links.length > 0;
     const out: FolderFile[] = [
       { path: 'README.md', state: readme(a), kind: 'core' },
@@ -1453,6 +1530,18 @@ const svg = (d: string, size = 20, sw = 2) =>
     const s = steps[i];
     const prev = steps[i - 1];
     if (!prev || !s) return;
+    if (s.type === 'role' && prev.type === 'tq' && prev.b === 'opening') { await harrySays('Thanks. Next, a quick one about your role, so the questions fit.'); return; }
+    if (s.type === 'tq' && !s.f && s.b !== 'opening' && s.i === 0) {
+      const name = brief?.businessName ?? 'you';
+      const j = JOURNEY_STAGE[s.b];
+      const lead = j !== undefined ? `${journeyIntro(j)} I'll start with a few questions just for ${name}.`
+        : s.b === 'connections' ? `A few questions on how AI sees ${name} today.`
+        : s.b === 'gaps' ? `A few more, just for ${name}: competitors and gaps.`
+        : 'Now marketing and growth. Rough answers are fine, and there are no wrong ones.';
+      await harrySays(`${isRoleStep(prev) ? '' : recapOf(before(i))} ${lead}`.trim());
+      return;
+    }
+    if (s.type === 'list' && prev.type === 'tq') { await harrySays("Now the main jobs themselves, so we can go through each one."); return; }
     if (isRoleStep(prev)) {
       // The echo: what Harry understood, and an easy way to correct it.
       const echo = (prev as { echo?: string }).echo;
@@ -1483,7 +1572,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       await harrySays(growthSent() ? `${describe('growth.md')} One last question.` : 'No problem. One last question.');
     } else if (s.type === 'q' && s.phase === 'closing') {
       const last = before(i);
-      const fromJourney = last && last.type !== 'q' && last.type !== 'choice';
+      const fromJourney = last && last.type !== 'q' && last.type !== 'choice' && last.type !== 'tq';
       await harrySays(last?.type === 'choice' ? 'No problem. One last question before you go.' : `${recapOf(last)}${fromJourney ? ' That covers how the work flows.' : ''} One last question.`.trim());
     }
   }
@@ -1501,7 +1590,12 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
   function header(s: Step) {
     if (s.type === 'q' && s.phase === 'core' && s.first) section(partLabel(`c${s.stage}`), CORE_STAGES[s.stage!].title);
-    else if (s.type === 'list') section(`${partLabel('journey')} · How the work flows`, jTitle(s.j));
+    else if (s.type === 'list' && steps[steps.indexOf(s) - 1]?.type !== 'tq') section(`${partLabel('journey')} · How the work flows`, jTitle(s.j));
+    else if (s.type === 'tq' && !s.f && s.b !== 'opening' && s.i === 0) {
+      const j = JOURNEY_STAGE[s.b];
+      if (j !== undefined) section(`${partLabel('journey')} · How the work flows`, jTitle(j));
+      else section(`Just for ${brief?.businessName ?? 'you'}`, STAGE_LABEL[s.b]);
+    }
     else if (s.type === 'drill' && s.d === 0) section(`${jTitle(s.j)} · job ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
     else if (s.type === 'growth' && s.g === 0) section('Optional · about 5 minutes', 'Growth');
   }
@@ -1626,6 +1720,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       if (s.type === 'growth') quick(helpers(body), [{ label: GROWTH_OFFER.no, data: 'growth:skip', onClick: () => act({ t: 'c', v: 'growth:skip' }) }]);
       if (s.type === 'name' && s.options.length) quick(helpers(body), s.options.map((o) => ({ label: o, onClick: () => act({ t: 'a', v: o }) })));
       // Optional shortcuts; typing your role works just the same.
+      if (s.type === 'tq' && s.b === 'opening') quick(helpers(body), [{ label: "Yes, that's right", onClick: () => act({ t: 'a', v: "Yes, that's right" }) }]);
       if (s.type === 'role') quick(helpers(body), ROLE_CHIPS.map((c) => ({ label: c, onClick: () => (c === 'Other' ? (input.focus({ preventScroll: true }), (input.placeholder = 'Tell me in a few words…')) : act({ t: 'a', v: c })) })));
       if (s.type === 'role2') quick(helpers(body), ['Sales', 'Operations', 'Admin', 'Finance'].map((c) => ({ label: c, onClick: () => act({ t: 'a', v: c }) })));
       if (s.type === 'drill' && s.d === 3) exampleActions(helpers(body));
@@ -1826,7 +1921,13 @@ const svg = (d: string, size = 20, sw = 2) =>
       else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: 'Which one is next? Just name it.', options: undrilled(s.j).slice(0, 6) });
     } else if (a.t === 'c' && s.type === 'gchoice' && (a.v === 'growth' || a.v === 'nogrowth')) {
       render = show(a.v === 'growth' ? GROWTH_OFFER.yes : GROWTH_OFFER.no);
-      if (a.v === 'growth') GROWTH_QUESTIONS.forEach((_q, g) => steps.push({ type: 'growth', g }));
+      if (a.v === 'growth') GROWTH_QUESTIONS.forEach((q, g) => { if (!brief?.skip.includes(q.id)) steps.push({ type: 'growth', g }); });
+    } else if (a.t === 'a' && s.type === 'tq') {
+      tailored.set(tqKey(s), a.v);
+      render = show(a.v, a.s);
+      // A skipped marketing question has nothing to follow up on.
+      const next = steps[pos + 1];
+      if (s.b === 'marketing' && !s.f && a.v === SKIPPED && next?.type === 'tq' && next.f && next.i === s.i) steps.splice(pos + 1, 1);
     } else if (a.t === 'a' && s.type === 'growth') {
       growth[s.g] = a.v;
       render = show(a.v, a.s);
@@ -2462,6 +2563,10 @@ const svg = (d: string, size = 20, sw = 2) =>
         const q = GROWTH_QUESTIONS[s.g];
         return `Optional growth question ${q.id} (${s.g + 1} of ${GROWTH_QUESTIONS.length}, about 5 minutes in all). Ask exactly: "${q.text}" Then call record_answer, or skip_question if they'd rather not. If they want to skip all the remaining growth questions, call choose_path with path "skip_growth".`;
       }
+      case 'tq':
+        return s.b === 'opening'
+          ? `Before anything else, check what we already know. Say exactly: "${stepText(s)}" Then call record_answer with their reply.`
+          : `Tailored question ${tqId(s)} (${STAGE_LABEL[s.b]}). Ask exactly: "${stepText(s)}" Then call record_answer with their words.`;
       case 'choice':
         return `The core (stages 0 to 2) is done. Say: "${CHOICE_TEXT}" Then call choose_path with path "keep_going" or "wrap_up".`;
       default:
@@ -2481,7 +2586,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     return null;
   }
-  const currentId = (s?: Step) => (s?.type === 'q' ? s.id : s?.type === 'list' ? JOURNEY[s.j].id : s?.type === 'drill' ? DRILL[s.d].id : s?.type === 'growth' ? GROWTH_QUESTIONS[s.g].id : '');
+  const currentId = (s?: Step) => (s?.type === 'q' ? s.id : s?.type === 'list' ? JOURNEY[s.j].id : s?.type === 'drill' ? DRILL[s.d].id : s?.type === 'growth' ? GROWTH_QUESTIONS[s.g].id : s?.type === 'tq' ? tqId(s) : '');
 
   /** Rough loudness of a base64 audio chunk from the agent (16-bit PCM); any chunk still counts as speech. */
   function chunkLevel(b64: unknown) {
@@ -2573,13 +2678,24 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
 
   let begun = false;
+  /** The first steps of a new interview: the opening check when there's a brief, then the role question. */
+  function firstSteps() {
+    if (brief) steps.push({ type: 'tq', b: 'opening', i: 0 });
+    steps.push({ type: 'role', mode: 'first' });
+  }
   async function begin() {
     if (begun) return;
     begun = true;
     root.dataset.view = 'chat';
-    if (!actions.length && !steps.length) { flow2 = true; growthOn = true; steps.push({ type: 'role', mode: 'first' }); }
+    if (!actions.length && !steps.length) { flow2 = true; growthOn = true; firstSteps(); }
     updateProgress();
     const hiName = greetName || client;
+    if (brief) {
+      await harrySays(`Hi${hiName ? ` ${hiName}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers.`);
+      await harrySays(`I've done some homework on ${brief.businessName}, so I'll skip what we already know and ask about the work that eats your time. We turn your answers into plain written instructions, so AI can work the way your business really runs. First, a quick check.`);
+      enqueue(() => present());
+      return;
+    }
     await harrySays(`Hi${hiName ? ` ${hiName}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. First, a quick one about your role, so the questions fit.`);
     await harrySays("I'll ask about your business, how the work gets done, and the jobs that take up your time. We turn your answers into plain written instructions, like a handbook for a new staff member. That way AI can work the way your business really runs, instead of guessing.");
     enqueue(() => present());
@@ -2681,9 +2797,65 @@ const svg = (d: string, size = 20, sw = 2) =>
     });
   }
 
-  function start() {
+  /** /intake?brief=<token>: fetch the client-safe brief from the server. Any problem: the standard interview. */
+  async function loadBrief(): Promise<'none' | 'ok' | 'failed'> {
+    const token = params.get('brief');
+    if (!token) return 'none';
+    try {
+      const r = await fetch('/api/intake-brief', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token.slice(0, 100) }) });
+      const d = await r.json().catch(() => null);
+      if (!r.ok || !d?.ok || !d.brief) return 'failed';
+      applyBrief(d.brief as PublicBrief);
+      return 'ok';
+    } catch {
+      return 'failed';
+    }
+  }
+  function applyBrief(b: PublicBrief) {
+    brief = b;
+    DRILL = [...DRILL_BASE, ...DRILL_BRIEF];
+    STORE = `rl-intake-v3:brief:${b.slug}`;
+    // Their colour (already checked on the server for contrast with white text), and their name and logo.
+    if (b.accent && /^#[0-9a-f]{6}$/i.test(b.accent)) {
+      const [r, g, bl] = [1, 3, 5].map((i) => parseInt(b.accent!.slice(i, i + 2), 16));
+      root.dataset.brand = '';
+      root.style.setProperty('--roadmap-blue', b.accent);
+      root.style.setProperty('--tint', `rgba(${r},${g},${bl},.07)`);
+      root.style.setProperty('--tint-2', `rgba(${r},${g},${bl},.14)`);
+      root.style.setProperty('--gradient-signal', `linear-gradient(90deg, ${b.accent}, ${b.accent})`);
+    }
+    $<HTMLElement>('ik-brand-name').textContent = b.businessName;
+    $<HTMLElement>('ik-brandline').hidden = false;
+    if (b.logoUrl) for (const id of ['ik-brand-logo', 'ik-id-logo']) {
+      const img = $<HTMLImageElement>(id);
+      img.alt = id === 'ik-id-logo' ? `${b.businessName} logo` : '';
+      img.addEventListener('error', () => { img.hidden = true; }, { once: true });
+      img.src = b.logoUrl;
+      img.hidden = false;
+    }
+    const hello = $<HTMLElement>('ik-hello');
+    hello.textContent = `Let's map how ${b.businessName} `;
+    hello.append(el('span', '', 'really runs.'));
+    // Your notes: what we already know, and the questions that won't be asked.
+    const list = $<HTMLUListElement>('ik-known-list');
+    list.textContent = '';
+    for (const k of b.known) list.append(el('li', '', k));
+    const skipped = b.skip.map((id) => SKIPPABLE.get(id)).filter((t): t is string => !!t);
+    $<HTMLElement>('ik-known-skip').textContent = skipped.length ? `So I won't ask about ${listJoin(skipped)}.` : '';
+    $<HTMLElement>('ik-known').hidden = !b.known.length && !skipped.length;
+  }
+
+  async function start() {
     lock(true);
-    if (client) $<HTMLElement>('ik-hello').innerHTML = `Hi ${client.replace(/[<>&"]/g, '')}. Let's map how your business <span>really runs.</span>`;
+    if (params.get('brief')) {
+      // Hold the start buttons until the brief has loaded, so the interview starts the right way.
+      const startBtns = [$<HTMLButtonElement>('ik-start-chat'), $<HTMLButtonElement>('ik-start-voice')];
+      startBtns.forEach((b) => (b.disabled = true));
+      const got = await loadBrief();
+      startBtns.forEach((b) => (b.disabled = false));
+      if (got === 'failed') showToast("That link didn't open a prepared interview, so this is the standard one. You can still go ahead, or check the link with Roadmap Labs.");
+    }
+    if (client && !brief) $<HTMLElement>('ik-hello').innerHTML = `Hi ${client.replace(/[<>&"]/g, '')}. Let's map how your business <span>really runs.</span>`;
     const saved = load();
     links = Array.isArray(saved.links) ? saved.links.filter((l) => typeof l === 'string') : [];
     renderChips();
@@ -2696,7 +2868,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     begun = true;
     root.dataset.view = 'chat';
-    if (saved.flow === 2) { flow2 = true; steps.push({ type: 'role', mode: 'first' }); }
+    if (saved.flow === 2) { flow2 = true; firstSteps(); }
     else { setPlan('owner', false); pullNext(); } // saved before roles: exactly the order it was started in
     // Saved before the Growth add-on: replay exactly as it was (no growth step can shift their saved answers).
     growthOn = saved.g === 1;
@@ -2729,7 +2901,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     enqueue(() => present());
   }
 
-  start();
+  void start();
 </script>
 
 </Base>

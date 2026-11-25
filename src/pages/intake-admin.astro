@@ -1,0 +1,252 @@
+---
+// Private back office for tailored intake briefs. Server-rendered on every request; never prerendered or cached.
+// Access: the INTAKE_ADMIN_TOKEN environment variable. Signing in sets an HttpOnly cookie holding a hash of it,
+// and every request checks that cookie against the current variable. No secret is ever sent to the browser.
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import Base from '../layouts/Base.astro';
+import { checkBrief, publicView, marketingWording, tailoredIds, SKIPPABLE, STAGE_LABEL, BRIEF_STAGES, DRILL_BRIEF, EVIDENCE_STALE_DAYS, MARKETING_FOLLOW_UP, type Brief } from '../data/brief.ts';
+import { BRIEF_PROMPT, SEARCH_PROMPT } from '../data/brief-prompt.ts';
+import { allBriefs, brokenBriefs } from '../lib/briefs';
+import { rateLimit, sameSite } from '../lib/api-guard';
+
+export const prerender = false;
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
+const secret = (import.meta.env.INTAKE_ADMIN_TOKEN ?? process.env.INTAKE_ADMIN_TOKEN ?? '').trim();
+const COOKIE = 'ik_admin';
+const hash = (s: string) => createHash('sha256').update(`intake-admin:${s}`).digest();
+const same = (a: Buffer, b: Buffer) => a.length === b.length && timingSafeEqual(a, b);
+const fromCookie = () => { const v = Astro.cookies.get(COOKIE)?.value ?? ''; return /^[a-f0-9]{64}$/.test(v) ? Buffer.from(v, 'hex') : Buffer.alloc(0); };
+
+type View = 'off' | 'login' | 'busy' | 'app';
+let view: View = 'login';
+let loginError = '';
+let pasted = '';
+let result: ReturnType<typeof checkBrief> | null = null;
+let parseError = '';
+let generated = false;
+
+const req = Astro.request;
+if (!secret) {
+  view = 'off';
+  Astro.response.status = 503;
+} else if (rateLimit('admin-any', req, 120, 10 * 60_000)) {
+  view = 'busy';
+  Astro.response.status = 429;
+} else {
+  let signedIn = same(fromCookie(), hash(secret));
+  if (req.method === 'POST') {
+    // Forms only from this page: same site, and a cookie that never travels with requests from other sites.
+    if (!sameSite(req)) { Astro.response.status = 403; signedIn = false; loginError = 'Please use this page directly.'; }
+    else {
+      const form = await req.formData().catch(() => null);
+      const action = String(form?.get('action') ?? '');
+      if (action === 'login') {
+        if (rateLimit('admin-login', req, 8, 15 * 60_000)) { Astro.response.status = 429; loginError = 'Too many tries. Wait 15 minutes.'; }
+        else if (same(hash(String(form?.get('secret') ?? '')), hash(secret))) {
+          Astro.cookies.set(COOKIE, hash(secret).toString('hex'), { httpOnly: true, secure: import.meta.env.PROD, sameSite: 'strict', path: '/intake-admin', maxAge: 8 * 60 * 60 });
+          return Astro.redirect('/intake-admin', 303);
+        } else { Astro.response.status = 401; loginError = "That's not right."; }
+      } else if (action === 'logout') {
+        Astro.cookies.delete(COOKIE, { path: '/intake-admin' });
+        return Astro.redirect('/intake-admin', 303);
+      } else if (action === 'check' && signedIn) {
+        pasted = String(form?.get('json') ?? '').slice(0, 60_000);
+        let parsed: unknown = null;
+        try { parsed = JSON.parse(pasted); } catch (e) { parseError = `That isn't valid JSON: ${(e as Error).message}`; }
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && ((parsed as Record<string, unknown>).token === 'GENERATE' || !(parsed as Record<string, unknown>).token)) {
+          (parsed as Record<string, unknown>).token = randomBytes(24).toString('base64url');
+          generated = true;
+        }
+        if (!parseError) { result = checkBrief(parsed); if (generated) pasted = JSON.stringify(parsed, null, 2); }
+      } else if (!signedIn) { Astro.response.status = 401; }
+    }
+  }
+  view = signedIn ? 'app' : 'login';
+}
+
+const origin = new URL(Astro.request.url).origin;
+const linkFor = (b: Pick<Brief, 'token'>) => `${origin}/intake?brief=${b.token}`;
+const today = new Date();
+const ageDays = (d: string) => Math.floor((today.getTime() - new Date(`${d}T00:00:00Z`).getTime()) / 86_400_000);
+const b = result?.ok ? result.brief! : null;
+const ids = b ? tailoredIds(publicView(b)) : [];
+const idOf = (stage: string, i: number) => ids.find((x) => x.stage === stage && x.i === i)?.id ?? '';
+const existing = view === 'app' ? allBriefs() : [];
+const broken = view === 'app' ? brokenBriefs() : [];
+---
+<Base title="Intake back office | Roadmap Labs" description="Private." path="/intake-admin" noindex>
+<style>
+  .ia { max-width: 920px; margin: 0 auto; padding: 48px 24px 96px; box-sizing: border-box; display: grid; gap: 28px; font: 400 15px/1.55 var(--font-sans); color: var(--ink); }
+  .ia h1 { margin: 0; font: 500 clamp(28px, 4vw, 40px)/1.1 var(--font-sans); letter-spacing: -0.02em; }
+  .ia h2 { margin: 0; font: 600 20px/28px var(--font-sans); }
+  .ia h3 { margin: 0; font: 600 16px/22px var(--font-sans); }
+  .ia p { margin: 0; }
+  .ia-card { display: grid; gap: 12px; padding: 20px; border-radius: 16px; border: 1px solid rgba(0,7,16,.1); background: #fff; }
+  .ia-muted { color: var(--text-secondary); font-size: 14px; }
+  .ia textarea { width: 100%; box-sizing: border-box; min-height: 260px; padding: 12px; border-radius: 10px; border: 1px solid rgba(0,7,16,.2); font: 400 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .ia textarea[readonly] { background: #f7f8fc; min-height: 200px; }
+  .ia input[type=password] { min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(0,7,16,.2); font: inherit; width: min(100%, 360px); }
+  .ia button { min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--roadmap-blue); color: #fff; font: 600 14px/20px var(--font-sans); cursor: pointer; justify-self: start; }
+  .ia button.ia-quiet { background: rgba(0,7,16,.06); color: var(--ink); }
+  .ia ul, .ia ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+  .ia-bad { padding: 12px 14px; border-radius: 12px; background: #fdecec; color: #8a1c1c; }
+  .ia-warn { padding: 12px 14px; border-radius: 12px; background: #fff4e5; color: #6b3b00; }
+  .ia-good { padding: 12px 14px; border-radius: 12px; background: #e9f7ef; color: #0f5132; }
+  .ia-link { padding: 10px 12px; border-radius: 10px; background: #f7f8fc; font: 500 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+  .ia-tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font: 600 11px/18px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; background: rgba(0,7,16,.06); }
+  .ia-tag--ok { background: #e9f7ef; color: #0f5132; }
+  .ia-tag--check { background: #fff4e5; color: #6b3b00; }
+  .ia-q { display: grid; gap: 2px; }
+  .ia-q small { color: var(--text-secondary); font-size: 13px; }
+  .ia-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .ia table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  .ia td, .ia th { text-align: left; padding: 6px 8px; border-bottom: 1px solid rgba(0,7,16,.08); vertical-align: top; }
+</style>
+<div class="ia">
+  {view === 'off' && (
+    <section class="ia-card"><h1>Back office is switched off</h1><p>Set INTAKE_ADMIN_TOKEN in the server environment to use it.</p></section>
+  )}
+  {view === 'busy' && (
+    <section class="ia-card"><h1>Too many requests</h1><p>Please wait a few minutes and try again.</p></section>
+  )}
+  {view === 'login' && (
+    <section class="ia-card">
+      <h1>Intake back office</h1>
+      <p class="ia-muted">Private. Enter the back office key.</p>
+      {loginError && <p class="ia-bad">{loginError}</p>}
+      <form method="post" class="ia-row">
+        <input type="hidden" name="action" value="login">
+        <label class="ia-sr" for="ia-secret" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Back office key</label>
+        <input id="ia-secret" type="password" name="secret" autocomplete="current-password" required>
+        <button type="submit">Sign in</button>
+      </form>
+    </section>
+  )}
+  {view === 'app' && (
+    <>
+      <header class="ia-row" style="justify-content: space-between">
+        <h1>Tailored intake briefs</h1>
+        <form method="post"><input type="hidden" name="action" value="logout"><button class="ia-quiet" type="submit">Sign out</button></form>
+      </header>
+
+      <section class="ia-card">
+        <h2>1. Write the brief with Claude</h2>
+        <p class="ia-muted">Copy this into Claude on its best model, fill in the website and your notes, and paste the JSON it returns below. Read it before using it.</p>
+        <textarea readonly id="ia-prompt" aria-label="Claude prompt for a brief">{BRIEF_PROMPT}</textarea>
+        <button class="ia-quiet" type="button" data-copy="ia-prompt">Copy the prompt</button>
+        <details>
+          <summary>Optional: search figures from DataForSEO (pulled by hand through Composio)</summary>
+          <p class="ia-muted" style="margin: 8px 0">Paste what this returns into the brief's "evidence" list. A figure is only ever shown to a client if it's in the brief with a source and marked confirmed.</p>
+          <textarea readonly id="ia-search" aria-label="Claude prompt for search figures">{SEARCH_PROMPT}</textarea>
+          <button class="ia-quiet" type="button" data-copy="ia-search">Copy the search prompt</button>
+        </details>
+      </section>
+
+      <section class="ia-card">
+        <h2>2. Check it</h2>
+        <form method="post" style="display: grid; gap: 12px">
+          <input type="hidden" name="action" value="check">
+          <label for="ia-json" class="ia-muted">Brief JSON (use "token": "GENERATE" for a new client)</label>
+          <textarea id="ia-json" name="json" required spellcheck="false">{pasted}</textarea>
+          <button type="submit">Check the brief</button>
+        </form>
+      </section>
+
+      {parseError && <p class="ia-bad">{parseError}</p>}
+      {result && !result.ok && (
+        <section class="ia-card">
+          <h2>Not ready yet</h2>
+          <ul class="ia-bad">{result.errors.map((e) => <li>{e}</li>)}</ul>
+          {result.warnings.length > 0 && <ul class="ia-warn">{result.warnings.map((w) => <li>{w}</li>)}</ul>}
+        </section>
+      )}
+      {b && (
+        <section class="ia-card">
+          <h2>3. Preview: {b.businessName}</h2>
+          <p class="ia-good">The brief passes every check.{generated && ' A new random token was made for it.'}</p>
+          {result!.warnings.length > 0 && <ul class="ia-warn">{result!.warnings.map((w) => <li>{w}</li>)}</ul>}
+
+          <h3>Harry opens with</h3>
+          <p>"{b.opening}"</p>
+
+          <h3>What we know</h3>
+          <ul>{b.known.map((k) => <li><span class:list={['ia-tag', k.status === 'confirmed' ? 'ia-tag--ok' : 'ia-tag--check']}>{k.status === 'confirmed' ? 'Shown as known' : 'To check, not shown'}</span> {k.text}</li>)}</ul>
+
+          <h3>Skipped questions</h3>
+          {b.skip.length ? <ul>{b.skip.map((id) => <li><b>{id}</b>: {SKIPPABLE.get(id)}</li>)}</ul> : <p class="ia-muted">None.</p>}
+
+          <h3>Tailored questions, in interview order</h3>
+          {BRIEF_STAGES.filter((k) => (b.questions[k]?.length ?? 0) > 0).map((k) => (
+            <div style="display: grid; gap: 6px">
+              <p><b>{STAGE_LABEL[k]}</b></p>
+              <ol>
+                {k === 'marketing'
+                  ? b.questions.marketing!.map((m, i) => (
+                      <li class="ia-q">
+                        <span>{idOf(k, i)}. {marketingWording(b, m)}</span>
+                        {marketingWording(b, m) !== m.text.trim() && <small>Figure version not shown, because its evidence isn't confirmed: "{m.text}"</small>}
+                        {(m.uses ?? []).length > 0 && <small>Uses: {(m.uses ?? []).join(', ')}</small>}
+                        <small>Then: {MARKETING_FOLLOW_UP}</small>
+                      </li>
+                    ))
+                  : b.questions[k]!.map((q, i) => <li>{idOf(k, i)}. {q}</li>)}
+              </ol>
+            </div>
+          ))}
+          <p class="ia-muted">Every job also gets two extra follow-ups in brief-based interviews: {DRILL_BRIEF.map((d) => `"${d.text}"`).join(' and ')}</p>
+
+          {(b.evidence?.length ?? 0) > 0 && (
+            <>
+              <h3>Evidence behind any figures</h3>
+              <table>
+                <thead><tr><th>Id</th><th>What</th><th>Figure</th><th>Source</th><th>Pulled</th><th>Status</th></tr></thead>
+                <tbody>{b.evidence!.map((e) => (
+                  <tr>
+                    <td>{e.id}</td><td>{e.kind}</td><td>{e.value}</td><td>{e.source}</td>
+                    <td>{e.pulled}{ageDays(e.pulled) > EVIDENCE_STALE_DAYS && <span class="ia-tag ia-tag--check" style="margin-left: 6px">{ageDays(e.pulled)} days old</span>}</td>
+                    <td><span class:list={['ia-tag', e.status === 'confirmed' ? 'ia-tag--ok' : 'ia-tag--check']}>{e.status}</span></td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </>
+          )}
+
+          <h3>Client link</h3>
+          <p class="ia-link">{linkFor(b)}</p>
+          <p class="ia-muted">For now (v1) the link works once this JSON is saved as <code>src/data/briefs/{b.slug}.json</code> and the site is deployed. In production this step saves it to Supabase instead.</p>
+          {generated && (<>
+            <h3>The brief with its new token</h3>
+            <textarea readonly id="ia-final">{pasted}</textarea>
+            <button class="ia-quiet" type="button" data-copy="ia-final">Copy the JSON</button>
+          </>)}
+        </section>
+      )}
+
+      <section class="ia-card">
+        <h2>Briefs on this site</h2>
+        {existing.length ? (
+          <table>
+            <thead><tr><th>Business</th><th>Link</th></tr></thead>
+            <tbody>{existing.map((x) => <tr><td>{x.businessName}<br><span class="ia-muted">{x.slug}</span></td><td class="ia-link">{linkFor(x)}</td></tr>)}</tbody>
+          </table>
+        ) : <p class="ia-muted">None yet.</p>}
+        {broken.length > 0 && <div class="ia-bad"><p><b>These files don't pass the checks, so their links don't work:</b></p><ul>{broken.map((x) => <li>{x.file}: {x.errors[0]}</li>)}</ul></div>}
+      </section>
+    </>
+  )}
+</div>
+<script is:inline>
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = document.getElementById(b.getAttribute('data-copy'));
+      if (!t) return;
+      var done = function () { var was = b.textContent; b.textContent = 'Copied'; setTimeout(function () { b.textContent = was; }, 1500); };
+      if (navigator.clipboard) navigator.clipboard.writeText(t.value).then(done, function () { t.select(); });
+      else { t.select(); document.execCommand('copy'); done(); }
+    });
+  });
+</script>
+</Base>

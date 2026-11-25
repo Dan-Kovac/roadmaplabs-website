@@ -1,0 +1,121 @@
+{
+  "slug": "inzant",
+  "token": "tHgzcbHXc9oqSaYcNCY027iAUx9XkYwB",
+  "businessName": "Inzant",
+  "website": "https://inzant.com.au",
+  "accent": "#1a5bb5",
+  "known": [
+    {
+      "text": "A software company in Newcastle, NSW, helping wholesalers since 2010",
+      "status": "confirmed"
+    },
+    {
+      "text": "Main product: an iPad sales app for wholesale reps, with a digital catalogue, order taking in the field, a CRM that suggests which client to visit next, and sales reports",
+      "status": "confirmed"
+    },
+    {
+      "text": "Also an iPhone Lite version, an online store and customer order portals",
+      "status": "confirmed"
+    },
+    {
+      "text": "Built in-house",
+      "status": "confirmed"
+    },
+    {
+      "text": "Connects to customers' accounting and business systems, including MYOB and Cin7",
+      "status": "confirmed"
+    },
+    {
+      "text": "New customers come through a free demo, then a guided onboarding, then a customer success team",
+      "status": "confirmed"
+    },
+    {
+      "text": "Promises real human support, not a chat-bot",
+      "status": "confirmed"
+    },
+    {
+      "text": "Says reps' sales go up 26% on average",
+      "status": "confirmed"
+    },
+    {
+      "text": "Team size",
+      "status": "to-check"
+    },
+    {
+      "text": "How many customers they have",
+      "status": "to-check"
+    },
+    {
+      "text": "What Dan has already discussed with them",
+      "status": "to-check"
+    },
+    {
+      "text": "Who Dan spoke to",
+      "status": "to-check"
+    },
+    {
+      "text": "Brand feel from the site: clean, light, blue-leaning, plain-spoken",
+      "status": "to-check"
+    },
+    {
+      "text": "Accent colour is a placeholder blue. Swap in their exact brand colour",
+      "status": "to-check"
+    },
+    {
+      "text": "No logo added yet. Add the web address of the logo on their site",
+      "status": "to-check"
+    }
+  ],
+  "evidence": [],
+  "skip": [
+    "S1"
+  ],
+  "opening": "From your site I've got that Inzant is a mobile sales platform for wholesale reps, based in Newcastle, with integrations into accounting and ERP tools. Is that still the right picture?",
+  "questions": {
+    "winning": [
+      "Your site pushes a free demo. Walk me through what happens from the moment someone asks for one to the moment they say yes or no. Which part do you wish someone else did?",
+      "Every demo is probably tailored to the wholesaler's range and systems. What do you prepare each time, and how long does it take?",
+      "Where do leads sit while they wait on a reply from you?"
+    ],
+    "doing": [
+      "Every new customer gets a guided onboarding. List the steps from signing to a rep using the app. Which step always takes longer than it should?",
+      "Each customer's product range has to get into the catalogue. How does it arrive, in what format, and who cleans it up?",
+      "You integrate with accounting and ERP systems like MYOB and Cin7. What goes wrong most often with a new integration, and who fixes it?",
+      "What do your support staff answer over and over? Give me the five questions you'd love to never type again.",
+      "Walk me through the last support issue that took longer than a day."
+    ],
+    "running": [
+      "How do you find out something broke before a customer rings you?",
+      "What do you do every Monday morning that nobody has written down?",
+      "You promise real humans, not a chat-bot. What's the one job your team does by hand that you'd gladly give to AI without losing that promise?",
+      "How do you report on the sales lift you claim, and who builds that for each customer?"
+    ],
+    "connections": [
+      "When you use AI, how does it see your customer data, support tickets or product notes: pasted in, or connected?",
+      "Which of your tools can't an AI read at all: support inbox, code, customer records, billing?",
+      "Think of the last time AI got something about your business wrong. What did it not know?"
+    ],
+    "gaps": [
+      "Which other mobile sales platform do prospects mention? What do they do that quietly bothers you that you don't?",
+      "If you started on that tomorrow, how would you go about it, and what's stopping you?",
+      "What would you do with two spare days a week?"
+    ],
+    "marketing": [
+      {
+        "text": "Wholesalers searching for a mobile sales app are probably comparing a few platforms. Do you know where Inzant shows up when they do, and has anything been tried to show up higher?"
+      },
+      {
+        "text": "How are your ads doing today? What have you tried before, what worked, and where did you get burned?"
+      },
+      {
+        "text": "What marketing has actually brought in good customers, and what looked promising but wasted money?"
+      },
+      {
+        "text": "Where have you been burned by an agency or a freelancer?"
+      },
+      {
+        "text": "Which channel do you feel you should be doing more of?"
+      }
+    ]
+  }
+}
