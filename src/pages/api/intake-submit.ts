@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
-import { CLOSING, TEXT_QIDS } from '../../data/intake';
+import { BLOCKED_FILE, CLOSING, TEXT_QIDS } from '../../data/intake';
+import { NOT_THIS_SITE, TOO_MANY, rateLimit, sameSite } from '../../lib/api-guard';
 
 export const prerender = false;
 
@@ -8,10 +9,17 @@ const BODY_LIMIT = 4.5 * 1024 * 1024;
 const TOO_LARGE =
   'Those files are too big to send through the page (the limit is about 4MB in total). Please put them in Google Drive, Dropbox or similar and paste the link instead.';
 
-const json = (status: number, body: object) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+const json = (status: number, body: object, extra: Record<string, string> = {}) =>
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...extra } });
+
+const MAX_FILES = 20;
 
 export const POST: APIRoute = async ({ request }) => {
+  if (!sameSite(request)) return json(403, { ok: false, error: NOT_THIS_SITE });
+  // A real person sends once or twice; a retry after an error is fine. More than this from one address is spam.
+  const wait = rateLimit('submit', request, 6, 15 * 60_000);
+  if (wait) return json(429, { ok: false, error: TOO_MANY }, { 'Retry-After': String(wait) });
+
   const apiKey = import.meta.env.JOTFORM_API_KEY ?? process.env.JOTFORM_API_KEY;
   const formId = import.meta.env.JOTFORM_FORM_ID ?? process.env.JOTFORM_FORM_ID ?? '263198186491065';
   if (!apiKey) {
@@ -33,6 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
   const out = new FormData();
   out.append('apiKey', apiKey);
   let answered = 0;
+  let fileCount = 0;
   for (const [key, value] of incoming.entries()) {
     const qid = Number(key);
     if (!Number.isInteger(qid)) continue;
@@ -40,6 +49,8 @@ export const POST: APIRoute = async ({ request }) => {
       out.append(`submission[${qid}]`, value.slice(0, 20000));
       if (value.trim()) answered++;
     } else if (qid === CLOSING.files && typeof value !== 'string' && value.size > 0) {
+      if (BLOCKED_FILE.test(value.name)) return json(400, { ok: false, error: `${value.name} is a program or script file, which we can't accept. Please remove it and send again.` });
+      if (++fileCount > MAX_FILES) return json(400, { ok: false, error: `That's more than ${MAX_FILES} files. Please put them in a shared folder and paste the link instead.` });
       out.append(`submission[${qid}][]`, value, value.name);
       answered++;
     }

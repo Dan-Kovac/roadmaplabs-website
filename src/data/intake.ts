@@ -130,6 +130,9 @@ export const SKIPPED = 'to fill';
 /** Vercel rejects serverless request bodies over ~4.5MB; keep uploads under this. */
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
+/** Program and script files: never needed for an intake, and the risky kind to pass on. Checked in the page and on the server. */
+export const BLOCKED_FILE = /\.(exe|msi|bat|cmd|com|scr|ps1|vbs|js|mjs|jar|sh|app|dmg|apk|html?|svg|hta|lnk|dll)$/i;
+
 /** Screen recordings: uploaded straight to a private Supabase Storage bucket (free tier caps files at 50MB). */
 export const RECORDING = {
   bucket: 'intake-recordings',

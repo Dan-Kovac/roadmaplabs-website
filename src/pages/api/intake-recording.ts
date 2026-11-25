@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { RECORDING } from '../../data/intake';
+import { NOT_THIS_SITE, TOO_MANY, rateLimit, sameSite } from '../../lib/api-guard';
 
 export const prerender = false;
 
@@ -36,6 +37,10 @@ async function ensureBucket(sb: SupabaseClient) {
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
 
 export const POST: APIRoute = async ({ request }) => {
+  if (!sameSite(request)) return json(403, { ok: false, error: NOT_THIS_SITE });
+  // Each start hands out an upload slot of up to 50MB: cap them per address.
+  if (rateLimit('recording', request, 12, 30 * 60_000)) return json(429, { ok: false, error: TOO_MANY });
+
   const url = import.meta.env.SUPABASE_URL ?? process.env.SUPABASE_URL;
   const key = import.meta.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
