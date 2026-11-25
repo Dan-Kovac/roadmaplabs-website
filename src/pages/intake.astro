@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { INTRO, DEFAULT_AUDIENCE } from '../data/intake-intro';
 
 // Public, so it can sit in the page. Unset means voice mode shows a "coming online" state and chat carries everything.
 const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
@@ -92,6 +93,15 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-orb--off .ik-orb__ring { border-color: rgba(0,7,16,.1); }
   @keyframes ik-spin { to { transform: rotate(360deg); } }
   @keyframes ik-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+  /* Header mark: the brand R in a blue rounded square. Still when idle; a slow soft glow while Harry thinks or listens. */
+  .ik-mark { position: relative; flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--roadmap-blue); color: #fff; box-shadow: 0 1px 2px rgba(0,7,16,.12), 0 4px 12px rgba(10,76,255,.22); }
+  .ik-mark::after { content: ""; position: absolute; inset: -1px; border-radius: 11px; box-shadow: 0 0 0 0 rgba(10,76,255,0); opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+  .ik[data-harry] .ik-mark::after { opacity: 1; animation: ik-mark-glow 2.6s ease-in-out infinite; }
+  .ik[data-harry="listening"] .ik-mark::after { animation-duration: 2s; }
+  @keyframes ik-mark-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(10,76,255,.0), 0 0 0 rgba(0,163,255,0); } 50% { box-shadow: 0 0 0 5px rgba(10,76,255,.14), 0 0 18px rgba(0,163,255,.45); } }
+  @media (prefers-reduced-motion: reduce) {
+    .ik[data-harry] .ik-mark::after { animation: none; box-shadow: 0 0 0 3px rgba(10,76,255,.18); }
+  }
   @keyframes ik-ring { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.45); opacity: 0; } }
 
   /* ---------- Voice hero (expands in voice mode) ---------- */
@@ -345,18 +355,62 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik[data-view="tour"] .ik-tour { display: flex; }
   .ik[data-view="tour"] .ik-welcome, .ik[data-view="tour"] .ik-log, .ik[data-view="tour"] .ik-dock,
   .ik[data-view="tour"] .ik-voice, .ik[data-view="tour"] .ik-panel, .ik[data-view="tour"] .ik-folderbtn, .ik[data-view="tour"] .ik-progress { display: none; }
-  .ik-tour__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 18px; }
+  .ik-tour > .ik-tour__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 18px; }
   .ik-tour__hello { font: 600 13px/18px var(--font-sans); color: var(--roadmap-blue); letter-spacing: -0.005em; }
   .ik-tour__skip { min-height: 40px; padding: 0 16px; border: 1px solid rgba(0,7,16,.12); border-radius: 999px; background: var(--paper); color: var(--ink); font: 600 13px/18px var(--font-sans); cursor: pointer; }
-  .ik-tour__stage { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 12px; padding-bottom: 12px; min-height: 0; }
-  .ik-beat { display: none; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .ik-tour > .ik-tour__stage { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; padding-top: 28px; padding-bottom: 20px; }
+  .ik-tour__set[hidden] { display: none; }
+  .ik-beat { display: none; flex-direction: column; align-items: stretch; gap: 28px; }
   .ik-beat.is-on { display: flex; }
-  .ik-beat.is-on > * { animation: ik-in .55s var(--ease) both; }
-  .ik-beat.is-on > :nth-child(2) { animation-delay: .05s; } .ik-beat.is-on > :nth-child(3) { animation-delay: .1s; } .ik-beat.is-on > :nth-child(4) { animation-delay: .18s; } .ik-beat.is-on > :nth-child(5) { animation-delay: .26s; }
-  .ik-beat__eyebrow { font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); }
-  .ik-beat h2 { margin: 0; font: 500 clamp(30px, 4.6vw, 46px)/1.06 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); }
-  .ik-beat > p { margin: 0; max-width: 34em; font: 400 17px/1.5 var(--font-sans); color: var(--text-secondary); }
-  .ik-beat__fine { font-size: 14px !important; }
+  .ik-beat__text { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; min-width: 0; }
+  .ik-beat__figure { margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .ik-beat__figure .ik-demo { margin: 0; }
+  .ik-beat__figure figcaption, .ik-beat__norec { margin: 0; padding: 0 4px; font: 400 13px/1.5 var(--font-sans); color: var(--text-muted); }
+  .ik-beat__norec[hidden] { display: none; }
+  /* Calm entrance: one gentle rise, lightly staggered. */
+  .ik-beat.is-on .ik-beat__text > *, .ik-beat.is-on .ik-beat__figure, .ik-beat.is-on > .ik-beat__footer { animation: ik-calm .7s var(--ease) both; }
+  .ik-beat.is-on .ik-beat__text > :nth-child(2) { animation-delay: .06s; }
+  .ik-beat.is-on .ik-beat__text > :nth-child(3) { animation-delay: .12s; }
+  .ik-beat.is-on .ik-beat__text > :nth-child(4) { animation-delay: .18s; }
+  .ik-beat.is-on .ik-beat__text > :nth-child(n+5) { animation-delay: .24s; }
+  .ik-beat.is-on .ik-beat__figure { animation-delay: .2s; }
+  .ik-beat.is-on > .ik-beat__footer { animation-delay: .3s; }
+  .ik-beat.is-on > .ik-blocks { animation: ik-calm .7s .28s var(--ease) both; }
+  @keyframes ik-calm { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .ik-beat__eyebrow { font: 600 12px/16px var(--font-sans); letter-spacing: .1em; text-transform: uppercase; color: var(--roadmap-blue); }
+  .ik-beat h2 { margin: 0 0 2px; max-width: 18em; font: 500 clamp(28px, 3vw, 38px)/1.12 var(--font-sans); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
+  .ik-beat__body { margin: 0; max-width: 36em; font: 400 17px/1.6 var(--font-sans); color: #3d4350; text-wrap: pretty; }
+  .ik-beat__footer { margin: 4px 0 0; max-width: 36em; font: 500 15px/1.55 var(--font-sans); color: var(--ink); }
+  /* Labelled blocks: "One thing to know first", "What you get" */
+  .ik-blocks { display: grid; gap: 10px; width: 100%; }
+  .ik-block { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.8); border: 1px solid rgba(0,7,16,.08); }
+  .ik-block__label { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; font: 600 14px/20px var(--font-sans); letter-spacing: -0.005em; color: var(--ink); }
+  .ik-block p { margin: 0; font: 400 15px/1.6 var(--font-sans); color: #3d4350; }
+  .ik-block--get { background: var(--tint); border-color: rgba(10,76,255,.18); }
+  .ik-block--get .ik-block__label { color: var(--roadmap-blue); }
+  .ik-block--get p { color: var(--ink); }
+  /* Numbered list: "Four things, in plain order." */
+  .ik-steps { list-style: none; counter-reset: step; display: grid; gap: 10px; width: 100%; max-width: 40em; margin: 6px 0 0; padding: 0; }
+  .ik-steps li { counter-increment: step; position: relative; padding: 14px 16px 14px 58px; border-radius: 14px; background: rgba(255,255,255,.8); border: 1px solid rgba(0,7,16,.08); }
+  .ik-steps li::before { content: counter(step); position: absolute; left: 16px; top: 13px; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--tint-2); color: var(--roadmap-blue); font: 700 13px/1 var(--font-sans); }
+  .ik-steps p { margin: 0; font: 400 15px/1.6 var(--font-sans); color: #3d4350; }
+  .ik-steps b { font-weight: 600; color: var(--ink); }
+  .ik-steps .ik-steps__why { margin-top: 4px; font-size: 14px; color: var(--roadmap-blue); }
+  .is-on .ik-steps li { animation: ik-calm .6s var(--ease) both; }
+  .is-on .ik-steps li:nth-child(2) { animation-delay: .1s; } .is-on .ik-steps li:nth-child(3) { animation-delay: .2s; } .is-on .ik-steps li:nth-child(4) { animation-delay: .3s; }
+  /* Wider screens: words on the left, the example on the right. */
+  @media (min-width: 1000px) {
+    .ik-tour > .ik-col, .ik[data-view="tour"] .ik-top .ik-col { max-width: 1120px; padding-left: 40px; padding-right: 40px; }
+    .ik-tour > .ik-tour__stage { padding-top: 20px; }
+    .ik-beat--split.is-on { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); column-gap: 64px; row-gap: 24px; align-items: center; }
+    .ik-beat--split .ik-beat__text { grid-column: 1; grid-row: 1; }
+    .ik-beat--split .ik-beat__figure { grid-column: 2; grid-row: 1; }
+    .ik-beat--split > .ik-blocks { grid-column: 1 / -1; grid-row: 2; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .ik-beat--split > .ik-beat__footer { grid-column: 1; grid-row: 2; align-self: start; margin-top: -8px; }
+    .ik-beat:not(.ik-beat--split) .ik-beat__text { max-width: 760px; }
+    .ik-beat:not(.ik-beat--split) .ik-steps { grid-template-columns: 1fr 1fr; max-width: none; }
+    .ik-beat:not(.ik-beat--split) .ik-beat__text { max-width: none; }
+  }
   .ik-tag { position: absolute; top: 12px; right: 12px; padding: 2px 8px; border-radius: 999px; background: #fff4e5; color: #8a4b00; font: 600 10px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; }
   .ik-demo { position: relative; width: 100%; box-sizing: border-box; margin: 10px 0 0; padding: 20px; border-radius: 20px; background: var(--paper); border: 1px solid rgba(0,7,16,.08); box-shadow: 0 1px 2px rgba(0,7,16,.04), 0 14px 34px rgba(0,7,16,.07); min-width: 0; }
   .ik-demo, .ik-demo * { min-width: 0; }
@@ -382,31 +436,6 @@ const svg = (d: string, size = 20, sw = 2) =>
   .is-on .ik-demo__row:nth-of-type(2) { animation-delay: .3s; } .is-on .ik-demo__row:nth-of-type(3) { animation-delay: .42s; } .is-on .ik-demo__row:nth-of-type(4) { animation-delay: .54s; }
   .is-on .ik-demo__row:nth-of-type(5) { animation-delay: .78s; } .is-on .ik-demo__row:nth-of-type(6) { animation-delay: .9s; } .is-on .ik-demo__row:nth-of-type(7) { animation-delay: 1.02s; }
   @keyframes ik-snap { 0% { opacity: 0; transform: translateY(14px) scale(.96); } 70% { opacity: 1; transform: translateY(-2px) scale(1.01); } 100% { opacity: 1; transform: none; } }
-  /* c) the agent finishes a job */
-  .ik-demo__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
-  .ik-demo__card { padding: 14px; border-radius: 14px; border: 1px solid rgba(0,7,16,.08); background: #fbfbfd; }
-  .ik-demo__card small { display: block; margin-bottom: 6px; font: 600 11px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
-  .ik-demo__card p { margin: 0; font: 400 14px/1.5 var(--font-sans); color: var(--text-secondary); }
-  .ik-demo__card--after { background: var(--paper); border-color: rgba(10,76,255,.35); box-shadow: 0 8px 22px rgba(10,76,255,.1); }
-  .ik-demo__card--after small { color: var(--roadmap-blue); }
-  .ik-demo__card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-  .ik-demo__card li { display: flex; gap: 8px; font: 500 14px/1.4 var(--font-sans); color: var(--ink); }
-  .ik-demo__card li::before { content: ""; flex: none; width: 16px; height: 16px; margin-top: 1px; border-radius: 50%; background: var(--roadmap-blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 11px no-repeat; }
-  .ik-demo__working { display: none; align-items: center; gap: 8px; font: 500 13px/18px var(--font-sans); color: var(--text-secondary); }
-  .ik-demo__working i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--tint-2); border-top-color: var(--roadmap-blue); animation: ik-spin .8s linear infinite; }
-  .is-on .ik-demo__working { display: flex; animation: ik-gone 1.4s .2s both; }
-  .is-on .ik-demo__card ul { animation: ik-in .5s 1.5s var(--ease) both; }
-  .is-on .ik-demo__card li:nth-child(2) { animation: ik-in .4s 1.7s var(--ease) both; } .is-on .ik-demo__card li:nth-child(3) { animation: ik-in .4s 1.9s var(--ease) both; }
-  @keyframes ik-gone { 0%, 85% { opacity: 1; max-height: 24px; margin-bottom: 8px; } 100% { opacity: 0; max-height: 0; margin-bottom: 0; } }
-  /* d) the four parts */
-  .ik-demo--parts { list-style: none; display: grid; gap: 8px; counter-reset: part; padding: 16px; }
-  .ik-demo--parts li { counter-increment: part; display: grid; grid-template-columns: 30px 1fr; gap: 2px 12px; padding: 10px 12px; border-radius: 12px; background: #f7f8fc; }
-  .ik-demo--parts li::before { content: counter(part); grid-row: span 3; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--tint); color: var(--roadmap-blue); font: 700 13px/1 var(--font-sans); }
-  .ik-demo--parts b { font: 600 15px/20px var(--font-sans); color: var(--ink); }
-  .ik-demo--parts span { font: 400 13px/18px var(--font-sans); color: var(--text-secondary); }
-  .ik-demo--parts code { font: 500 12px/16px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--roadmap-blue); overflow-wrap: anywhere; }
-  .is-on .ik-demo--parts li { animation: ik-snap .45s var(--ease) both; }
-  .is-on .ik-demo--parts li:nth-child(2) { animation-delay: .15s; } .is-on .ik-demo--parts li:nth-child(3) { animation-delay: .3s; } .is-on .ik-demo--parts li:nth-child(4) { animation-delay: .45s; }
   /* e) where to add detail */
   .ik-demo__composer { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 22px; border: 1px solid rgba(0,7,16,.12); background: var(--paper); }
   .ik-demo__type { flex: 1; min-width: 0; padding: 0 6px; font: 400 15px/20px var(--font-sans); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -418,7 +447,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-demo__callouts span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: var(--tint); color: var(--ink); font: 500 13px/18px var(--font-sans); }
   .ik-demo__callouts svg { color: var(--roadmap-blue); flex: none; }
   /* nav */
-  .ik-tour__nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 10px; padding-bottom: 18px; }
+  .ik-tour > .ik-tour__nav { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 18px; padding-bottom: 18px; background: linear-gradient(180deg, rgba(255,255,255,0), var(--paper) 28px); }
   .ik-dots { display: flex; gap: 6px; }
   .ik-dots button { width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
   .ik-dots button::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: rgba(0,7,16,.16); transition: width .3s var(--ease), background-color .3s ease; }
@@ -427,9 +456,17 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-tour__btns .ik-cta { min-height: 46px; padding: 0 22px; }
   @media (max-width: 640px) {
     .ik-demo { padding: 16px; }
-    .ik-demo__pair { grid-template-columns: 1fr; }
-    .ik-demo__row span { display: none; }
-    .ik-beat > p { font-size: 16px; }
+    .ik-demo__row { flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 12px; }
+    .ik-demo__row span { text-align: left; }
+    .ik-tour > .ik-tour__stage { justify-content: flex-start; padding-top: 22px; }
+    .ik-tour > .ik-tour__top { padding-top: 14px; }
+    .ik-tour > .ik-tour__nav { padding-top: 22px; padding-bottom: 14px; }
+    .ik-beat { gap: 22px; }
+    .ik-beat__text { gap: 12px; }
+    .ik-beat__body { font-size: 16px; }
+    .ik-block, .ik-steps li { padding: 12px 14px; }
+    .ik-steps li { padding-left: 52px; }
+    .ik-steps li::before { left: 14px; top: 12px; }
     .ik-tour__btns .ik-cta { padding: 0 18px; }
   }
 
@@ -475,7 +512,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   @media (max-width: 640px) {
     .ik-col { padding: 0 16px; }
     .ik-top__row { height: 58px; }
-    .ik-id .ik-orb--sm { --size: 30px; }
+    .ik-mark { width: 30px; height: 30px; border-radius: 9px; }
+    .ik-mark svg { width: 16px; height: 16px; }
     .ik:not([data-view="welcome"]) .ik-id__name { display: none; }
     .ik[data-view="welcome"] .ik-id__meta { display: none; }
     .ik-id__meta { display: flex; flex-direction: column; min-width: 0; }
@@ -505,7 +543,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     .ik-toast { top: 66px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ik-demo__working { display: none !important; }
+    .ik-tour *, .ik-tour *::before { animation: none !important; }
     .ik-orb__core, .ik-orb__halo { transition: none; }
     .ik-log { scroll-behavior: auto; }
   }
@@ -520,7 +558,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     <div class="ik-col">
       <div class="ik-top__row">
         <div class="ik-id">
-          <span class="ik-orb ik-orb--sm" aria-hidden="true"><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
+          <span class="ik-mark" aria-hidden="true"><svg viewBox="-24 -24 368 368" width="18" height="18"><path fill="currentColor" d="M25.66 0.1H214.79A97.4 97.4 0 0 1 214.79 194.9L169.64 148.4H214.79A50.9 50.9 0 0 0 214.79 46.6H70.81ZM4.76 0.1V75.08L242.45 319.9H315.25ZM4.76 96.61V171.59L148.75 319.9H221.55Z"/></svg></span>
           <div class="ik-id__text">
             <span class="ik-id__name">Harry</span>
             <span class="ik-id__meta" id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
@@ -606,95 +644,83 @@ const svg = (d: string, size = 20, sw = 2) =>
       <button class="ik-tour__skip" type="button" id="ik-tour-skip">Skip</button>
     </div>
     <div class="ik-col ik-tour__stage" id="ik-tour-stage">
-
-      <section class="ik-beat" data-beat="0" aria-label="1 of 5">
-        <span class="ik-beat__eyebrow">How Roadmap OS works</span>
-        <h2>One answer becomes context.</h2>
-        <p>Tell Harry how you work. It lands as a line in a file an agent can read.</p>
-        <div class="ik-demo ik-demo--answer" aria-hidden="true">
-          <span class="ik-tag">Example</span>
-          <div class="ik-demo__bubble">We quote jobs from a phone call and a spreadsheet.</div>
-          <div class="ik-demo__file">
-            <div class="ik-demo__filename">workflows/quoting.md</div>
-            <div class="ik-demo__line ik-demo__line--h">## How it's done</div>
-            <div class="ik-demo__line">1. Take the job details on the phone call</div>
-            <div class="ik-demo__line">2. Price it in the quoting spreadsheet</div>
-            <div class="ik-demo__line">3. Send the quote</div>
-          </div>
+      {Object.entries(INTRO).map(([audience, set]) => (
+      <div class="ik-tour__set" data-audience={audience} hidden={audience !== DEFAULT_AUDIENCE}>
+      {set!.map((b, i) => (
+      <section class:list={['ik-beat', { 'ik-beat--split': !!b.demo }]} data-beat={i} data-shot={b.id} aria-label={`${i + 1} of ${set!.length}: ${b.eyebrow}`}>
+        <div class="ik-beat__text">
+          <span class="ik-beat__eyebrow">{b.eyebrow}</span>
+          <h2>{b.title}</h2>
+          {b.body.map((p) => <p class="ik-beat__body">{p}</p>)}
+          {b.steps && (
+            <ol class="ik-steps">
+              {b.steps.map((s) => (
+                <li><p><b>{s.title}</b> {s.text}</p>{s.why && <p class="ik-steps__why">{s.why}</p>}</li>
+              ))}
+            </ol>
+          )}
+          {b.footer && !b.demo && <p class="ik-beat__footer">{b.footer}</p>}
         </div>
-      </section>
-
-      <section class="ik-beat" data-beat="1" aria-label="2 of 5">
-        <span class="ik-beat__eyebrow">How Roadmap OS works</span>
-        <h2>Files form your folder.</h2>
-        <p>Laid out like a handbook for a new starter, so an agent understands your business the way a person would.</p>
-        <div class="ik-demo ik-demo--folder" aria-hidden="true">
-          <span class="ik-tag">Example</span>
-          <div class="ik-demo__dir">Example Co OS/</div>
-          <div class="ik-demo__row"><b>README.md</b><span>the business overview</span></div>
-          <div class="ik-demo__row"><b>brand.md</b><span>how you look and sound</span></div>
-          <div class="ik-demo__row"><b>customer.md</b><span>who you serve</span></div>
-          <div class="ik-demo__row ik-demo__row--dir"><b>workflows/</b><span>your jobs, one file each</span></div>
-          <div class="ik-demo__row ik-demo__row--dir"><b>routines/</b><span>what kicks them off</span></div>
-          <div class="ik-demo__row ik-demo__row--dir"><b>skills/</b><span>the instructions, written down</span></div>
-        </div>
-      </section>
-
-      <section class="ik-beat" data-beat="2" aria-label="3 of 5">
-        <span class="ik-beat__eyebrow">How Roadmap OS works</span>
-        <h2>An agent gets to work.</h2>
-        <p>With your files, an agent drafts a quote the way you would.</p>
-        <div class="ik-demo ik-demo--agent" aria-hidden="true">
-          <span class="ik-tag">Illustration</span>
-          <div class="ik-demo__pair">
-            <div class="ik-demo__card ik-demo__card--before">
-              <small>Without your files</small>
-              <p>"Please find attached our quote. Let us know if you have any questions."</p>
-            </div>
-            <div class="ik-demo__card ik-demo__card--after">
-              <small>With your files</small>
-              <div class="ik-demo__working"><i></i>Drafting from quoting.md…</div>
-              <ul>
-                <li>Your line items, priced your way</li>
-                <li>Your wording and sign-off</li>
-                <li>Your follow-up step, ready to send</li>
-              </ul>
-            </div>
+        {b.demo && (
+          <figure class="ik-beat__figure">
+            {b.demo === 'answer' && (
+              <div class="ik-demo ik-demo--answer" aria-hidden="true">
+                <span class="ik-tag">Example</span>
+                <div class="ik-demo__bubble">We quote jobs from a phone call and a spreadsheet.</div>
+                <div class="ik-demo__file">
+                  <div class="ik-demo__filename">workflows/quoting.md</div>
+                  <div class="ik-demo__line ik-demo__line--h">## How it's done</div>
+                  <div class="ik-demo__line">1. Take the job details on the phone call</div>
+                  <div class="ik-demo__line">2. Price it in the quoting spreadsheet</div>
+                  <div class="ik-demo__line">3. Send the quote</div>
+                </div>
+              </div>
+            )}
+            {b.demo === 'folder' && (
+              <div class="ik-demo ik-demo--folder" aria-hidden="true">
+                <span class="ik-tag">Example</span>
+                <div class="ik-demo__dir">Example Co OS/</div>
+                <div class="ik-demo__row"><b>README.md</b><span>the business overview</span></div>
+                <div class="ik-demo__row"><b>brand.md</b><span>how you look and sound</span></div>
+                <div class="ik-demo__row"><b>customer.md</b><span>who you serve</span></div>
+                <div class="ik-demo__row ik-demo__row--dir"><b>workflows/</b><span>your jobs, one file each</span></div>
+                <div class="ik-demo__row ik-demo__row--dir"><b>routines/</b><span>what kicks them off</span></div>
+                <div class="ik-demo__row ik-demo__row--dir"><b>skills/</b><span>the instructions, written down</span></div>
+              </div>
+            )}
+            {b.demo === 'tools' && (
+              <div class="ik-demo ik-demo--tools" aria-hidden="true">
+                <div class="ik-demo__composer">
+                  <span class="ik-demo__ico ik-demo__ico--hl"><Fragment set:html={svg(icons.clip, 18)} /></span>
+                  <span class="ik-demo__type">Type your answer…</span>
+                  <span class="ik-demo__ico ik-demo__ico--hl"><Fragment set:html={svg(icons.screen, 18)} /></span>
+                  <span class="ik-demo__ico"><Fragment set:html={svg(icons.mic, 18)} /></span>
+                </div>
+                <div class="ik-demo__callouts">
+                  <span><Fragment set:html={svg(icons.clip, 14)} />Attach files, screenshots and links</span>
+                  <span><Fragment set:html={svg(icons.screen, 14)} />Record your screen as you show us</span>
+                </div>
+              </div>
+            )}
+            {b.caption && <figcaption>{b.caption}</figcaption>}
+            {b.demo === 'tools' && <p class="ik-beat__norec" data-norec hidden>Screen recording needs a desktop browser such as Chrome, Edge or Firefox. On a phone, attach screenshots or paste a Loom link instead.</p>}
+          </figure>
+        )}
+        {b.blocks && (
+          <div class="ik-blocks">
+            {b.blocks.map((k) => (
+              <div class:list={['ik-block', `ik-block--${k.tone ?? 'note'}`]}>
+                <span class="ik-block__label">{k.tone === 'get' && <Fragment set:html={svg(icons.check, 14, 2.6)} />}{k.label}</span>
+                <p>{k.text}</p>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
+        {b.footer && b.demo && <p class="ik-beat__footer">{b.footer}</p>}
       </section>
-
-      <section class="ik-beat" data-beat="3" aria-label="4 of 5">
-        <span class="ik-beat__eyebrow">What's ahead</span>
-        <h2>What Harry will gather.</h2>
-        <p>Four parts that fit together into one folder.</p>
-        <ol class="ik-demo ik-demo--parts">
-          <li><b>Setup</b><span>The business and anything you can hand over</span><code>README.md</code></li>
-          <li><b>AI today and your tools</b><span>What you use and where work gets stuck</span><code>README.md · reference.md</code></li>
-          <li><b>The journey</b><span>Acquire, deliver, operate: one workflow at a time</span><code>workflows/ · routines/ · skills/</code></li>
-          <li><b>Your goals</b><span>What "worked" would look like for you</span><code>README.md</code></li>
-        </ol>
-      </section>
-
-      <section class="ik-beat" data-beat="4" aria-label="5 of 5">
-        <span class="ik-beat__eyebrow">One tip</span>
-        <h2>The more specific, the better.</h2>
-        <p>A screenshot of how you quote a job beats a paragraph describing it.</p>
-        <div class="ik-demo ik-demo--tools" aria-hidden="true">
-          <div class="ik-demo__composer">
-            <span class="ik-demo__ico ik-demo__ico--hl"><Fragment set:html={svg(icons.clip, 18)} /></span>
-            <span class="ik-demo__type">Type your answer…</span>
-            <span class="ik-demo__ico ik-demo__ico--hl"><Fragment set:html={svg(icons.screen, 18)} /></span>
-            <span class="ik-demo__ico"><Fragment set:html={svg(icons.mic, 18)} /></span>
-          </div>
-          <div class="ik-demo__callouts">
-            <span><Fragment set:html={svg(icons.clip, 14)} />Attach files, screenshots and links</span>
-            <span><Fragment set:html={svg(icons.screen, 14)} />Record your screen as you show us</span>
-          </div>
-        </div>
-        <p class="ik-beat__fine">Real examples make your files more relevant. Skip anything you don't have.</p>
-      </section>
-
+      ))}
+      </div>
+      ))}
     </div>
     <div class="ik-col ik-tour__nav">
       <div class="ik-dots" id="ik-tour-dots" aria-label="Walkthrough progress"></div>
@@ -1186,6 +1212,14 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   const wait = (ms: number) => (replaying || reduced ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
 
+  // The header mark glows softly while Harry is thinking (typing a reply) or listening (mic or live voice), and is still otherwise.
+  const harryState = { thinking: 0, listening: 0, voice: 0 };
+  function harryBusy(k: keyof typeof harryState, on: boolean) {
+    harryState[k] = k === 'thinking' ? Math.max(0, harryState[k] + (on ? 1 : -1)) : on ? 1 : 0;
+    const v = harryState.listening || harryState.voice ? 'listening' : harryState.thinking ? 'thinking' : '';
+    if (v) root.dataset.harry = v; else delete root.dataset.harry;
+  }
+
   /** Harry "types": a short think, then the words stream in. Screen readers get the full line at once. */
   async function harrySays(text: string, opts: { question?: boolean; error?: boolean } = {}) {
     if (opts.error) return note(text, undefined, undefined, true);
@@ -1197,6 +1231,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       p.textContent = text;
       return p;
     }
+    harryBusy('thinking', true);
     const think = el('span', 'ik-think');
     think.innerHTML = '<i></i><i></i><i></i>';
     think.setAttribute('aria-hidden', 'true');
@@ -1218,6 +1253,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     p.textContent = text;
     scroll();
+    harryBusy('thinking', false);
     return p;
   }
 
@@ -1984,6 +2020,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     };
     rec.onend = () => {
       rec = null;
+      harryBusy('listening', false);
       stopMeter();
       micBtn.setAttribute('aria-pressed', 'false');
       micBtn.setAttribute('aria-label', 'Speak your answer');
@@ -1997,6 +2034,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       micBtn.setAttribute('aria-label', 'Stop listening');
       micBtn.dataset.tip = 'Stop listening';
       input.placeholder = 'Listening… tap the mic when you’re done';
+      harryBusy('listening', true);
       startMeter();
     } catch {
       rec = null;
@@ -2099,15 +2137,19 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   async function startRecording() {
     if (recBusy) return;
+    recBusy = true; // set before the browser's picker opens, so a second click can't open another
     openTray(false);
     let display: MediaStream;
     try {
       display = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15, max: 24 } }, audio: true });
-    } catch {
-      note("Screen sharing didn't start. You can try again, or paste a Loom link instead.");
+    } catch (err) {
+      recBusy = false;
+      const name = err instanceof DOMException ? err.name : '';
+      note(name === 'NotAllowedError'
+        ? "Screen sharing was cancelled or blocked. No problem: try again and pick a screen or window, or paste a Loom link instead."
+        : "Screen sharing didn't start in this browser. You can try again, or paste a Loom link instead.");
       return;
     }
-    recBusy = true;
     // Narration from the mic if allowed; system/tab audio if the browser shared it. Mix both when there are two.
     let mic: MediaStream | null = null;
     try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); } catch {}
@@ -2496,7 +2538,13 @@ const svg = (d: string, size = 20, sw = 2) =>
     const onConnect = config.onConnect;
     config.onConnect = (...args: unknown[]) => {
       if (status) { status.textContent = 'Live with Harry'; status.setAttribute('data-live', ''); }
+      harryBusy('voice', true);
       onConnect?.(...args);
+    };
+    const onDisconnect = config.onDisconnect;
+    config.onDisconnect = (...args: unknown[]) => {
+      harryBusy('voice', false);
+      onDisconnect?.(...args);
     };
     const onAudio = config.onAudio;
     config.onAudio = (...args: unknown[]) => {
@@ -2533,7 +2581,14 @@ const svg = (d: string, size = 20, sw = 2) =>
   // ---------- Opening walkthrough: fresh sessions only, after the welcome and before question one ----------
   // A session with saved answers never sees it on load (it resumes as before); anyone can replay it from the folder panel.
   const tour = $<HTMLElement>('ik-tour');
-  const beats = [...tour.querySelectorAll<HTMLElement>('.ik-beat')];
+  // Content comes from src/data/intake-intro.ts, one set per audience. Owner is the default and today the only set;
+  // ?intro=<audience> picks another once one exists (an unknown value keeps the owner set).
+  const tourSets = [...tour.querySelectorAll<HTMLElement>('.ik-tour__set')];
+  const wanted = new URLSearchParams(location.search).get('intro');
+  const tourSet = tourSets.find((t) => t.dataset.audience === wanted) ?? tourSets.find((t) => !t.hidden) ?? tourSets[0];
+  tourSets.forEach((t) => (t.hidden = t !== tourSet));
+  const beats = [...tourSet.querySelectorAll<HTMLElement>('.ik-beat')];
+  if (!canRecord) tour.querySelectorAll<HTMLElement>('[data-norec]').forEach((n) => (n.hidden = false));
   const dots = $<HTMLElement>('ik-tour-dots');
   const nextBtn = $<HTMLButtonElement>('ik-tour-next');
   const skip2 = $<HTMLButtonElement>('ik-tour-skip2');
