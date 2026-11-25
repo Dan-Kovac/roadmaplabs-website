@@ -93,15 +93,6 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-orb--off .ik-orb__ring { border-color: rgba(0,7,16,.1); }
   @keyframes ik-spin { to { transform: rotate(360deg); } }
   @keyframes ik-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
-  /* Header mark: the brand R in a blue rounded square. Still when idle; a slow soft glow while Harry thinks or listens. */
-  .ik-mark { position: relative; flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--roadmap-blue); color: #fff; box-shadow: 0 1px 2px rgba(0,7,16,.12), 0 4px 12px rgba(10,76,255,.22); }
-  .ik-mark::after { content: ""; position: absolute; inset: -1px; border-radius: 11px; box-shadow: 0 0 0 0 rgba(10,76,255,0); opacity: 0; transition: opacity .6s ease; pointer-events: none; }
-  .ik[data-harry] .ik-mark::after { opacity: 1; animation: ik-mark-glow 2.6s ease-in-out infinite; }
-  .ik[data-harry="listening"] .ik-mark::after { animation-duration: 2s; }
-  @keyframes ik-mark-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(10,76,255,.0), 0 0 0 rgba(0,163,255,0); } 50% { box-shadow: 0 0 0 5px rgba(10,76,255,.14), 0 0 18px rgba(0,163,255,.45); } }
-  @media (prefers-reduced-motion: reduce) {
-    .ik[data-harry] .ik-mark::after { animation: none; box-shadow: 0 0 0 3px rgba(10,76,255,.18); }
-  }
   @keyframes ik-ring { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.45); opacity: 0; } }
 
   /* ---------- Voice hero (expands in voice mode) ---------- */
@@ -512,8 +503,6 @@ const svg = (d: string, size = 20, sw = 2) =>
   @media (max-width: 640px) {
     .ik-col { padding: 0 16px; }
     .ik-top__row { height: 58px; }
-    .ik-mark { width: 30px; height: 30px; border-radius: 9px; }
-    .ik-mark svg { width: 16px; height: 16px; }
     .ik:not([data-view="welcome"]) .ik-id__name { display: none; }
     .ik[data-view="welcome"] .ik-id__meta { display: none; }
     .ik-id__meta { display: flex; flex-direction: column; min-width: 0; }
@@ -558,7 +547,6 @@ const svg = (d: string, size = 20, sw = 2) =>
     <div class="ik-col">
       <div class="ik-top__row">
         <div class="ik-id">
-          <span class="ik-mark" aria-hidden="true"><svg viewBox="-24 -24 368 368" width="18" height="18"><path fill="currentColor" d="M25.66 0.1H214.79A97.4 97.4 0 0 1 214.79 194.9L169.64 148.4H214.79A50.9 50.9 0 0 0 214.79 46.6H70.81ZM4.76 0.1V75.08L242.45 319.9H315.25ZM4.76 96.61V171.59L148.75 319.9H221.55Z"/></svg></span>
           <div class="ik-id__text">
             <span class="ik-id__name">Harry</span>
             <span class="ik-id__meta" id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
@@ -1212,14 +1200,6 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   const wait = (ms: number) => (replaying || reduced ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
 
-  // The header mark glows softly while Harry is thinking (typing a reply) or listening (mic or live voice), and is still otherwise.
-  const harryState = { thinking: 0, listening: 0, voice: 0 };
-  function harryBusy(k: keyof typeof harryState, on: boolean) {
-    harryState[k] = k === 'thinking' ? Math.max(0, harryState[k] + (on ? 1 : -1)) : on ? 1 : 0;
-    const v = harryState.listening || harryState.voice ? 'listening' : harryState.thinking ? 'thinking' : '';
-    if (v) root.dataset.harry = v; else delete root.dataset.harry;
-  }
-
   /** Harry "types": a short think, then the words stream in. Screen readers get the full line at once. */
   async function harrySays(text: string, opts: { question?: boolean; error?: boolean } = {}) {
     if (opts.error) return note(text, undefined, undefined, true);
@@ -1231,7 +1211,6 @@ const svg = (d: string, size = 20, sw = 2) =>
       p.textContent = text;
       return p;
     }
-    harryBusy('thinking', true);
     const think = el('span', 'ik-think');
     think.innerHTML = '<i></i><i></i><i></i>';
     think.setAttribute('aria-hidden', 'true');
@@ -1253,7 +1232,6 @@ const svg = (d: string, size = 20, sw = 2) =>
     }
     p.textContent = text;
     scroll();
-    harryBusy('thinking', false);
     return p;
   }
 
@@ -2020,7 +1998,6 @@ const svg = (d: string, size = 20, sw = 2) =>
     };
     rec.onend = () => {
       rec = null;
-      harryBusy('listening', false);
       stopMeter();
       micBtn.setAttribute('aria-pressed', 'false');
       micBtn.setAttribute('aria-label', 'Speak your answer');
@@ -2034,7 +2011,6 @@ const svg = (d: string, size = 20, sw = 2) =>
       micBtn.setAttribute('aria-label', 'Stop listening');
       micBtn.dataset.tip = 'Stop listening';
       input.placeholder = 'Listening… tap the mic when you’re done';
-      harryBusy('listening', true);
       startMeter();
     } catch {
       rec = null;
@@ -2538,13 +2514,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const onConnect = config.onConnect;
     config.onConnect = (...args: unknown[]) => {
       if (status) { status.textContent = 'Live with Harry'; status.setAttribute('data-live', ''); }
-      harryBusy('voice', true);
       onConnect?.(...args);
-    };
-    const onDisconnect = config.onDisconnect;
-    config.onDisconnect = (...args: unknown[]) => {
-      harryBusy('voice', false);
-      onDisconnect?.(...args);
     };
     const onAudio = config.onAudio;
     config.onAudio = (...args: unknown[]) => {
