@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { INTRO, DEFAULT_AUDIENCE } from '../data/intake-intro';
-import { welcomeVoiceGate } from '../data/intake-welcome';
+import { intakePageDescription, welcomeLead, welcomeVoiceGate } from '../data/intake-welcome';
 
 // Public, so it can sit in the page. Unset or blank: the welcome screen does not offer voice.
 // Voice mode, if opened after the welcome, still shows a "coming online" state and chat carries everything.
@@ -27,7 +27,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 ---
 <Base
   title="Client intake | Roadmap Labs"
-  description="The Roadmap Labs client intake: answer a short interview about your business by chat or by voice, and share any files or links that help."
+  description={intakePageDescription(offerVoice)}
   path="/intake"
   noindex
 >
@@ -616,7 +616,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     <div class="ik-col">
       <span class="ik-orb ik-orb--hero" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
       <h1 id="ik-hello">Let's map how your business <span>really runs.</span></h1>
-      <p class="ik-welcome__lead">I'm Harry. First the basics, how you use AI today and the tools you run on. Then, if you have time, we'll walk through how work comes in, gets done and gets looked after. Type, talk, or switch to a voice interview whenever you like.</p>
+      <p class="ik-welcome__lead">{welcomeLead(offerVoice)}</p>
       <ul class="ik-points">
         <li><Fragment set:html={svg(icons.clock, 18)} />Core takes about 10 minutes</li>
         <li><Fragment set:html={svg(icons.skip, 18)} />Skip anything you're unsure of</li>
