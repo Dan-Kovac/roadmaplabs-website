@@ -25,7 +25,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 ---
 <Base
   title="Client intake | Roadmap Labs"
-  description="The Roadmap Labs client intake: answer the business OS interview by chat or by voice, and share any files or links that help."
+  description="The Roadmap Labs client intake: answer a short interview about your business by chat or by voice, and share any files or links that help."
   path="/intake"
   noindex
 >
@@ -313,12 +313,12 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-panel__link { align-self: flex-start; padding: 0; border: 0; background: none; font: 600 12px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   .ik-panel__fine { margin: 4px 0 0; font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
   .ik-tree { display: grid; gap: 2px; margin-top: 4px; }
-  .ik-dir { display: flex; align-items: center; gap: 8px; padding: 6px 4px; font: 600 13px/18px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); min-width: 0; }
+  .ik-dir { display: flex; align-items: center; gap: 8px; padding: 6px 4px; font: 600 14px/20px var(--font-sans); color: var(--ink); min-width: 0; }
   .ik-dir svg { flex: none; color: var(--roadmap-blue); }
   .ik-dir span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ik-file { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; padding: 8px 8px 8px 22px; border-radius: 10px; min-width: 0; transition: background-color .6s ease; }
   .ik-file--wf { padding-left: 38px; }
-  .ik-file__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 13px/18px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); }
+  .ik-file__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 14px/20px var(--font-sans); color: var(--ink); }
   .ik-file__sub { grid-column: 1 / -1; min-width: 0; font: 400 12px/16px var(--font-sans); color: var(--text-secondary); }
   .ik-file[data-depth="empty"] .ik-file__name { color: var(--text-muted); }
   .ik-file.is-new { animation: ik-in .5s var(--ease) both; }
@@ -552,7 +552,7 @@ const svg = (d: string, size = 20, sw = 2) =>
             <span class="ik-id__meta" id="ik-progress" aria-live="polite">Roadmap Labs intake</span>
           </div>
         </div>
-        <button class="ik-folderbtn" type="button" id="ik-folder-btn" aria-controls="ik-panel" aria-expanded="false" aria-label="Your folder: what we've captured so far"><Fragment set:html={svg(icons.folder, 18)} /><span class="ik-folderbtn__n" id="ik-folder-n">0</span></button>
+        <button class="ik-folderbtn" type="button" id="ik-folder-btn" aria-controls="ik-panel" aria-expanded="false" aria-label="Your notes: what we've captured so far"><Fragment set:html={svg(icons.folder, 18)} /><span class="ik-folderbtn__n" id="ik-folder-n">0</span></button>
         <div class="ik-modes" role="group" aria-label="How you'd like to answer">
           <button type="button" data-mode="chat" aria-pressed="true"><Fragment set:html={svg(icons.chat, 16)} /><span>Chat</span></button>
           <button type="button" data-mode="voice" aria-pressed="false"><Fragment set:html={svg(icons.wave, 16)} /><span>Voice<span class="ik-modes__long"> interview</span></span></button>
@@ -568,19 +568,19 @@ const svg = (d: string, size = 20, sw = 2) =>
   <aside class="ik-panel" id="ik-panel" aria-labelledby="ik-panel-title">
     <div class="ik-panel__head">
       <div>
-        <span class="ik-panel__eyebrow">Your folder</span>
+        <span class="ik-panel__eyebrow">Your notes</span>
         <strong id="ik-panel-title">What we've captured so far</strong>
       </div>
-      <button class="ik-panel__close" type="button" id="ik-panel-close" aria-label="Close your folder">×</button>
+      <button class="ik-panel__close" type="button" id="ik-panel-close" aria-label="Close your notes">×</button>
     </div>
-    <p class="ik-panel__note">Roadmap Labs writes the finished files after the interview.</p>
+    <p class="ik-panel__note">What we've picked up so far. After the interview, we write it up properly as clear instructions for AI.</p>
     <div class="ik-panel__role" id="ik-role-line" hidden>
       <span>Answering as <b id="ik-role-name"></b></span>
       <span class="ik-panel__role-actions"><button type="button" id="ik-role-change">Change</button><button type="button" id="ik-role-add">Add a role</button></span>
       <small>Your role only changes which questions you're asked.</small>
     </div>
     <div class="ik-tree" id="ik-tree" aria-live="polite"></div>
-    <p class="ik-panel__fine">Depth is a rough, early guide from your answers: empty, thin or solid. Provisional rules.</p>
+    <p class="ik-panel__fine">The bars are a rough guide to how much we have on each topic so far.</p>
     <button class="ik-panel__link" type="button" id="ik-tour-replay">Replay the walkthrough</button>
   </aside>
 
@@ -807,7 +807,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     <div class="ik-col">
       <span class="ik-done" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
       <h2 id="ik-finish-title">That's everything. Thank you.</h2>
-      <p class="ik-finish__lead">Everything you shared becomes files: your README, brand, customer and reference files, plus one workflow file for each job you described. We'll follow up within 2 business days.</p>
+      <p class="ik-finish__lead">We'll turn what you shared into clear written notes on your business, your brand, your customers and your tools, plus step-by-step instructions for each job you described. We'll follow up within 2 business days.</p>
       <ul class="ik-captured" id="ik-captured" aria-label="What we received"></ul>
       <ol class="ik-next" aria-label="What happens next">
         <li><strong>We read it all</strong>Roadmap Labs reviews your answers, files and recordings.</li>
@@ -823,7 +823,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 </section>
 
 <script>
-  import { readme, reference, workflow, fromDocuments, folderName as folderFor, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
+  import { readme, reference, workflow, fromDocuments, businessName, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
   import { readRole, ROLE_QUESTION, ROLE_QUESTION_LEGACY, ROLE_FOLLOW_UP, ROLE_CHIPS, ROUTE_NAME, type Route } from '../data/intake-roles';
   import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING, BLOCKED_FILE } from '../data/intake';
   import { GROWTH_QUESTIONS, GROWTH_OFFER, buildPayload } from '../data/intake-growth';
@@ -855,13 +855,13 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   // A new key for the new spine, so progress saved under the old 44-question script never replays into it.
   const STORE = 'rl-intake-v3';
-  const CHOICE_TEXT = "That's the core done, about 10 minutes. Want to keep going into the journey? It's about 20 more minutes on how work comes in, gets done and gets looked after. Or you can finish here.";
+  const CHOICE_TEXT = "That's the core done, about 10 minutes. Want to keep going? It's about 20 more minutes on how work comes in, gets done and gets looked after. Or you can finish here.";
   const TOO_BIG = "That's too big to send through the page (about 4MB in total). Put it in Google Drive or Dropbox and paste the link instead.";
 
   const textByQid = new Map<number, string>([
     ...CORE_QUESTIONS.map((q) => [q.qid, q.text] as [number, string]),
     ...JOURNEY.map((j) => [j.qid, j.text] as [number, string]),
-    ...JOURNEY.flatMap((J) => J.slots.map((qid, p) => [qid, `${J.title} workflow ${p + 1}`] as [number, string])),
+    ...JOURNEY.flatMap((J) => J.slots.map((qid, p) => [qid, `${J.label}: job ${p + 1}`] as [number, string])),
     [CLOSING.anythingElse.qid, CLOSING.anythingElse.text],
   ]);
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -1012,7 +1012,9 @@ const svg = (d: string, size = 20, sw = 2) =>
   const growthDue = () => growthOn && !usedBlocks.has('growth') && JOURNEY.every((_J, j) => usedBlocks.has(`j:${j}`));
   /** On the team route, Operate is about the person's own week. */
   const teamWeek = (j: J) => j === 2 && route() === 'team' && !roles.includes('owner');
-  const jTitle = (j: J) => (teamWeek(j) ? 'Your week' : JOURNEY[j].title);
+  const jTitle = (j: J) => (teamWeek(j) ? 'Your week' : JOURNEY[j].label);
+  /** "Another one for winning work?" */
+  const anotherText = (j: J) => (teamWeek(j) ? 'Another task from your week?' : `Another one for ${JOURNEY[j].label.toLowerCase()}?`);
   const TEAM_LIST_TEXT = 'What do you do in a normal week? Name each task, one per line.';
   const TEAM_LIST_HINT = 'For example, an office manager: invoicing, booking jobs, answering the phones, ordering stock. A marketing coordinator: social posts, the newsletter, monthly reporting.';
   const stepKey = (s?: Step) =>
@@ -1026,7 +1028,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       case 'role2': return ROLE_FOLLOW_UP;
       case 'name': return s.prompt;
       case 'drill': return DRILL[s.d].text;
-      case 'another': return teamWeek(s.j) ? 'Another task from your week?' : `Another one in ${JOURNEY[s.j].title}?`;
+      case 'another': return anotherText(s.j);
       case 'choice': return CHOICE_TEXT;
       case 'gchoice': return GROWTH_OFFER.text;
       case 'growth': return GROWTH_QUESTIONS[s.g].text;
@@ -1245,7 +1247,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const s = steps[pos];
     input.placeholder = locked
       ? (answerable(s) || !s ? 'Harry is typing…' : s.type === 'files' ? 'All questions answered' : 'Pick an option above')
-      : s?.type === 'list' ? 'One per line…' : s?.type === 'name' ? 'Name the workflow…' : s?.type === 'role' ? 'Your role, in your own words…' : 'Type your answer…';
+      : s?.type === 'list' ? 'One per line…' : s?.type === 'name' ? 'Name the job…' : s?.type === 'role' ? 'Your role, in your own words…' : 'Type your answer…';
     if (!locked && !replaying && mode === 'chat' && (actions.length || finePointer)) input.focus({ preventScroll: true });
   }
 
@@ -1263,7 +1265,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const s = steps[pos];
     const coreDone = steps.slice(0, pos).filter((x) => x.type === 'q' && x.phase === 'core').length;
     const jy = journeyUnits();
-    const folder = folderName();
+    const folder = displayName();
     let label = '';
     let pct = 0;
     if (root.dataset.view === 'welcome') { label = 'Roadmap Labs intake'; pct = 0; }
@@ -1271,7 +1273,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     else if (sent) { label = `All sent · ${folder}`; pct = 100; }
     else if (!s || s.type === 'files') { label = `Ready to send · ${folder}`; pct = 100; }
     else if (s.type === 'choice') { label = `Core done · ${folder}`; pct = 34; }
-    else if (s.type === 'gchoice') { label = `Journey done · ${folder}`; pct = 95; }
+    else if (s.type === 'gchoice') { label = `Main questions done · ${folder}`; pct = 95; }
     else if (s.type === 'growth') { label = `Growth, optional · ${folder}`; pct = 95; }
     else if (s.type === 'q' && s.phase === 'core') { label = `${CORE_STAGES[s.stage!].title} · ${folder}`; pct = (coreDone / CORE_QUESTIONS.length) * 34; }
     else if (s.type === 'q') { label = `Last question · ${folder}`; pct = 96; }
@@ -1295,12 +1297,22 @@ const svg = (d: string, size = 20, sw = 2) =>
     bar.style.width = `${Math.max(2, Math.round(pct))}%`;
     sendNow.hidden = sent || !hasAnything() || s?.type === 'files';
     const caption = document.getElementById('ik-voice-caption');
-    if (caption) caption.textContent = !s ? '' : s.type === 'choice' ? "That's the core done. Into the journey, or finish here?" : s.type === 'gchoice' ? 'Optional: about 5 minutes of growth questions, or skip to the last question.' : s.type === 'files' ? 'All questions done.' : stepText(s);
+    if (caption) caption.textContent = !s ? '' : s.type === 'choice' ? "That's the core done. Keep going, or finish here?" : s.type === 'gchoice' ? 'Optional: about 5 minutes of growth questions, or skip to the last question.' : s.type === 'files' ? 'All questions done.' : stepText(s);
   }
 
   // ---------- Your folder: what's been captured so far ----------
   // Provisional depth rules live in src/data/intake-depth.ts. This shows captured context, never finished files.
-  interface FolderFile { path: string; state: FileState; kind: 'core' | 'docs' | 'workflow' | 'growth' }
+  interface FolderFile { path: string; state: FileState; kind: 'core' | 'docs' | 'workflow' | 'growth'; name?: string }
+  /** What people see in place of file names. The paths stay internal. */
+  const FILE_LABEL: Record<string, [label: string, topic: string]> = {
+    'README.md': ['Your business', 'your business'],
+    'brand.md': ['Your brand', 'your brand'],
+    'customer.md': ['Your customers', 'your customers'],
+    'reference.md': ['Your tools', 'your tools'],
+    'growth.md': ['Growth ideas', 'growth'],
+  };
+  const labelOf = (f: FolderFile) => (f.kind === 'workflow' ? f.name ?? 'A job' : FILE_LABEL[f.path]?.[0] ?? f.path);
+  const topicOf = (f: FolderFile) => (f.kind === 'workflow' ? `"${f.name}"` : FILE_LABEL[f.path]?.[1] ?? f.path);
   /** growth.md: the optional Growth answers captured so far. Solid at six or more answered. */
   function growthState(): FileState {
     const got = GROWTH_QUESTIONS.filter((_q, i) => filled(growth[i]));
@@ -1314,7 +1326,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     };
   }
   // The header subtitle and the panel use the same name: a short S1 answer, or the placeholder.
-  const folderName = () => folderFor(answers.get(CORE_QUESTIONS[0].qid));
+  /** The business name as people say it (no "OS/"), or "Your business" until one is given. */
+  const displayName = () => businessName(answers.get(CORE_QUESTIONS[0].qid)) || 'Your business';
   function folderFiles(): FolderFile[] {
     const a = (q: number) => answers.get(q);
     const shared = files.length > 0 || links.length > 0;
@@ -1330,7 +1343,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       let f = workflowFile(pr.name);
       for (let n = 2; used.has(f); n++) f = f.replace(/(?:-\d+)?\.md$/, `-${n}.md`);
       used.add(f);
-      out.push({ path: `workflows/${f}`, state: workflow(pr.answers), kind: 'workflow' });
+      out.push({ path: `workflows/${f}`, state: workflow(pr.answers), kind: 'workflow', name: pr.name });
     }
     out.push({ path: 'growth.md', state: growthState(), kind: 'growth' });
     return out;
@@ -1341,12 +1354,14 @@ const svg = (d: string, size = 20, sw = 2) =>
     const i = procs.flat().filter((x) => x && !x.skipped).indexOf(target);
     return folderFiles().filter((f) => f.kind === 'workflow')[i]?.path ?? `workflows/${workflowFile(target.name)}`;
   };
-  /** One line about a file, in the system's words: "reference.md has your tools, but not costs yet." */
+  /** One line about what we have, in plain words: "On your tools, we now have your tools and your CRM, but not costs yet." */
   function describe(path: string) {
     const f = fileOf(path);
-    if (!f || f.state.depth === 'empty') return `${path} is still empty; we'll fill it in on the call.`;
-    if (f.state.depth === 'solid') return `${path} is solid: ${listJoin(f.state.has)}.`;
-    return f.state.has.length ? `${path} has ${listJoin(f.state.has)}, but ${f.state.gap}.` : `${path} has a start, but ${f.state.gap}.`;
+    if (!f) return '';
+    const topic = topicOf(f);
+    if (f.state.depth === 'empty') return `Nothing yet on ${topic}; we'll cover it on the call.`;
+    if (f.state.depth === 'solid') return `That's plenty on ${topic}: ${listJoin(f.state.has)}.`;
+    return f.state.has.length ? `On ${topic}, we now have ${listJoin(f.state.has)}, but ${f.state.gap}.` : `We have a start on ${topic}, but ${f.state.gap}.`;
   }
 
   const tree = $<HTMLDivElement>('ik-tree');
@@ -1364,9 +1379,9 @@ const svg = (d: string, size = 20, sw = 2) =>
       const r = el('div', `ik-file${f.kind === 'workflow' ? ' ik-file--wf' : ''}`);
       r.dataset.depth = f.state.depth;
       r.dataset.path = f.path;
-      r.append(el('span', 'ik-file__name', f.path.replace(/^workflows\//, '')));
+      r.append(el('span', 'ik-file__name', labelOf(f)));
       const depth = el('span', 'ik-depth');
-      depth.setAttribute('aria-label', `Depth: ${DEPTH_LABEL[f.state.depth].toLowerCase()}`);
+      depth.setAttribute('aria-label', `How much we have: ${DEPTH_LABEL[f.state.depth].toLowerCase()}`);
       depth.innerHTML = '<span class="ik-depth__bar" aria-hidden="true"><i></i><i></i><i></i></span>';
       depth.append(el('span', '', DEPTH_LABEL[f.state.depth]));
       r.append(depth);
@@ -1380,13 +1395,13 @@ const svg = (d: string, size = 20, sw = 2) =>
       seen.set(f.path, { size: f.state.size, depth: f.state.depth });
       tree.append(r);
     };
-    dir(folderName());
+    dir(displayName());
     // Core files appear once their first answer lands; brand.md and customer.md come from documents, so they show from the start.
     for (const f of list.filter((x) => x.kind === 'core' || x.kind === 'docs')) if (f.kind === 'docs' || f.state.size > 0) row(f);
-    dir('workflows/', 'ik-dir--sub');
+    dir('Your jobs', 'ik-dir--sub');
     const wfs = list.filter((x) => x.kind === 'workflow');
     if (wfs.length) wfs.forEach(row);
-    else tree.append(el('p', 'ik-placeholder', 'One file for each workflow you name in the journey.'));
+    else tree.append(el('p', 'ik-placeholder', 'Each job you walk us through shows up here.'));
     // The optional Growth add-on: shown only once a growth answer lands.
     for (const f of list.filter((x) => x.kind === 'growth')) if (f.state.size > 0) row(f);
     $<HTMLElement>('ik-folder-n').textContent = String(list.filter((f) => f.state.depth !== 'empty').length);
@@ -1412,9 +1427,9 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   // ---------- What Harry says between steps ----------
   function journeyRecap(j: J) {
-    const paths = procs[j].map((pr, p) => (pr && !pr.skipped ? workflowPath(j, p) : '')).filter(Boolean);
-    const title = JOURNEY[j].title;
-    return paths.length ? `That's ${title} captured: ${listJoin(paths)}.` : `That's ${title} done; we'll go through it on the call.`;
+    const names = procs[j].filter((pr) => pr && !pr.skipped).map((pr) => pr!.name);
+    const title = jTitle(j).toLowerCase();
+    return names.length ? `That's ${title} covered: ${listJoin(names)}.` : `That's ${title} done; we'll go through it on the call.`;
   }
   const fileForStage = (n: number) => (n === 2 ? 'reference.md' : 'README.md');
   const isRoleStep = (x?: Step) => x?.type === 'role' || x?.type === 'role2';
@@ -1428,8 +1443,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
   function journeyIntro(j: J) {
     if (route() === 'owner' || roles.includes('owner')) return JOURNEY[j].intro;
-    if (route() === 'team' && j === 2) return "Let's start with your own week. Each task you name becomes its own workflow file.";
-    return ['Now how new business comes in. Each workflow you describe becomes its own workflow file.', 'Next, how the work you sell actually gets done.', 'Next, everything that runs around the work.'][j];
+    if (route() === 'team' && j === 2) return "Let's start with your own week. For each task you name, I'll ask a few questions so we can write down how it's done.";
+    return ["Now, how new business comes in. For each one you name, I'll ask a few questions so we can write down how it's done.", 'Next, how the work you sell actually gets done.', 'Next, everything that runs around the work.'][j];
   }
   async function transition(i: number) {
     const s = steps[i];
@@ -1453,7 +1468,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       await harrySays(`${recapOf(last)} ${intro}`.trim());
     } else if (s.type === 'drill' && s.d === 0) {
       const name = procs[s.j][s.p].name;
-      await harrySays(s.p === 0 ? `Let's start with ${name}. It gets its own file: ${workflowPath(s.j, s.p)}.` : `Next: ${name}, in ${workflowPath(s.j, s.p)}.`);
+      await harrySays(s.p === 0 ? `Let's start with ${name}.` : `Next: ${name}.`);
     } else if (s.type === 'another') {
       await harrySays(describe(workflowPath(s.j, s.p)));
     } else if (s.type === 'gchoice') {
@@ -1466,7 +1481,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     } else if (s.type === 'q' && s.phase === 'closing') {
       const last = before(i);
       const fromJourney = last && last.type !== 'q' && last.type !== 'choice';
-      await harrySays(last?.type === 'choice' ? 'No problem. One last question before you go.' : `${recapOf(last)}${fromJourney ? " That's the journey done." : ''} One last question.`.trim());
+      await harrySays(last?.type === 'choice' ? 'No problem. One last question before you go.' : `${recapOf(last)}${fromJourney ? ' That covers how the work flows.' : ''} One last question.`.trim());
     }
   }
 
@@ -1483,8 +1498,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
   function header(s: Step) {
     if (s.type === 'q' && s.phase === 'core' && s.first) section(partLabel(`c${s.stage}`), CORE_STAGES[s.stage!].title);
-    else if (s.type === 'list') section(`${partLabel('journey')} · The journey`, jTitle(s.j));
-    else if (s.type === 'drill' && s.d === 0) section(`${JOURNEY[s.j].title} · workflow ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
+    else if (s.type === 'list') section(`${partLabel('journey')} · How the work flows`, jTitle(s.j));
+    else if (s.type === 'drill' && s.d === 0) section(`${jTitle(s.j)} · job ${s.p + 1} of up to ${MAX_PROCESSES}`, procs[s.j][s.p].name, true);
     else if (s.type === 'growth' && s.g === 0) section('Optional · about 5 minutes', 'Growth');
   }
   /** Replay after a refresh: the question as it was asked, no transitions or helpers. Synchronous on purpose. */
@@ -1547,7 +1562,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       const wrap = el('div', 'ik-choices');
       wrap.append(
         route() === 'owner' || !route()
-          ? option('Keep going into the journey', 'About 20 min: how work comes in, gets done and gets looked after', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more')
+          ? option('Keep going', 'About 20 min: how work comes in, gets done and gets looked after', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more')
           : option('Keep going', route() === 'marketing' ? 'Your tools, then how work gets delivered and looked after' : 'How you use AI today', true, () => { wrap.remove(); act({ t: 'c', v: 'more' }); }, 'more'),
         option('Finish here', 'One last question, then share anything useful', false, () => { wrap.remove(); act({ t: 'c', v: 'wrap' }); }, 'wrap'),
       );
@@ -1591,7 +1606,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       const opts: { label: string; primary?: boolean; v: string }[] = [];
       if (s.next) opts.push({ label: `Yes: ${s.next}`, primary: true, v: `next:${s.next}` });
       opts.push({ label: s.next ? 'Yes, a different one' : 'Yes, another one', primary: !s.next, v: 'another' });
-      opts.push({ label: `No, move on${s.j < 2 ? ` to ${JOURNEY[s.j + 1].title}` : ''}`, v: 'done' });
+      opts.push({ label: `No, move on${s.j < 2 ? ` to ${JOURNEY[s.j + 1].label.toLowerCase()}` : ''}`, v: 'done' });
       quick(helpers(q.parentElement), opts.map((o) => ({ label: o.label, primary: o.primary, data: o.v, onClick: () => act({ t: 'c', v: o.v }) })));
       return;
     }
@@ -1681,9 +1696,9 @@ const svg = (d: string, size = 20, sw = 2) =>
     card.append(el('h3', '', "That's the core done"));
     const r = route() ?? 'owner';
     card.append(el('p', '', r === 'owner'
-      ? `That was the core, about 10 minutes. ${describe('reference.md')} Keep going into the journey? About 20 more minutes on how work comes in, gets done and gets looked after; each job you describe becomes a workflow file. Or finish here.`
+      ? `That was the core, about 10 minutes. ${describe('reference.md')} Keep going? About 20 more minutes on how work comes in, gets done and gets looked after. For each job you describe, we write down how it's done. Or finish here.`
       : r === 'marketing'
-        ? `That's your core done: the basics, AI today and how new business comes in. ${describe('README.md')} Keep going into your tools and the rest of the journey? Or finish here.`
+        ? `That's your core done: the basics, AI today and how new business comes in. ${describe('README.md')} Keep going with your tools and how the work gets done? Or finish here.`
         : `That's your core done: your week and the tools you use. ${describe('reference.md')} Keep going with a few questions on how you use AI? Or finish here.`));
     card.setAttribute('aria-label', CHOICE_TEXT);
     if (replaying || !live) card.querySelector<SVGCircleElement>('.fg')!.style.cssText = 'animation: none; stroke-dashoffset: 0';
@@ -1741,7 +1756,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     if (s.type === 'role' && s.mode === 'legacy') {
       // Saved before roles existed: tag answers from here on, never re-route or restart.
       legacyTag = read.route ?? 'team';
-      s.echo = "Thanks. I'll carry on where we were. Your role only changes which questions I ask; you can change the focus from your folder panel.";
+      s.echo = "Thanks. I'll carry on where we were. Your role only changes which questions I ask; you can change it any time under Your notes.";
       return true;
     }
     if (!read.route) return false; // ambiguous: one follow-up
@@ -1787,8 +1802,8 @@ const svg = (d: string, size = 20, sw = 2) =>
       if (multiLine) startProcess(s.j, 0, list[0]);
       else if (list.length >= 2) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'Which of these matters most to start with?', options: list.slice(0, 6).map(short) });
       else if (list.length === 1 && list[0].length <= 80) startProcess(s.j, 0, list[0]);
-      else if (list.length === 1) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'What would you call that workflow, in a few words?', options: [] });
-      else steps.push({ type: 'name', j: s.j, p: 0, prompt: `Which ${J.title.toLowerCase()} workflow should we start with? Just name one, like ${J.example}.`, options: [] });
+      else if (list.length === 1) steps.push({ type: 'name', j: s.j, p: 0, prompt: 'What would you call that job, in a few words?', options: [] });
+      else steps.push({ type: 'name', j: s.j, p: 0, prompt: `Which one should we start with? Just name one, like ${J.example}.`, options: [] });
     } else if (a.t === 'a' && s.type === 'name') {
       render = show(a.v, a.s);
       if (a.v === SKIPPED) {
@@ -1805,7 +1820,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       render = show(a.v === 'done' ? 'No, move on' : a.v.startsWith('next:') ? `Yes: ${a.v.slice(5)}` : 'Yes, another one');
       if (a.v === 'done') nextStage(s.j);
       else if (a.v.startsWith('next:')) startProcess(s.j, s.p + 1, a.v.slice(5));
-      else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: `Which one? Name the next ${JOURNEY[s.j].title.toLowerCase()} workflow.`, options: undrilled(s.j).slice(0, 6) });
+      else steps.push({ type: 'name', j: s.j, p: s.p + 1, prompt: 'Which one is next? Just name it.', options: undrilled(s.j).slice(0, 6) });
     } else if (a.t === 'c' && s.type === 'gchoice' && (a.v === 'growth' || a.v === 'nogrowth')) {
       render = show(a.v === 'growth' ? GROWTH_OFFER.yes : GROWTH_OFFER.no);
       if (a.v === 'growth') GROWTH_QUESTIONS.forEach((_q, g) => steps.push({ type: 'growth', g }));
@@ -1821,7 +1836,7 @@ const svg = (d: string, size = 20, sw = 2) =>
         p.lastChild!.textContent = "Skipped the growth questions. We'll cover them on the call if useful";
       };
     } else if (a.t === 'c' && s.type === 'choice') {
-      render = show(a.v === 'more' ? (route() === 'owner' ? 'Keep going into the journey' : 'Keep going') : 'Finish here');
+      render = show(a.v === 'more' ? 'Keep going' : 'Finish here');
       if (a.v !== 'more') plan = plan.filter((b) => b.k === 'closing');
       if (!plan.length && !usedBlocks.has('closing')) plan = [{ k: 'closing' }];
       pullNext();
@@ -2318,7 +2333,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : /s$/.test(w) ? 'es' : 's'}`;
     item(`${plural(answered, 'answer')} received`, skipped ? `· ${skipped} to fill, we'll cover ${skipped === 1 ? 'it' : 'them'} on the call` : undefined);
     const mapped = procs.flat().filter((p) => p && !p.skipped);
-    if (mapped.length) item(`${plural(mapped.length, 'workflow')} mapped`, `· ${listJoin(mapped.map((p) => p.name))}`);
+    if (mapped.length) item(`${plural(mapped.length, 'job')} walked through`, `· ${listJoin(mapped.map((p) => p.name))}`);
     const shared = [files.length && plural(files.length, 'file'), plainLinks && plural(plainLinks, 'link'), recs && plural(recs, 'screen recording')].filter(Boolean) as string[];
     if (shared.length) item(`${listJoin(shared)} shared`);
     item('Saved to Roadmap Labs', `· ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
@@ -2421,22 +2436,22 @@ const svg = (d: string, size = 20, sw = 2) =>
           ? `Closing question (W1). Ask exactly: "${s.text}" Then call record_answer.`
           : `Stage ${s.stage}, ${CORE_STAGES[s.stage!].title}, question ${s.id}. Ask exactly: "${s.text}" Then call record_answer with their words.${openInStage()}${openInStage() ? ROAM : ''}`;
       case 'list':
-        return `Stage 3, the journey: ${JOURNEY[s.j].title} (${JOURNEY[s.j].id}). Ask exactly: "${JOURNEY[s.j].text}" Then call record_answer with what they name, one per line.`;
+        return `Stage 3, how the work flows: ${JOURNEY[s.j].label} (${JOURNEY[s.j].id}). Ask exactly: "${JOURNEY[s.j].text}" Then call record_answer with what they name, one per line.`;
       case 'name':
-        return `${JOURNEY[s.j].title}. Ask: "${s.prompt}"${s.options.length ? ` They mentioned: ${s.options.join('; ')}.` : ''} Then call record_answer with the workflow name, in their words.`;
+        return `${JOURNEY[s.j].label}. Ask: "${s.prompt}"${s.options.length ? ` They mentioned: ${s.options.join('; ')}.` : ''} Then call record_answer with the workflow name, in their words.`;
       case 'drill': {
         const pr = procs[s.j][s.p];
         const extra =
           s.d === 3 ? ' They can attach a file, paste text or a link, or record their screen on the page.'
           : s.d === 4 ? ' Offer three answers: hand it over, split it, or keep it with a person. Ask why.'
-          : s.d === 8 ? ' Keep it light: one short answer is enough. This becomes the routine that starts the workflow.'
-          : s.d === 0 ? ' This becomes the skill: the written instructions. Reflect their tool and step names back.'
+          : s.d === 8 ? ' Keep it light: one short answer is enough. It tells AI when the job should start.'
+          : s.d === 0 ? ' This becomes the written instructions for the job. Reflect their tool and step names back.'
           : s.d === 7 ? ` Help them reach an hourly figure: who does it, hours per week, and their hourly cost or annual pay. As a rough benchmark, annual pay divided by about ${BENCHMARK.hoursPerYear} hours is an hourly cost. Use only their figures and say it is a rough benchmark. Never invent numbers.`
           : '';
-        return `${JOURNEY[s.j].title}, workflow "${pr.name}", ${DRILL[s.d].id} (${s.d + 1} of ${DRILL.length}). Ask exactly: "${DRILL[s.d].text}"${extra} Then call record_answer.${openInStage()}${openInStage() ? ROAM : ''}`;
+        return `${JOURNEY[s.j].label}, job "${pr.name}", ${DRILL[s.d].id} (${s.d + 1} of ${DRILL.length}). Ask exactly: "${DRILL[s.d].text}"${extra} Then call record_answer.${openInStage()}${openInStage() ? ROAM : ''}`;
       }
       case 'another':
-        return `"${procs[s.j][s.p].name}" is done. Ask: "Another one in ${JOURNEY[s.j].title}?"${s.next ? ` They also mentioned "${s.next}".` : ''} If yes, call choose_path with path "another" and the workflow name; if no, call choose_path with path "next_stage".`;
+        return `"${procs[s.j][s.p].name}" is done. Ask: "${anotherText(s.j)}"${s.next ? ` They also mentioned "${s.next}".` : ''} If yes, call choose_path with path "another" and the workflow name; if no, call choose_path with path "next_stage".`;
       case 'gchoice':
         return `The journey is done. Say: "${GROWTH_OFFER.text}" Then call choose_path with path "growth" to answer them, or "skip_growth" to go to the last question.`;
       case 'growth': {

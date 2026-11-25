@@ -71,7 +71,7 @@ export const GROWTH_QUESTIONS: GrowthQuestion[] = [
 /** The offer before the first growth question. */
 export const GROWTH_OFFER = {
   title: 'Optional: growth',
-  text: "That's the journey done. There are eight optional growth questions, about 5 minutes, on where good customers come from and what you could offer them. They're not part of the core. Answer them, or skip to the last question.",
+  text: "That covers how the work flows. There are eight optional growth questions, about 5 minutes, on where good customers come from and what you could offer them. They're not part of the core. Answer them, or skip to the last question.",
   yes: 'Answer growth questions',
   yesSub: 'About 5 minutes · optional · skip any one',
   no: 'Skip growth questions',

@@ -7,7 +7,7 @@
 
 export type Depth = 'empty' | 'thin' | 'solid';
 
-export const DEPTH_LABEL: Record<Depth, string> = { empty: 'Empty', thin: 'Thin', solid: 'Solid' };
+export const DEPTH_LABEL: Record<Depth, string> = { empty: 'Nothing yet', thin: 'A start', solid: 'Plenty' };
 
 const SKIPPED = 'to fill';
 
@@ -82,7 +82,7 @@ export function reference(a: (qid: number) => string | undefined): FileState {
 const WF_KEYS: [number, string, string][] = [
   [0, 'the steps', 'no steps yet'],
   [1, 'the tools', 'no tools yet'],
-  [2, 'what good looks like', 'no quality bar yet'],
+  [2, 'what good looks like', 'not what good looks like yet'],
   [3, 'an example', 'no example yet'],
   [8, 'what starts it', 'not what starts it yet'],
 ];

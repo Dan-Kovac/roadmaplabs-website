@@ -17,9 +17,9 @@ export interface CoreQuestion {
 }
 
 export const CORE_STAGES = [
-  { n: 0, title: 'Setup', recap: 'the setup', intro: 'First, the basics, which go in your README.md.' },
-  { n: 1, title: 'AI today', recap: 'your AI today', intro: 'Next, how AI shows up in the business today, which also goes in your README.md. Small jobs count.' },
-  { n: 2, title: 'Tool stack', recap: 'your tool stack', intro: 'Next, your tool stack, which goes in reference.md.' },
+  { n: 0, title: 'The basics', recap: 'the setup', intro: 'First, the basics about the business.' },
+  { n: 1, title: 'AI today', recap: 'your AI today', intro: 'Next, how you use AI in the business today. Small jobs count.' },
+  { n: 2, title: 'Your tools', recap: 'your tool stack', intro: 'Next, the software and tools you use day to day.' },
 ] as const;
 
 export const CORE_QUESTIONS: CoreQuestion[] = [
@@ -48,20 +48,23 @@ export const JOURNEY = [
     id: 'J1',
     key: 'acquire',
     title: 'Acquire',
+    /** What people see. `title` stays as the label in the Jotform payload. */
+    label: 'Winning work',
     qid: 160,
     slots: [163, 164, 165],
-    text: 'How do new customers and business come in? Name each workflow, one per line: marketing, word of mouth, partnerships, outbound, anything.',
+    text: 'How do new customers and business come in? List each way, one per line: marketing, word of mouth, partnerships, reaching out to people, anything.',
     hint: 'For example, a trades firm: builder referrals, Google reviews, a Facebook page. A clinic: GP referrals, online booking. An agency: LinkedIn, past clients. A shop: Instagram, walk-ins, an email list.',
-    intro: 'Now the journey, in three parts: how work comes in, how it gets done, and what runs around it. Each workflow you describe becomes its own workflow file. First, how new business comes in.',
+    intro: "Now, how the work flows, in three parts: how work comes in, how it gets done, and what runs around it. For each job you name, I'll ask a few questions so we can write down how it's done. First, how new business comes in.",
     example: 'referrals',
   },
   {
     id: 'J2',
     key: 'deliver',
     title: 'Deliver',
+    label: 'Doing the work',
     qid: 161,
     slots: [167, 168, 169],
-    text: 'How does the work you sold actually get done and delivered? Name each workflow, one per line.',
+    text: 'How does the work you sold actually get done and delivered? List the main jobs, one per line.',
     hint: 'For example, a trades firm: quote, schedule the job, do the work, invoice. A clinic: intake forms, appointment, treatment notes. An agency: brief, drafts, review rounds, launch. A shop: pick, pack, ship.',
     intro: 'Next, how the work you sell actually gets done.',
     example: 'quoting',
@@ -70,9 +73,10 @@ export const JOURNEY = [
     id: 'J3',
     key: 'operate',
     title: 'Operate',
+    label: 'Running the business',
     qid: 162,
     slots: [170, 171, 172],
-    text: 'What runs around the work: looking after customers, keeping them happy, reaching back out, running the business day to day? Name each workflow, one per line.',
+    text: 'What runs around the work: looking after customers, keeping them happy, reaching back out, running the business day to day? List the main jobs, one per line.',
     hint: 'For example, a trades firm: chasing unpaid invoices, warranty call-backs. A clinic: recall reminders. An agency: monthly reporting. A shop: returns, reorders, asking for reviews.',
     intro: 'Last part: everything that runs around the work.',
     example: 'invoicing',
@@ -82,15 +86,15 @@ export const JOURNEY = [
 /** The drill: identical for every workflow, saved as one labelled block in the stage's next slot.
  *  The answers fill that workflow's files: the skill (D1, D3), its reference file (D4) and the routine that starts it (D9). */
 export const DRILL = [
-  { id: 'D1', label: 'How', text: 'Walk me through it step by step. This becomes the skill: the written instructions.' },
+  { id: 'D1', label: 'How', text: 'Walk me through it step by step. This becomes the written instructions for the job.' },
   { id: 'D2', label: 'Tools', text: 'Which tools are involved?' },
-  { id: 'D3', label: 'Good looks like', text: 'What does good look like? This becomes the quality bar in the skill.' },
-  { id: 'D4', label: 'Example', text: 'Do you have a real example? It becomes a reference file next to the skill: a real email, proposal, checklist or screenshot.' },
+  { id: 'D3', label: 'Good looks like', text: 'What does good look like? This tells AI what a good result is.' },
+  { id: 'D4', label: 'Example', text: 'Do you have a real example, like an email, proposal, checklist or screenshot? We keep it with the instructions so AI can follow it.' },
   { id: 'D5', label: 'Hand to AI', text: 'Would you want to hand this to AI, keep it with a person, or split it? Why?' },
   { id: 'D6', label: 'Time', text: 'How long does it take, how often? (e.g. 2 hours, twice a week)' },
   { id: 'D7', label: 'Value', text: "What's it worth: what does it bring in or protect when it goes well?" },
   { id: 'D8', label: 'Cost', text: "Roughly what does it cost? Tell me who does it, the hours per week, and their hourly cost or annual pay." },
-  { id: 'D9', label: 'Starts when', text: "What starts it: a time or an event? That's the routine." },
+  { id: 'D9', label: 'Starts when', text: 'What starts it: a set time, or something that happens? That tells AI when to step in.' },
 ] as const;
 
 /** Light example under D9. */
