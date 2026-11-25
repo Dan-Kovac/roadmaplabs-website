@@ -2399,7 +2399,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     w.setAttribute('text-contents', JSON.stringify({ main_label: 'Talk it through with Harry', start_call: 'Start voice interview', end_call: 'End interview' }));
     host.append(w);
     const s = document.createElement('script');
-    s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+    // Pinned: an unpinned URL would run whatever ElevenLabs publishes next, with full access to this page. Bump on purpose.
+    s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed@0.25.2/dist/index.js';
     s.async = true;
     s.onerror = () => {
       const st = document.getElementById('ik-voice-status');
