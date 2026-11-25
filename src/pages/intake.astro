@@ -2545,7 +2545,7 @@ const svg = (d: string, size = 20, sw = 2) =>
     updateProgress();
     const hiName = greetName || client;
     await harrySays(`Hi${hiName ? ` ${hiName}` : ''}, I'm Harry. Answer in your own words, short or long; there are no wrong answers. First, a quick one about your role, so the questions fit.`);
-    await harrySays('Everything we build for you ends up as files in one folder: workflows (your jobs), routines (what kicks them off) and skills (the instructions, written down). I\'m collecting what goes in them.');
+    await harrySays("I'll ask about your business, how the work gets done, and the jobs that take up your time. We turn your answers into plain written instructions, like a handbook for a new staff member. That way AI can work the way your business really runs, instead of guessing.");
     enqueue(() => present());
   }
   // ---------- Opening walkthrough: fresh sessions only, after the welcome and before question one ----------
