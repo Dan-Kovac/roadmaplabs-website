@@ -189,6 +189,7 @@ const broken = view === 'app' ? brokenBriefs() : [];
                         <span>{idOf(k, i)}. {marketingWording(b, m)}</span>
                         {marketingWording(b, m) !== m.text.trim() && <small>Figure version not shown, because its evidence isn't confirmed: "{m.text}"</small>}
                         {(m.uses ?? []).length > 0 && <small>Uses: {(m.uses ?? []).join(', ')}</small>}
+                        {m.fallback && marketingWording(b, m) === m.text.trim() && <small>If the evidence stops being confirmed, the client sees instead: "{m.fallback}"</small>}
                         <small>Then: {MARKETING_FOLLOW_UP}</small>
                       </li>
                     ))

@@ -52,6 +52,10 @@ test('a figure needs sourced evidence holding that figure, and a figure-free fal
   assert.equal(checkBrief(q({ text: 'People search this about 2000 times a month. Thoughts?', uses: ['e1'], fallback: 'Do you know where you show up?' }), today).ok, false); // not the evidence figure
   assert.equal(checkBrief(q({ text: 'People search this about 1300 times a month. Thoughts?', uses: ['e1'], fallback: 'Do you know where you show up?' }), today).ok, true);
   assert.equal(checkBrief(q({ text: 'What do you use, Cin7 or MYOB?' }), today).ok, true); // digits inside names aren't figures
+  // Ordinals and page numbers are figures too.
+  assert.equal(checkBrief(q({ text: 'You show up around 19th, on page 2. Thoughts?' }), today).ok, false);
+  const rank = [{ id: 'e2', kind: 'ranking', value: 'position 19 (page 2)', source: 'DataForSEO via Composio (test)', pulled: '2026-11-20', status: 'confirmed' }];
+  assert.equal(checkBrief({ ...base(), evidence: rank, questions: { marketing: [{ text: 'You show up around 19th, on page 2. Thoughts?', uses: ['e2'], fallback: 'Do you know where you show up?' }] } }, today).ok, true);
 });
 
 test('figures older than 30 days get a warning, and dates must be real', () => {

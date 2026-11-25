@@ -54,7 +54,13 @@ What's in the Inzant brief:
 - **Colour:** a placeholder blue. Swap in their exact colour.
 - **Logo:** none yet, because I didn't fetch their site. Add their logo address.
 - **Skip:** only S1, the business name. The other items Dan listed (what they do, who they sell to, where, how long, the product, integrations, guided onboarding) aren't questions in today's interview at all. So they appear under "Already know" rather than as skipped questions.
-- **Questions:** as provided, plus five marketing questions with no figures.
+- **Questions:** as provided, plus five marketing questions.
+- **Search evidence (added 26 Nov 2026):** pulled 2026-11-26 at 08:57 AEDT from Google desktop, Australia (google.com with the Australian setting). Source: "DataForSEO via Composio (account main-dataforseo)", marked confirmed.
+  - **Ranking:** inzant.com.au is at organic position 19 (page 2) for "wholesale sales rep app". The ranking page is inzant.com.au/marketing-managers.
+  - **Monthly searches** (Australia, English, 12-month average): "wholesale order app" 10, "b2b ordering app" 10, "wholesale ecommerce platform" 10. "mobile sales app for wholesalers" and "wholesale sales rep app" returned no figure.
+  - **Used:** the first marketing question uses the ranking only: "When someone searches for a wholesale sales rep app, Inzant shows up on page 2 of Google, around 19th. Is search something you've tried to grow, and what has worked or not for finding new customers?" Its fallback is the earlier figure-free question.
+  - **Not used:** the volumes are too small to build a question on, so they're recorded as evidence only. Evidence is never sent to the client's browser.
+  - **When it expires:** the back office will warn that these figures are out of date from 27 December 2026 (30 days). Pull them again before sending the link after that.
 - **Wording:** "ERP" stays in Dan's opening line and in one question, because it's Inzant's own word for their customers' systems.
 
 ## Marketing and growth: figures and evidence
@@ -65,9 +71,9 @@ A marketing question may quote a number or a ranking only when the brief backs i
    - what kind of figure it is
    - the figure itself
    - its source, for example "DataForSEO via Composio (account name)" or "from Dan"
-   - the date it was pulled
+   - the date it was pulled (`pulled`, YYYY-MM-DD; note the time and search settings in the value or in your notes)
    - confirmed or unverified
-2. The question lists that item in `uses`, and the number in the wording matches the evidence.
+2. The question lists that item in `uses`, and every number in the wording matches the evidence. Ordinals and page numbers count too ("19th", "page 2"); digits inside names ("Cin7") don't.
 3. The question has a `fallback`: the same question with no figure.
 
 The client sees the figure version only if every item it uses is **confirmed**. Otherwise they get the fallback. The back office refuses any marketing question that quotes a number without a sourced evidence item, or that has no fallback. It also warns about evidence older than 30 days. Evidence is never sent to the client's browser. **No figure is ever shown to a client unless it is in the brief with a source.** We never invent or show example numbers.

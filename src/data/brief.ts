@@ -86,8 +86,8 @@ export const SKIPPABLE = new Map<string, string>([
 
 const KEYS = new Set(['slug', 'token', 'businessName', 'website', 'logoUrl', 'accent', 'known', 'evidence', 'skip', 'opening', 'questions']);
 const EVIDENCE_KINDS = new Set(['search-term', 'monthly-searches', 'ranking', 'competitor', 'ad-spend', 'other']);
-/** Figures in a sentence: 1,200 / 4.5 / 26% / #3. Not digits inside a name, like Cin7 or ServiceM8. */
-const numbersIn = (t: string) => (t.match(/(?<![A-Za-z])\d[\d,.]*(?![A-Za-z\d])/g) ?? []).map((n) => n.replace(/[,.]+$/, '').replace(/,/g, ''));
+/** Figures in a sentence: 1,200 / 4.5 / 26% / #3 / 19th / page 2. Not digits inside a name, like Cin7 or ServiceM8. */
+const numbersIn = (t: string) => (t.match(/(?<![A-Za-z])\d[\d,.]*(?=(?:st|nd|rd|th)?(?![A-Za-z\d]))/gi) ?? []).map((n) => n.replace(/[,.]+$/, '').replace(/,/g, ''));
 const LIMITS = { name: 60, known: 200, opening: 400, question: 400, knownItems: 20, perStage: 8 };
 
 /** Plain text only: no markup, no links, no control characters, no long dashes. Returns a reason, or '' when fine. */

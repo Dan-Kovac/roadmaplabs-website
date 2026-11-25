@@ -66,7 +66,64 @@
       "status": "to-check"
     }
   ],
-  "evidence": [],
+  "evidence": [
+    {
+      "id": "e1",
+      "kind": "search-term",
+      "value": "wholesale sales rep app",
+      "source": "DataForSEO via Composio (account main-dataforseo)",
+      "pulled": "2026-11-26",
+      "status": "confirmed"
+    },
+    {
+      "id": "e2",
+      "kind": "ranking",
+      "value": "position 19 (page 2), Google desktop Australia, ranking page inzant.com.au/marketing-managers",
+      "source": "DataForSEO via Composio (account main-dataforseo)",
+      "pulled": "2026-11-26",
+      "status": "confirmed"
+    },
+    {
+      "id": "e3",
+      "kind": "monthly-searches",
+      "value": "wholesale order app: 10 a month (Australia, English, 12-month average)",
+      "source": "DataForSEO via Composio (account main-dataforseo)",
+      "pulled": "2026-11-26",
+      "status": "confirmed"
+    },
+    {
+      "id": "e4",
+      "kind": "monthly-searches",
+      "value": "b2b ordering app: 10 a month (Australia, English, 12-month average)",
+      "source": "DataForSEO via Composio (account main-dataforseo)",
+      "pulled": "2026-11-26",
+      "status": "confirmed"
+    },
+    {
+      "id": "e5",
+      "kind": "monthly-searches",
+      "value": "wholesale ecommerce platform: 10 a month (Australia, English, 12-month average)",
+      "source": "DataForSEO via Composio (account main-dataforseo)",
+      "pulled": "2026-11-26",
+      "status": "confirmed"
+    },
+    {
+      "id": "e6",
+      "kind": "other",
+      "value": "mobile sales app for wholesalers: no search volume returned",
+      "source": "DataForSEO via Composio (account main-dataforseo)",
+      "pulled": "2026-11-26",
+      "status": "confirmed"
+    },
+    {
+      "id": "e7",
+      "kind": "other",
+      "value": "wholesale sales rep app: no search volume returned",
+      "source": "DataForSEO via Composio (account main-dataforseo)",
+      "pulled": "2026-11-26",
+      "status": "confirmed"
+    }
+  ],
   "skip": [
     "S1"
   ],
@@ -102,7 +159,12 @@
     ],
     "marketing": [
       {
-        "text": "Wholesalers searching for a mobile sales app are probably comparing a few platforms. Do you know where Inzant shows up when they do, and has anything been tried to show up higher?"
+        "text": "When someone searches for a wholesale sales rep app, Inzant shows up on page 2 of Google, around 19th. Is search something you've tried to grow, and what has worked or not for finding new customers?",
+        "uses": [
+          "e1",
+          "e2"
+        ],
+        "fallback": "Wholesalers searching for a mobile sales app are probably comparing a few platforms. Do you know where Inzant shows up when they do, and has anything been tried to show up higher?"
       },
       {
         "text": "How are your ads doing today? What have you tried before, what worked, and where did you get burned?"
