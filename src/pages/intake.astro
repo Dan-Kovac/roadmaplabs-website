@@ -309,7 +309,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-panel__role[hidden] { display: none; }
   .ik-panel__role-actions { display: flex; flex-wrap: wrap; gap: 4px 14px; }
   .ik-panel__role button { min-height: 32px; padding: 0; border: 0; background: none; font: 600 13px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
-  .ik-panel__role small { font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
+  .ik-panel__role small { font: 400 11px/16px var(--font-sans); color: var(--text-secondary); }
   .ik-panel__link { align-self: flex-start; padding: 0; border: 0; background: none; font: 600 12px/18px var(--font-sans); color: var(--roadmap-blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   .ik-panel__fine { margin: 4px 0 0; font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
   .ik-tree { display: grid; gap: 2px; margin-top: 4px; }
@@ -720,7 +720,7 @@ const svg = (d: string, size = 20, sw = 2) =>
   </div>
 
   <!-- Voice hero -->
-  <div class="ik-voice" id="ik-voice" aria-hidden="true">
+  <div class="ik-voice" id="ik-voice" aria-hidden="true" inert>
     <div>
       <div class="ik-col ik-voice__inner">
         <span class:list={['ik-orb', 'ik-orb--hero', { 'ik-orb--off': !agentId }]} id="ik-hero-orb" aria-hidden="true"><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__ring"></span><span class="ik-orb__halo"></span><span class="ik-orb__core"></span></span>
@@ -786,7 +786,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       <form class="ik-composer" id="ik-composer" data-locked>
         <button class="ik-ico" type="button" id="ik-attach" aria-label="Share a file, link or screen recording" aria-expanded="false" aria-controls="ik-tray" data-tip="Share a file or link"><Fragment set:html={svg(icons.clip)} /></button>
         <label class="ik-sr" for="ik-input">Your answer</label>
-        <textarea id="ik-input" rows="1" placeholder="Type your answer…" autocomplete="off" enterkeyhint="send"></textarea>
+        <textarea id="ik-input" rows="1" placeholder="Type your answer…" autocomplete="off" enterkeyhint="send" maxlength="20000" aria-label="Your answer"></textarea>
         <button class="ik-ico" type="button" id="ik-rec-quick" aria-label="Record your screen" data-tip="Record your screen" hidden><Fragment set:html={svg(icons.screen)} /></button>
         <button class="ik-ico ik-mic" type="button" id="ik-mic" aria-label="Speak your answer" aria-pressed="false" data-tip="Speak your answer" hidden><Fragment set:html={svg(icons.mic)} /></button>
         <button class="ik-ico ik-send" type="submit" id="ik-send" aria-label="Send answer" data-tip="Send · Enter"><Fragment set:html={svg(icons.up, 20, 2.4)} /></button>
@@ -825,7 +825,7 @@ const svg = (d: string, size = 20, sw = 2) =>
 <script>
   import { readme, reference, workflow, fromDocuments, folderName as folderFor, workflowFile, DEPTH_LABEL, type FileState, type Depth } from '../data/intake-depth';
   import { readRole, ROLE_QUESTION, ROLE_QUESTION_LEGACY, ROLE_FOLLOW_UP, ROLE_CHIPS, ROUTE_NAME, type Route } from '../data/intake-roles';
-  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING } from '../data/intake';
+  import { CORE_QUESTIONS, CORE_STAGES, JOURNEY, DRILL, D5_CHIPS, D9_HINT, MAX_PROCESSES, BENCHMARK, CLOSING, SKIPPED, MAX_UPLOAD_BYTES, RECORDING, BLOCKED_FILE } from '../data/intake';
   import { GROWTH_QUESTIONS, GROWTH_OFFER, buildPayload } from '../data/intake-growth';
 
   type J = 0 | 1 | 2;
@@ -2060,6 +2060,14 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   fileInput.addEventListener('change', () => {
     for (const f of Array.from(fileInput.files || [])) {
+      if (BLOCKED_FILE.test(f.name)) {
+        note(`${f.name} is a program or script file, so we can't take it. Screenshots, PDFs, documents and spreadsheets are all fine.`, undefined, undefined, true);
+        continue;
+      }
+      if (files.length >= 20) {
+        note(`${f.name}: that's 20 files already. For more, put them in a shared folder and paste the link.`, undefined, undefined, true);
+        continue;
+      }
       if (totalBytes() + f.size > MAX_UPLOAD_BYTES) {
         note(`${f.name}: ${TOO_BIG}`, undefined, undefined, true);
         continue;
@@ -2075,10 +2083,11 @@ const svg = (d: string, size = 20, sw = 2) =>
 
   /** "loom.com/share/x" -> "https://loom.com/share/x", so the Jotform link field gets a real URL. */
   function normaliseLink(v: string) {
-    const t = v.trim();
-    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) return t;
+    // Web links only (http or https). Anything else, like plain text or a javascript: link, isn't kept as a link.
+    const t = v.trim().slice(0, 2000);
+    if (/^https?:\/\/[^\s/$.?#][^\s]*$/i.test(t)) return t;
     if (/^[\w-]+(\.[\w-]+)+([/?#:]\S*)?$/.test(t)) return `https://${t}`;
-    return t;
+    return '';
   }
   const linkLabel = (l: string) => (l.startsWith('Screen recording') ? l.split(': ')[0] : l.replace(/^https?:\/\//, ''));
   function addLink(raw: string, label?: string) {
@@ -2093,7 +2102,11 @@ const svg = (d: string, size = 20, sw = 2) =>
   }
   linkForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (addLink(linkInput.value)) { linkInput.value = ''; openTray(false); }
+    if (addLink(linkInput.value)) { linkInput.value = ''; openTray(false); return; }
+    const raw = linkInput.value.trim();
+    if (!raw) return;
+    openTray(false);
+    note(links.includes(normaliseLink(raw)) ? "You've already added that link." : "That doesn't look like a web link. Paste the full address from your browser, starting with https://");
   });
 
   // ---------- Screen recording (getDisplayMedia -> MediaRecorder -> private Supabase bucket) ----------
@@ -2182,7 +2195,7 @@ const svg = (d: string, size = 20, sw = 2) =>
       try {
         await uploadRecording(blob, seconds);
       } catch (err) {
-        note(err instanceof Error && err.message ? err.message : "The recording couldn't be saved. Please try again, or paste a Loom link instead.", undefined, undefined, true);
+        note(err instanceof Error && err.message && !(err instanceof TypeError) ? err.message : "The recording couldn't be saved. Check your internet connection and try again, or paste a Loom link instead.", undefined, undefined, true);
       } finally {
         recBar.hidden = true;
         recBusy = false;
@@ -2273,7 +2286,8 @@ const svg = (d: string, size = 20, sw = 2) =>
     } catch (err) {
       sendingNote?.remove();
       if (sendAllBtn) { sendAllBtn.disabled = false; sendAllBtn.innerHTML = label ?? 'Send everything'; }
-      const msg = err instanceof Error && err.message ? err.message : "That didn't send. Please try again.";
+      // A TypeError here is the browser's own network failure text ("Failed to fetch"): say it in plain words.
+      const msg = err instanceof TypeError ? "We couldn't reach our server. Check your internet connection, then try again." : err instanceof Error && err.message ? err.message : "That didn't send. Please try again.";
       note(`${msg} Nothing is lost: your answers are still saved here.`, 'Try again', () => sendAll(), true);
       if (answerable(steps[pos])) lock(false);
     } finally {
@@ -2329,7 +2343,10 @@ const svg = (d: string, size = 20, sw = 2) =>
   function setMode(m: Mode, persist = true) {
     mode = m;
     root.dataset.mode = m;
-    $<HTMLElement>('ik-voice').setAttribute('aria-hidden', String(m !== 'voice'));
+    // Collapsed in chat mode: inert, so its buttons can't take keyboard focus while they're invisible.
+    const voicePanel = $<HTMLElement>('ik-voice');
+    voicePanel.setAttribute('aria-hidden', String(m !== 'voice'));
+    voicePanel.inert = m !== 'voice';
     root.querySelectorAll<HTMLButtonElement>('.ik-modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
     if (m === 'voice') {
       stopListening();
