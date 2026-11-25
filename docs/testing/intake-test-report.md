@@ -31,6 +31,8 @@ Needs Dan's call: tie uploads to a signed-in client (1.1), shorten the viewing l
 
 ### 1.3 Nothing is deleted. The "deleted after handoff" claim is not true yet (High, compliance)
 
+> **Update (later the same day):** Dan has decided deletion is done by hand: promptly if a client doesn't go ahead, and once their own setup is running. The intake, the voice prompt and /privacy now say exactly that. /privacy now names Jotform, Supabase, ElevenLabs and OpenRouter and says some data is stored in the United States. The manual steps are in `docs/ops/intake-data-deletion.md`. The rest of this section describes the code, which still deletes nothing automatically.
+
 What exists, exactly:
 
 | Where | What | How long |

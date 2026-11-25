@@ -498,6 +498,8 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-finish__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
   .ik-finish__actions p { margin: 0; font: 400 13px/18px var(--font-sans); color: var(--text-muted); }
   .ik-finish__actions a { color: inherit; }
+  .ik-finish__data { margin: 0; max-width: 40em; font: 400 13px/20px var(--font-sans); color: var(--text-secondary); }
+  .ik-finish__data a { color: inherit; }
 
   /* ---------- Phones ---------- */
   @media (max-width: 640px) {
@@ -620,7 +622,7 @@ const svg = (d: string, size = 20, sw = 2) =>
         <button class="ik-cta" type="button" id="ik-start-chat"><Fragment set:html={svg(icons.chat, 18)} />Start in chat</button>
         <button class="ik-cta ik-cta--quiet" type="button" id="ik-start-voice"><Fragment set:html={svg(icons.wave, 18)} />Start a voice interview</button>
       </div>
-      <p class="ik-welcome__fine">Your answers go straight to Roadmap Labs and are only used for your project. <a href="/privacy">Privacy policy</a></p>
+      <p class="ik-welcome__fine">Your answers go straight to Roadmap Labs and are only used for your project. Your information is stored securely. If you decide not to go ahead, we delete it promptly. Once your own setup is running, we delete it from our side too. <a href="/privacy">Privacy policy</a></p>
     </div>
   </div>
 
@@ -818,6 +820,7 @@ const svg = (d: string, size = 20, sw = 2) =>
         <button class="ik-cta ik-cta--quiet" type="button" id="ik-download"><Fragment set:html={svg(icons.save, 18)} />Download a copy of your answers</button>
         <p>Questions in the meantime? <a href="mailto:dan@roadmaplabs.com.au">dan@roadmaplabs.com.au</a></p>
       </div>
+      <p class="ik-finish__data">Your information is stored securely. If you decide not to go ahead, just tell us and we delete it promptly. Once your own setup is running, we delete it from our side too. <a href="/privacy">Privacy policy</a></p>
     </div>
   </div>
 </section>
