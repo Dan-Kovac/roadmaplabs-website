@@ -134,6 +134,15 @@ export const SKIPPED = 'to fill';
 /** Vercel rejects serverless request bodies over ~4.5MB; keep uploads under this. */
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
+/** What happens to their answers: the same meaning as /privacy ("How long we keep intake information").
+ *  Used on the intro screen, the welcome and finish small print, and Harry's chat helper. Keep them all the same. */
+export const DATA_PROMISE_POINTS = [
+  'Your answers are only used to write your report and set up your project.',
+  'If you decide not to go ahead, we delete them promptly.',
+  'Once your own setup is running, we delete your records from our side too.',
+] as const;
+export const DATA_PROMISE = 'Your answers are only used to write your report and set up your project, whether or not you go ahead. If you decide not to go ahead, we delete them promptly. Once your own setup is running, we delete your records from our side too.';
+
 /** Program and script files: never needed for an intake, and the risky kind to pass on. Checked in the page and on the server. */
 export const BLOCKED_FILE = /\.(exe|msi|bat|cmd|com|scr|ps1|vbs|js|mjs|jar|sh|app|dmg|apk|html?|svg|hta|lnk|dll)$/i;
 

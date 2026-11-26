@@ -9,6 +9,8 @@
 // Writing rules: plain Australian English, short sentences, no em dashes, no jargon the reader would need explained.
 // Each screen says what this is, why it matters to them, and what they get.
 
+import { DATA_PROMISE_POINTS } from './intake';
+
 export type IntroAudience = 'owner' | 'employee';
 export const DEFAULT_AUDIENCE: IntroAudience = 'owner';
 
@@ -43,6 +45,10 @@ export interface IntroBeat {
   caption?: string;
   /** Closing line at the end of the screen. */
   footer?: string;
+  /** Short ticked lines, for the screen about their answers. */
+  points?: readonly string[];
+  /** A small link under the screen, opened in a new tab so the walkthrough isn't lost. */
+  link?: { href: string; label: string };
 }
 
 const OWNER: IntroBeat[] = [
@@ -125,6 +131,14 @@ const OWNER: IntroBeat[] = [
     ],
     demo: 'tools',
     footer: "Real examples make your files more relevant. Skip anything you don't have.",
+  },
+  {
+    id: 'answers',
+    eyebrow: 'Before we start',
+    title: 'What happens to your answers',
+    body: [],
+    points: DATA_PROMISE_POINTS,
+    link: { href: '/privacy', label: 'Privacy policy' },
   },
 ];
 

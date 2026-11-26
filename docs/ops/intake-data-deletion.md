@@ -34,6 +34,6 @@ Write one line in the client's record, without any of their answers. For example
 
 The intake, the voice agent and /privacy all say this:
 
-> Your information is stored securely. If you decide not to go ahead, we delete it promptly. Once your own setup is running, we delete it from our side too.
+> Your answers are only used to write your report and set up your project, whether or not you go ahead. If you decide not to go ahead, we delete them promptly. Once your own setup is running, we delete your records from our side too.
 
 If anything above stops being done, or a new tool starts holding intake data, update this checklist, /privacy and that wording together.

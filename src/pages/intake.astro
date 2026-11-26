@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { INTRO, DEFAULT_AUDIENCE } from '../data/intake-intro';
+import { DATA_PROMISE } from '../data/intake';
 
 // Public, so it can sit in the page. Unset means voice mode shows a "coming online" state and chat carries everything.
 const agentId = (import.meta.env.PUBLIC_ELEVENLABS_AGENT_ID ?? '').trim();
@@ -372,6 +373,14 @@ const svg = (d: string, size = 20, sw = 2) =>
   .ik-beat h2 { margin: 0 0 2px; max-width: 18em; font: 500 clamp(28px, 3vw, 38px)/1.12 var(--font-sans); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
   .ik-beat__body { margin: 0; max-width: 36em; font: 400 17px/1.6 var(--font-sans); color: #3d4350; text-wrap: pretty; }
   .ik-beat__footer { margin: 4px 0 0; max-width: 36em; font: 500 15px/1.55 var(--font-sans); color: var(--ink); }
+  /* "What happens to your answers": three ticked lines and a small privacy link */
+  .ik-promise { list-style: none; display: grid; gap: 10px; width: 100%; max-width: 36em; margin: 6px 0 0; padding: 0; }
+  .ik-promise li { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.8); border: 1px solid rgba(0,7,16,.08); font: 400 16px/1.55 var(--font-sans); color: var(--ink); }
+  .ik-promise__tick { flex: none; display: grid; place-items: center; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; background: var(--tint-2); color: var(--roadmap-blue); }
+  .is-on .ik-promise li { animation: ik-calm .6s var(--ease) both; }
+  .is-on .ik-promise li:nth-child(2) { animation-delay: .1s; } .is-on .ik-promise li:nth-child(3) { animation-delay: .2s; }
+  .ik-beat__link { font: 500 14px/20px var(--font-sans); color: var(--text-secondary); text-decoration: underline; text-underline-offset: 2px; }
+  .ik-beat__link:hover { color: var(--ink); }
   /* Labelled blocks: "One thing to know first", "What you get" */
   .ik-blocks { display: grid; gap: 10px; width: 100%; }
   .ik-block { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.8); border: 1px solid rgba(0,7,16,.08); }
@@ -622,7 +631,7 @@ const svg = (d: string, size = 20, sw = 2) =>
         <button class="ik-cta" type="button" id="ik-start-chat"><Fragment set:html={svg(icons.chat, 18)} />Start in chat</button>
         <button class="ik-cta ik-cta--quiet" type="button" id="ik-start-voice"><Fragment set:html={svg(icons.wave, 18)} />Start a voice interview</button>
       </div>
-      <p class="ik-welcome__fine">Your answers go straight to Roadmap Labs and are only used for your project. Your information is stored securely. If you decide not to go ahead, we delete it promptly. Once your own setup is running, we delete it from our side too. <a href="/privacy">Privacy policy</a></p>
+      <p class="ik-welcome__fine">{DATA_PROMISE} <a href="/privacy">Privacy policy</a></p>
     </div>
   </div>
 
@@ -649,6 +658,12 @@ const svg = (d: string, size = 20, sw = 2) =>
               ))}
             </ol>
           )}
+          {b.points && (
+            <ul class="ik-promise">
+              {b.points.map((pt) => <li><span class="ik-promise__tick"><Fragment set:html={svg(icons.check, 14, 2.8)} /></span><span>{pt}</span></li>)}
+            </ul>
+          )}
+          {b.link && <a class="ik-beat__link" href={b.link.href} target="_blank" rel="noopener">{b.link.label}</a>}
           {b.footer && !b.demo && <p class="ik-beat__footer">{b.footer}</p>}
         </div>
         {b.demo && (
@@ -820,7 +835,7 @@ const svg = (d: string, size = 20, sw = 2) =>
         <button class="ik-cta ik-cta--quiet" type="button" id="ik-download"><Fragment set:html={svg(icons.save, 18)} />Download a copy of your answers</button>
         <p>Questions in the meantime? <a href="mailto:dan@roadmaplabs.com.au">dan@roadmaplabs.com.au</a></p>
       </div>
-      <p class="ik-finish__data">Your information is stored securely. If you decide not to go ahead, just tell us and we delete it promptly. Once your own setup is running, we delete it from our side too. <a href="/privacy">Privacy policy</a></p>
+      <p class="ik-finish__data">{DATA_PROMISE} <a href="/privacy">Privacy policy</a></p>
     </div>
   </div>
 </section>
